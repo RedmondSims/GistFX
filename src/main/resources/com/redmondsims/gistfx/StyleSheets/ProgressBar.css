@@ -1,0 +1,51 @@
+.root {
+    -fx-padding: 15;
+}
+
+
+.green-bar {
+    -fx-accent: green;
+}
+
+.yellow-bar {
+    -fx-accent: yellow;
+}
+
+.orange-bar {
+    -fx-accent: orange;
+}
+
+.red-bar {
+    -fx-accent: red;
+}
+
+.blue-bar {
+    -fx-accent: blue;
+}
+
+.cyan-bar {
+    -fx-accent: cyan;
+}
+
+.hotpink-bar {
+    -fx-accent: rgb(255, 0, 175);
+}
+
+.ocean-bar {
+    -fx-accent: rgb(0, 185, 255);
+}
+
+.black-bar {
+    -fx-accent: rgb(0, 0, 0);
+}
+
+
+.light .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.dark .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}

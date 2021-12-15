@@ -1,0 +1,112 @@
+/*******************************************************************************
+ *                                                                             *
+ * Text Areas                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+
+.text-area {
+    -fx-font-size: 9pt;
+    -fx-line-spacing: 10px;
+    -fx-font-family: "Courier New";
+    -fx-font-size: 15;
+    -fx-text-fill: rgb(255, 255, 0);
+    -fx-opacity: 1.0;
+    -fx-fill: ghostwhite;
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: ghostwhite;
+    -fx-border-color: transparent;
+    -fx-alignment: top-left;
+}
+
+.text-area, .text-area {
+    -fx-background-color: transparent;
+    -fx-font-weight: BOLD;
+    -fx-prompt-text-fill: ghostwhite;
+    -fx-alignment: top-left;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+
+.text-area:disabled, .text-area:disabled > * {
+    -fx-font-family: "Courier New";
+    -fx-font-size: 13;
+    -fx-text-fill: rgb(255, 255, 0);
+    -fx-opacity: 1.0;
+}
+
+.text-area .scroll-bar:horizontal,
+.text-area .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+.text-area .scroll-bar:horizontal .track,
+.text-area .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-opacity: 0;
+}
+
+.text-area .scroll-bar:horizontal .thumb,
+.text-area .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0, 0, 0;
+    -fx-background-radius: 0em;
+    -fx-opacity: 0;
+}
+
+
+.text-area .scroll-bar:horizontal:disabled {
+    -fx-opacity: 0;
+}
+
+.text-area.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+.text-area.scroll-pane .viewport {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+
+.text-area.scroll-pane .content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+.text-area.scroll-pane.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+#textAreaJack.text-area, .text-area.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-alignment: left;
+}
+
+#textAreaMike.text-area, .text-area.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-alignment: right;
+}
+
