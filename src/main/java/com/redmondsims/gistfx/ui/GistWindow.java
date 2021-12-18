@@ -66,12 +66,11 @@ public class GistWindow {
 	private final        Label              checkBoxLabel         = new Label("Public");
 	private final        Label              lblDescriptionLabel   = new Label("Description:");
 	private final        Label              lblFileNameLabel      = new Label("Filename:");
-	private final        Label              lblGistNameLabel      = new Label("  Gist getName:");
+	private final        Label              lblGistNameLabel      = new Label("  Gist Name:");
 	private final        Label              lblGitUpdate          = new Label("Updating GitHub");
 	private final        Label              lblCheckingGit        = new Label("Comparing local data with GitHub");
 	private final        Label              lblFileName           = new Label();
 	private final        Label              lblGistName           = new Label();
-	private final        Button             buttonSaveGist        = new Button("Save Gist");
 	private final        Button             buttonNewFile         = new Button("New File");
 	private final        Button             buttonSaveFile        = new Button("Save File");
 	private final        Button             buttonDeleteFile      = new Button("Delete File");
@@ -222,14 +221,12 @@ public class GistWindow {
 		lblFileNameLabel.setPrefWidth(60);
 		lblDescription.setWrapText(false);
 		lblDescription.setEllipsisString("...");
-		buttonSaveGist.setMaxWidth(55);
 		buttonNewFile.setMaxWidth(55);
 		buttonSaveFile.setMaxWidth(55);
 		buttonNewGist.setMaxWidth(55);
 		buttonDeleteGist.setMaxWidth(80);
 		buttonUndo.setMaxWidth(80);
 		buttonDeleteFile.setMaxWidth(80);
-		buttonSaveGist.setPrefHeight(35);
 		lblFileName.setPrefWidth(125);
 		lblFileName.setAlignment(Pos.CENTER_LEFT);
 		lblFileNameLabel.setPrefWidth(75);
@@ -329,7 +326,7 @@ public class GistWindow {
 
 			if (buttonBarType.equals(Type.GIST)) {
 				if (gist != null) {
-					buttonBar.getButtons().setAll(buttonNewGist, buttonSaveGist, buttonNewFile, buttonDeleteGist);
+					buttonBar.getButtons().setAll(buttonNewGist, buttonNewFile, buttonDeleteGist);
 				}
 				else {
 					buttonBar.getButtons().setAll(buttonNewGist);
