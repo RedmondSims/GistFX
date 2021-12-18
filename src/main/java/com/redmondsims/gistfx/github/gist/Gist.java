@@ -77,7 +77,7 @@ public class Gist {
 
 	public boolean setDescription(String description) {
 		this.description.setValue(description);
-		return Action.save(this, true);
+		return Action.updateGistDescription(this);
 	}
 
 	public int getForkCount() {return Action.getForkCount(gistId);}

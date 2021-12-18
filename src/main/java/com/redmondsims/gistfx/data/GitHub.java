@@ -18,6 +18,7 @@ import org.kohsuke.github.GitHubBuilder;
 import org.kohsuke.github.extras.HttpClientGitHubConnector;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,13 +44,9 @@ class GitHub {
 
 	private void notifyUser() {
 		new Thread(() -> {
-			Platform.runLater(() -> {
-				uploading.setValue(true);
-			});
+			Platform.runLater(() -> uploading.setValue(true));
 			sleep(4500);
-			Platform.runLater(() -> {
-				uploading.setValue(false);
-			});
+			Platform.runLater(() -> uploading.setValue(false));
 		}).start();
 	}
 
@@ -64,17 +61,18 @@ class GitHub {
 		return false;
 	}
 
+	public void loadGHGistMap() {
+		new Thread(this::getGHGistMap).start();
+	}
+
 	public void loadData() {
-		DataSource dataSource = LiveSettings.dataSource;
+		DataSource dataSource = LiveSettings.getDataSource();
 		if (dataSource.equals(LOCAL)) {
-			new Thread(this::getGHGistMap).start();
-			LoginWindow.addInfo("Loading UI");
 			GistManager.startFromDatabase();
 		}
 		if (dataSource.equals(GITHUB)) {
-			LoginWindow.addInfo("Downloading Gist Objects");
+			LoginWindow.updateProcess("Downloading Gist Objects");
 			getGHGistMap();
-			LoginWindow.addInfo("Loading GUI");
 			GistManager.startFromGit(ghGistMap, false);
 		}
 	}
@@ -132,6 +130,17 @@ class GitHub {
 		return null;
 	}
 
+	public Date getGistUpdateDate(String gistId) {
+		try {
+			java.util.Date date = gitHub.getGist(gistId).getUpdatedAt();
+			return new Date(date.getTime());
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public GHGistFile getGistFile(String gistId, String filename) {
 		try {
 			return gitHub.getGist(gistId).getFile(filename);
@@ -142,7 +151,7 @@ class GitHub {
 		return null;
 	}
 
-	public boolean upload(Gist gist) {
+	public boolean update(Gist gist) {
 		String  gistId      = gist.getGistId();
 		String  description = gist.getDescription();
 		boolean success     = false;
@@ -158,7 +167,7 @@ class GitHub {
 		return success;
 	}
 
-	public boolean upload(GistFile file) {
+	public boolean update(GistFile file) {
 		boolean success  = false;
 		String  gistId   = file.getGistId();
 		String  filename = file.getFilename();

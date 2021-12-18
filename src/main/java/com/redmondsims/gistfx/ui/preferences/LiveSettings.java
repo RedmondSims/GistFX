@@ -2,6 +2,8 @@ package com.redmondsims.gistfx.ui.preferences;
 
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.github.gist.GistManager;
+import com.redmondsims.gistfx.ui.preferences.UISettings.DataSource;
+import com.redmondsims.gistfx.ui.preferences.UISettings.ProgressColorSource;
 import javafx.scene.CacheHint;
 import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
@@ -10,23 +12,25 @@ import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import com.redmondsims.gistfx.ui.preferences.UISettings.ProgressColorSource;
+
 import java.util.Objects;
+
+import static com.redmondsims.gistfx.ui.preferences.UISettings.Theme.DARK;
 
 public class LiveSettings {
 
 
-	public static  UISettings.DataSource  dataSource;
-	public static  UISettings.Theme       theme            = UISettings.Theme.DARK;
+	private static DataSource             dataSource;
+	private static UISettings.Theme       theme            = DARK;
+	private static UISettings.LoginScreen loginScreen;
 	public static  Color                  progressBarColor = AppSettings.getProgressBarColor();
 	public static  ProgressColorSource    progressBarColorSource;
 	public static  Boolean                useJsonGist;
-	private static UISettings.LoginScreen loginScreen;
 	public static  boolean                flagDirtyFiles;
 	public static  Color                  dirtyFileFlagColor;
 	public static  boolean                doMasterReset    = false;
 
-	public static void applyUserPreferences() {
+	public static void applyAppSettings() {
 		progressBarColorSource = AppSettings.getProgressColorSource();
 		useJsonGist            = AppSettings.getSaveToGist();
 		theme                  = AppSettings.getTheme();
@@ -34,6 +38,22 @@ public class LiveSettings {
 		dirtyFileFlagColor     = AppSettings.getDirtyFileFlagColor();
 		setLoginScreen(AppSettings.getLoginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
+	}
+
+	public static void setDataSource(DataSource source) {
+		dataSource = source;
+	}
+
+	public static DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public static UISettings.Theme getTheme() {
+		return theme;
+	}
+
+	public static void setTheme(UISettings.Theme theme) {
+		LiveSettings.theme = theme;
 	}
 
 	public static ImageView getDirtyFlag() {
@@ -54,6 +74,12 @@ public class LiveSettings {
 		imageView.setCache(true);
 		imageView.setCacheHint(CacheHint.SPEED);
 		return imageView;
+	}
+
+	public static ImageView getConflictFlag() {
+		String    conflictFlagPath = Objects.requireNonNull(Main.class.getResource("ConflictFlag.png")).toExternalForm();
+		Image     image         = new Image(conflictFlagPath);
+		return new ImageView(image);
 	}
 
 	public static UISettings.LoginScreen getLoginScreen() {

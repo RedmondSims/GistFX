@@ -4,7 +4,7 @@ import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.javafx.PasswordDialog;
-import com.redmondsims.gistfx.javafx.controls.CustomProgressBar;
+import com.redmondsims.gistfx.javafx.controls.CProgressBar;
 import com.redmondsims.gistfx.ui.alerts.CustomAlert;
 import com.redmondsims.gistfx.ui.alerts.Help;
 import com.redmondsims.gistfx.ui.enums.LoginStates;
@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.redmondsims.gistfx.ui.enums.LoginStates.*;
-import static com.redmondsims.gistfx.utils.SceneOne.Choice.*;
 import static javafx.scene.layout.AnchorPane.*;
 
 /**
@@ -80,9 +79,9 @@ public class LoginWindow {
 	private              boolean           skip                 = false;
 	private              boolean           tokenChecked         = false;
 	private              boolean           tokenValid           = false;
-	private              LoginStates       postState;
-	private              CustomProgressBar pBar;
-	private              HBox              hboxToken;
+	private LoginStates  postState;
+	private CProgressBar pBar;
+	private HBox         hboxToken;
 	private              HBox              hboxPassword;
 	private              HBox              hboxTop;
 	private              HBox              hboxBottom;
@@ -125,11 +124,11 @@ public class LoginWindow {
 			Help.showIntro();
 		}
 		if (LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD)) {
-			LiveSettings.theme = AppSettings.getTheme();
+			LiveSettings.setTheme(AppSettings.getTheme());
 			guiLogin();
 		}
 		else {
-			LiveSettings.theme = Theme.DARK;
+			LiveSettings.setTheme(Theme.DARK);
 			graphicLogin();
 		}
 	}
@@ -152,7 +151,7 @@ public class LoginWindow {
 		return pf;
 	}
 
-	public static void addInfo(String info) {
+	public static void updateProcess(String info) {
 		if (info.startsWith("clear")) {
 			taInfo.clear();
 		}
@@ -210,7 +209,7 @@ public class LoginWindow {
 
 	private void guiLogin() {
 		pBar = Action.getProgressNode(13, Color.BLACK);
-		boolean darkTheme = LiveSettings.theme.equals(Theme.DARK);
+		boolean darkTheme = LiveSettings.getTheme().equals(Theme.DARK);
 		Label   blank1    = new Label(" ");
 		Label   blank2    = new Label(" ");
 		blank1.setPrefWidth(145);
@@ -535,7 +534,7 @@ public class LoginWindow {
 					Response response = new PasswordDialog().ConfirmPasswordYesNoCancel(loginPassword.getValue(), SceneOne.getOwner());
 					if (response == Response.YES) {
 						new Thread(() -> {
-							addInfo("Hashing Password");
+							updateProcess("Hashing Password");
 							String passwordHash = Crypto.hashPassword(loginPassword.getValue());
 							AppSettings.setHashedPassword(passwordHash);
 							AppSettings.setHashedToken(Crypto.encryptWithSessionKey(userToken.getValue()));
@@ -588,7 +587,7 @@ public class LoginWindow {
 			if (userToken.getValue().length() > 20) {
 				tokenValid = Action.tokenValid(userToken.getValue());
 				Platform.runLater(() -> lblLoggedIn.setText(tokenValid ? "Token Valid" : "Token NOT Valid"));
-				addInfo(tokenValid ? "Token Valid" : "Token NOT Valid");
+				updateProcess(tokenValid ? "Token Valid" : "Token NOT Valid");
 				if (tokenValid && tokenOnly) {
 					newSecurityMode = TOKEN_LOGIN;
 					Crypto.setSessionKey("");
@@ -603,7 +602,7 @@ public class LoginWindow {
 	private boolean checkPassword() {
 		boolean valid = Crypto.validatePassword(loginPassword.getValue(), hashedPassword);
 		if (valid) {
-			addInfo("Password Valid");
+			updateProcess("Password Valid");
 			newSecurityMode = PASSWORD_LOGIN;
 			Crypto.setSessionKey(tfPassword.getText());
 			userToken.setValue(Crypto.decryptWithSessionKey(hashedAccessToken));
@@ -616,10 +615,10 @@ public class LoginWindow {
 	private void processCredentials() {
 		new Thread(() -> {
 			if (usingLocalCreds) {
-				addInfo("Checking Password...");
+				updateProcess("Checking Password...");
 			}
 			else if (!tfToken.getText().isEmpty() && tfPassword.getText().length() > 5) {
-				addInfo("Validating Credentials...");
+				updateProcess("Validating Credentials...");
 			}
 			postState = postCheck();
 			switch (postState) {
@@ -635,11 +634,9 @@ public class LoginWindow {
 				}
 
 				case WRONG_PASSWORD_ENTERED -> {
-					Platform.runLater(() -> {
-						CustomAlert.showWarning("Incorrect Password", "The password you entered is incorrect. After six failed attempts, GistFX will reset your password and access token so that you can create a new password with a working access token.\n\nYou have " + (6 - passwordAttempts) + " attempts remaining.");
-					});
+					Platform.runLater(() -> CustomAlert.showWarning("Incorrect Password", "The password you entered is incorrect. After six failed attempts, GistFX will reset your password and access token so that you can create a new password with a working access token.\n\nYou have " + (6 - passwordAttempts) + " attempts remaining."));
 					buttonLogin.setDisable(false);
-					addInfo("clear");
+					updateProcess("clear");
 				}
 
 				case ALL_CREDS_VALID -> new Thread(this::logIntoGitHub).start();
@@ -688,7 +685,7 @@ public class LoginWindow {
 	}
 
 	private void logIntoGitHub() {
-		LiveSettings.applyUserPreferences();
+		LiveSettings.applyAppSettings();
 		if (!currentSecurityMode.equals(newSecurityMode) || passwordChanged) {
 			/*
 			 * This ensures that if the user switches between password login and
@@ -696,7 +693,7 @@ public class LoginWindow {
 			 * to be re-encrypted.
 			 */
 			Action.cleanDatabase();
-			LiveSettings.dataSource = UISettings.DataSource.GITHUB;
+			LiveSettings.setDataSource(UISettings.DataSource.GITHUB);
 			AppSettings.setSecurityOption(newSecurityMode);
 		}
 		Action.initJson();

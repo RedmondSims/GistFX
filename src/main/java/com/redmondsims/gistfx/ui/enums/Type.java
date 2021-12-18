@@ -13,5 +13,8 @@ public enum Type {
 	DOUBLE,
 	RANDOM,
 	STANDARD,
-	STRING
+	STRING,
+	CONFLICT,
+	DIRTY,
+	OK
 }

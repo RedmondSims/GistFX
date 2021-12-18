@@ -2,13 +2,15 @@ package com.redmondsims.gistfx.data;
 
 import com.redmondsims.gistfx.github.gist.Gist;
 import com.redmondsims.gistfx.github.gist.GistFile;
-import com.redmondsims.gistfx.javafx.controls.CustomProgressBar;
+import com.redmondsims.gistfx.javafx.controls.CProgressBar;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.paint.Color;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
+
 import java.io.File;
+import java.sql.Date;
 import java.util.Map;
 
 /*
@@ -23,7 +25,7 @@ public class Action {
 	private static final Disk   DISK   = new Disk();
 	private static final Json   JSON   = new Json();
 
-	/*
+	/**
 	 * SQLite ONLY Methods
 	 */
 
@@ -83,7 +85,7 @@ public class Action {
 		return SQLITE.getNameMap();
 	}
 
-	/*
+	/**
 	 * GitHub ONLY Methods
 	 */
 
@@ -132,7 +134,15 @@ public class Action {
 		return file.getContent();
 	}
 
-	/*
+	public static void loadGHGistMap() {
+		GITHUB.loadGHGistMap();
+	}
+
+	public static Date getGistUpdateDate(String gistId) {
+		return GITHUB.getGistUpdateDate(gistId);
+	}
+
+	/**
 	 * Json Methods
 	 */
 
@@ -166,7 +176,7 @@ public class Action {
 		JSON.setName(gistId,name);
 	}
 
-	/*
+	/**
 	 * GitHub AND SQLite Methods
 	 */
 
@@ -176,20 +186,18 @@ public class Action {
 		return true;
 	}
 
-	public static boolean save(GistFile file, boolean upload) {
-		SQLITE.saveFile(file);
-		if (upload) {
-			 return GITHUB.upload(file);
-		}
-		return true;
+	public static boolean updateGistDescription(Gist gist) {
+		SQLITE.updateGistDescription(gist);
+		return GITHUB.update(gist);
 	}
 
-	public static boolean save(Gist gist, boolean upload) {
-		SQLITE.updateGistDescription(gist);
-		if (upload) {
-			return GITHUB.upload(gist);
-		}
-		return true;
+	public static boolean updateGistFile(GistFile file) {
+		SQLITE.saveFile(file);
+		return GITHUB.update(file);
+	}
+
+	public static void saveToSQL(GistFile file) {
+		SQLITE.saveFile(file);
 	}
 
 	public static void renameFile(GistFile file) {
@@ -209,20 +217,19 @@ public class Action {
 		DISK.writeToTextFile(file,content);
 	}
 
-	/*
+	/**
 	 * ProgressBar Methods
 	 */
 
-	public static CustomProgressBar getProgressNode(double height) {
-		return new CustomProgressBar(GITHUB.progress, height);
+	public static CProgressBar getProgressNode(double height) {
+		return new CProgressBar(GITHUB.progress, height);
 	}
 
-	public static CustomProgressBar getProgressNode(double height, Color color) {
-		return new CustomProgressBar(GITHUB.progress, height, color);
+	public static CProgressBar getProgressNode(double height, Color color) {
+		return new CProgressBar(GITHUB.progress, height, color);
 	}
 
-	public static DoubleProperty getProgressBinding() {
-		GITHUB.progress.setValue(.1);
+	public static DoubleProperty getGitHubDownloadProgress() {
 		return GITHUB.progress;
 	}
 

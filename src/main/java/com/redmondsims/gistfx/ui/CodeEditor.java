@@ -32,7 +32,7 @@ public class CodeEditor {
 		if (!GIST_FILE_LIST.contains(fileObject)) {
 			GIST_FILE_LIST.add(fileObject);
 		}
-		fileObject.bindContentTo(monacoFX.getEditor().getDocument().textProperty());
+		fileObject.setContentListener(monacoFX.getEditor().getDocument().textProperty());
 	}
 
 	public static void requestFocus() {monacoFX.requestFocus();}

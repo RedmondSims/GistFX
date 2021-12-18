@@ -16,13 +16,15 @@ import com.redmondsims.gistfx.ui.preferences.AppSettings;
 import com.redmondsims.gistfx.ui.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.preferences.UISettings;
 import com.redmondsims.gistfx.ui.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.utils.SceneOne;
+import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -35,10 +37,12 @@ import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.stage.Screen;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.apache.commons.io.FilenameUtils;
-import java.awt.Desktop;
+
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import com.redmondsims.gistfx.utils.SceneOne;
+
 import static com.redmondsims.gistfx.utils.SceneOne.Choice.*;
 import static javafx.scene.layout.AnchorPane.*;
 
@@ -64,6 +68,7 @@ public class GistWindow {
 	private final        Label              lblFileNameLabel      = new Label("Filename:");
 	private final        Label              lblGistNameLabel      = new Label("  Gist getName:");
 	private final        Label              lblGitUpdate          = new Label("Updating GitHub");
+	private final        Label              lblCheckingGit        = new Label("Comparing local data with GitHub");
 	private final        Label              lblFileName           = new Label();
 	private final        Label              lblGistName           = new Label();
 	private final        Button             buttonSaveGist        = new Button("Save Gist");
@@ -73,7 +78,8 @@ public class GistWindow {
 	private final        Button             buttonNewGist         = new Button("New Gist");
 	private final        Button             buttonCopyToClipboard = new Button("Copy File To Clipboard");
 	private final        Button             buttonDeleteGist      = new Button("Delete Gist");
-	private final        Button             buttonUndo      	  = new Button("Undo Edit");
+	private final        Button             buttonUndo            = new Button("Undo Edit");
+	private final        Button             buttonCompare         = new Button("Resolve Conflict");
 	private final        ButtonBar          buttonBar             = new ButtonBar();
 	private final        MyMenuBar          menuBar               = new MyMenuBar();
 	private final        AnchorPane         ap                    = new AnchorPane();
@@ -91,7 +97,7 @@ public class GistWindow {
 	private              TreeView<GistType> treeView;
 	private              TreeItem<GistType> selectedTreeItemForGistName;
 	private              TreeItem<GistType> selectedTreeItemForGistFileName;
-	private final String sceneId = "GistWindow";
+	private final        String             sceneId               = "GistWindow";
 
 	private static void setNodePosition(Node node, double left, double right, double top, double bottom) {
 		if (top != -1) setTopAnchor(node, top);
@@ -111,6 +117,7 @@ public class GistWindow {
 		placeControlsOnPane();
 		setControlVisualProperties();
 		setControlActionProperties();
+		if (fromReload) lblCheckingGit.setVisible(false);
 		splitPane.setDividerPosition(0, .2);
 		addMenuBarItems();
 		SceneOne.set(ap,sceneId).show(DECORATED,CENTERED);
@@ -125,6 +132,7 @@ public class GistWindow {
 		SceneOne.setStageCloseEvent(sceneId, this::closeWindowEvent);
 		if (fromReload) CustomAlert.showInfo("All data re-downloaded successfully.", SceneOne.getOwner(sceneId));
 		else checkUnsavedFiles();
+		handleButtonBar();
 	}
 
 	private void checkUnsavedFiles() {
@@ -173,7 +181,8 @@ public class GistWindow {
 		addMainNode(lblGitUpdate, -1, 40, 75, -1);
 		addMainNode(lblDescriptionLabel, 20, -1, 80, -1);
 		addMainNode(lblDescription, 105, 20, 80, -1);
-		addMainNode(pBar, 15, 15, 103, -1);
+		addMainNode(lblCheckingGit,10,10,75,-1);
+		addMainNode(pBar, 15, 15, 100, -1);
 
 		addPaneNode(buttonBar, 0, -1, 5, -1);
 		addPaneNode(lblFileNameLabel, 0, -1, 35, -1);
@@ -232,9 +241,13 @@ public class GistWindow {
 		checkBoxLabel.setGraphic(publicCB);
 		checkBoxLabel.setContentDisplay(ContentDisplay.RIGHT);
 		pBar.setPrefHeight(10);
-		pBar.setVisible(false);
+		pBar.setStyle(AppSettings.getProgressBarStyle());
+		pBar.setVisible(pBar.progressProperty().isBound());
 		labelsVisible(false);
 		lblGitUpdate.setId("notify");
+		lblCheckingGit.setId("notify");
+		lblCheckingGit.setAlignment(Pos.CENTER);
+		buttonCompare.setId("conflict");
 		CodeEditor.get().setVisible(false);
 	}
 
@@ -267,6 +280,7 @@ public class GistWindow {
 		lblDescription.setOnMouseClicked(e -> changeGistDescription());
 		publicCB.setOnAction(e -> changePublicState());
 		lblGitUpdate.visibleProperty().bind(Action.getNotifyProperty());
+		buttonCompare.setOnAction(e->openCompareWindow());
 	}
 
 	private void showWorking() {
@@ -302,17 +316,26 @@ public class GistWindow {
 			if (buttonBarType.equals(Type.FILE)) {
 				if (file != null) {
 					if (file.isDirty()) {
-						buttonBar.getButtons().addAll(buttonNewFile, buttonSaveFile, buttonCopyToClipboard, buttonUndo, buttonDeleteFile);
+						buttonBar.getButtons().setAll(buttonNewFile, buttonSaveFile, buttonCopyToClipboard, buttonUndo, buttonDeleteFile);
 					}
 					else {
-						buttonBar.getButtons().addAll(buttonNewFile, buttonCopyToClipboard, buttonDeleteFile);
+						buttonBar.getButtons().setAll(buttonNewFile, buttonCopyToClipboard, buttonDeleteFile);
+					}
+					if (file.isInConflict()) {
+						buttonBar.getButtons().add(buttonCompare);
 					}
 				}
 			}
-			else {
-				buttonBar.getButtons().addAll(buttonNewGist, buttonSaveGist, buttonNewFile, buttonDeleteGist);
+
+			if (buttonBarType.equals(Type.GIST)) {
+				if (gist != null) {
+					buttonBar.getButtons().setAll(buttonNewGist, buttonSaveGist, buttonNewFile, buttonDeleteGist);
+				}
+				else {
+					buttonBar.getButtons().setAll(buttonNewGist);
+				}
 			}
-			if (gist != null || file != null) {buttonBar.setVisible(showButtonBar);}
+			buttonBar.setVisible(AppSettings.getShowButtonBar());
 			double top = buttonBar.isVisible() ? 35 : 5;
 			setAnchors(lblFileNameLabel, 0, -1, top, -1);
 			setAnchors(lblFileName, 85, 20, top, -1);
@@ -331,11 +354,47 @@ public class GistWindow {
 		setNodePosition(node, left, right, top, bottom);
 	}
 
+	private void addNode(AnchorPane ap, Node node, double left, double right, double top, double bottom) {
+		ap.getChildren().add(node);
+		setNodePosition(node, left, right, top, bottom);
+	}
+
 	private void setAnchors(Node node, double left, double right, double top, double bottom) {
 		if (top != -1) AnchorPane.setTopAnchor(node, top);
 		if (bottom != -1) AnchorPane.setBottomAnchor(node, bottom);
 		if (left != -1) AnchorPane.setLeftAnchor(node, left);
 		if (right != -1) AnchorPane.setRightAnchor(node, right);
+	}
+
+	private void openCompareWindow() {
+		Rectangle2D screenBounds = Screen.getPrimary().getBounds();
+		double width = screenBounds.getWidth() * .75;
+		double height = screenBounds.getHeight() * .75;
+		AnchorPane ap = new AnchorPane();
+		Button buttonKeepGitHub = new Button("Keep GitHub Version");
+		Button buttonKeepLocal = new Button("Keep Local Version");
+		buttonKeepGitHub.setOnAction(e -> {
+			file.resolveConflict(Type.GITHUB);
+			SceneOne.close("Compare");
+		});
+		buttonKeepLocal.setOnAction(e -> {
+			file.resolveConflict(Type.LOCAL);
+			SceneOne.close("Compare");
+		});
+		MonacoFX gitHubEditor = new MonacoFX();
+		MonacoFX localEditor = new MonacoFX();
+		if (AppSettings.getTheme().equals(Theme.DARK)) {
+			gitHubEditor.getEditor().setCurrentTheme("vs-dark");
+			localEditor.getEditor().setCurrentTheme("vs-dark");
+		}
+		gitHubEditor.getEditor().getDocument().setText(file.getGitHubVersion());
+		localEditor.getEditor().getDocument().setText(file.getContent());
+		double midPoint = width / 2;
+		addNode(ap,buttonKeepGitHub,10,-1,10,-1);
+		addNode(ap,buttonKeepLocal,-1,10,10,-1);
+		addNode(ap,gitHubEditor,10,midPoint + 5,40,10);
+		addNode(ap,localEditor,midPoint + 5,10,40,10);
+		SceneOne.set(ap,"Compare").widthHeight(width,height).show(CENTERED,FLOATER);
 	}
 
 	/**
@@ -428,12 +487,15 @@ public class GistWindow {
 
 	private void saveFile() {
 		if (checkSelectedGistFile("Save File")) {
+			if(file.isInConflict()) {
+				CustomAlert.showWarning("Cannot Save File!","This file is in conflict with the GitHub version. Resolve conflict first.");
+				openCompareWindow();
+				return;
+			}
 			new Thread(() -> {
 				sleep(500);
 				if(!file.flushDirtyData()) {
-					Platform.runLater(() -> {
-						CustomAlert.showWarning("There was a problem committing the data.");
-					});
+					Platform.runLater(() -> CustomAlert.showWarning("There was a problem committing the data."));
 				}
 			}).start();
 		}
@@ -441,13 +503,16 @@ public class GistWindow {
 
 	private void saveAllFiles() {
 		if (GistManager.isDirty()) {
+			if(filesInConflict()) {
+				CustomAlert.showWarning("Cannot Save Files!","You have one or more files in conflict with the GitHub version. Click on the file with the red X next to it, then click on the Resolve Conflict button and chose which version of the file should be kept before saving any files.");
+				return;
+			}
 			new Thread(() -> {
 				savingData = true;
 				Platform.runLater(() -> {
 					CodeEditor.get().setVisible(false);
-					pBar.progressProperty().bind(Action.getProgressBinding());
-					Action.getProgressBinding().setValue(0);
-					pBar.setVisible(true);
+					bindProgressBar(Action.getGitHubDownloadProgress());
+					Action.getGitHubDownloadProgress().setValue(0);
 					for (TreeItem<GistType> branch : treeRoot.getChildren()) {
 						branch.setExpanded(false);
 					}
@@ -457,7 +522,7 @@ public class GistWindow {
 				double         count           = 1;
 				for (GistFile file : unsavedFileList) {
 					double newCount = count;
-					Platform.runLater(() -> Action.getProgressBinding().setValue(newCount / total));
+					Platform.runLater(() -> Action.getGitHubDownloadProgress().setValue(newCount / total));
 					if (!file.flushDirtyData()) {
 						CustomAlert.showWarning("There was a problem.");
 						savingData = false;
@@ -466,8 +531,8 @@ public class GistWindow {
 					count++;
 				}
 				Platform.runLater(() -> {
-					pBar.setVisible(false);
-					Action.getProgressBinding().setValue(0);
+					clearProgressBar();
+					Action.getGitHubDownloadProgress().setValue(0);
 					if (CustomAlert.showInfoResponse("All unsaved files were uploaded to GitHub successfully.", SceneOne.getOwner(sceneId))) {
 						savingData = false;
 					}
@@ -609,12 +674,12 @@ public class GistWindow {
 		}
 		file = null;
 		gist = null;
-		pBar.setVisible(true);
+		bindProgressBar(Action.getGitHubDownloadProgress());
 		GistManager.unBindFileObjects();
 		new Thread(() -> {
 			Action.refreshAllData();
 			Platform.runLater(SceneOne::close);
-			pBar.setVisible(false);
+			clearProgressBar();
 		}).start();
 	}
 
@@ -648,17 +713,27 @@ public class GistWindow {
 	}
 
 	public void setPBarStyle(String style) {
-/*
-		pBar.getStyleClass().clear();
-		if (LiveSettings.theme.equals(Theme.DARK)) {
-			pBar.getStyleClass().add("dark");
-		}
-		else {
-			pBar.getStyleClass().add("light");
-		}
-*/
-
 		pBar.setStyle(style);
+	}
+
+	public void bindProgressBar(DoubleProperty doubleProperty) {
+		pBar.progressProperty().bind(doubleProperty);
+		pBar.setVisible(true);
+		pBar.toFront();
+	}
+
+	public void clearProgressBar() {
+		pBar.progressProperty().unbind();
+		pBar.setVisible(false);
+	}
+
+	private boolean filesInConflict() {
+		for (TreeItem<GistType> branch : treeRoot.getChildren()) {
+			for (TreeItem<GistType> leaf : branch.getChildren()) {
+				if (leaf.getValue().getFile().isInConflict()) return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -726,6 +801,25 @@ public class GistWindow {
 		treeRoot.getChildren().add(0, branch);
 	}
 
+	public void setFileDirtyState(GistFile gistFile, Type state){
+		if (!state.equals(Type.OK)) {
+			for(TreeItem<GistType> branch : treeRoot.getChildren()) {
+				for(TreeItem<GistType> leaf : branch.getChildren()) {
+					if (leaf.getValue().getFile().equals(gistFile)) {
+						branch.setExpanded(true);
+					}
+				}
+			}
+		}
+	}
+
+	public void triggerConflictWarning() {
+		lblCheckingGit.setVisible(false);
+		if (filesInConflict()) {
+			Platform.runLater(() -> CustomAlert.showWarning("You have one or more files that are in conflict with the version on GitHub. Click on each file with a red X and then click on Resolve Conflict to see the differences and chose which version to keep.\n\nConflict is determined by the last update made to your gist where the date of that update is compared to the last time the file was uploaded into your Gist, so it is possible that no conflict exists."));
+		}
+	}
+
 	private TreeItem<GistType> getBranch(String gistId) {
 		for (TreeItem<GistType> branch : treeRoot.getChildren()) {
 			if (branch.getValue().getType().equals(Type.GIST) && branch.getValue().getGistID().equals(gistId)) {
@@ -747,10 +841,7 @@ public class GistWindow {
 				leaf.graphicProperty().bind(file.getFlagNode());
 				file.addedToTree();
 				branch.getChildren().add(leaf);
-				Tooltip.install(leaf.getGraphic(),new Tooltip(leaf.getValue().getFile().getToolTip()));
-				if (file.isDirty()) {
-					branch.setExpanded(true);
-				}
+				if (file.isDirty()) branch.setExpanded(true);
 			}
 			treeRoot.getChildren().add(branch);
 		}

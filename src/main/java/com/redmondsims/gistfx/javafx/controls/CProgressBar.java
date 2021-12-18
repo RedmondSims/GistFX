@@ -10,16 +10,16 @@ import javafx.scene.paint.Color;
 
 import java.util.Random;
 
-public class CustomProgressBar extends ProgressBar {
+public class CProgressBar extends ProgressBar {
 
-	public CustomProgressBar(DoubleProperty bindProperty, double height) {
+	public CProgressBar(DoubleProperty bindProperty, double height) {
 		super(0);
 		progressProperty().bind(bindProperty);
 		setPrefHeight(height);
 		setup();
 	}
 
-	public CustomProgressBar(DoubleProperty bindProperty, double height, Color color) {
+	public CProgressBar(DoubleProperty bindProperty, double height, Color color) {
 		super(0);
 		progressProperty().bind(bindProperty);
 		setPrefHeight(height);
@@ -33,7 +33,7 @@ public class CustomProgressBar extends ProgressBar {
 		getStylesheets().add(Theme.PROGRESS_BAR.getStyleSheet());
 
 		setTheme();
-		LiveSettings.applyUserPreferences();
+		LiveSettings.applyAppSettings();
 		if (LiveSettings.progressBarColorSource.equals(ProgressColorSource.RANDOM)) {
 			addRandomColor();
 		}
@@ -52,7 +52,7 @@ public class CustomProgressBar extends ProgressBar {
 	}
 
 	private void setTheme() {
-		if (LiveSettings.theme.equals(Theme.DARK)) {
+		if (LiveSettings.getTheme().equals(Theme.DARK)) {
 			getStyleClass().add("dark");
 		}
 		else {

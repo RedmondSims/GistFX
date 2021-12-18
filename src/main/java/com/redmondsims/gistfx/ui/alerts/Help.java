@@ -108,7 +108,7 @@ public class Help {
 	private static void showHelp(String html) {
 		String background = "~background~";
 		String color      = "~color~";
-		if (LiveSettings.theme.equals(Theme.DARK)) {
+		if (LiveSettings.getTheme().equals(Theme.DARK)) {
 			html = Modify.string().replace(html, background, "background-color:#373e43");
 			html = Modify.string().replace(html, color, "color:lightgrey");
 		}
@@ -121,7 +121,7 @@ public class Help {
 		Alert alert = new Alert(Alert.AlertType.NONE);
 		alert.initModality(Modality.WINDOW_MODAL);
 		alert.getButtonTypes().clear();
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.theme.getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
 		alert.getButtonTypes().add(ButtonType.OK);
 		alert.getDialogPane().setContent(webView);
 		alert.getDialogPane().setPadding(new Insets(10, 20, 0, 10));

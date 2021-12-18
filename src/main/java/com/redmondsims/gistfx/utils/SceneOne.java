@@ -22,6 +22,8 @@ public final class SceneOne {
 		UNDECORATED,
 		UTILITY,
 		UNIFIED,
+		FLOATER,
+		MAIN,
 		CENTERED
 	}
 
@@ -48,11 +50,12 @@ public final class SceneOne {
 		public Builder(Parent root) {
 			this.root = root;
 		}
-
 		public Builder(Parent root, String className) {
 			this.root      = root;
 			this.className = className;
 		}
+
+		private Choice type = Choice.MAIN;
 
 		private final Parent                    root;
 		private       boolean                   centered          = false;
@@ -125,6 +128,8 @@ public final class SceneOne {
 					case UTILITY -> initStyle = StageStyle.UTILITY;
 					case UNIFIED -> initStyle = StageStyle.UNIFIED;
 					case CENTERED -> centered = true;
+					case FLOATER -> type = Choice.FLOATER;
+					case MAIN -> type = Choice.MAIN;
 				}
 			}
 		}
@@ -138,6 +143,7 @@ public final class SceneOne {
 					.center(centerSceneByDefault)
 					.fullscreen(fullScreen)
 					.title(title)
+					.type(type)
 					.stageCloseEvent(stageEventHandler)
 					.build());
 			sceneMap.get(mapName).setTitle(title != null ? title : "");
@@ -344,6 +350,12 @@ public final class SceneOne {
 			private       StageStyle         style                = null;
 			private String title = "";
 			private       EventHandler<WindowEvent>              sceneEventHandler = null;
+			private Choice type;
+
+			public Builder type(Choice type) {
+				this.type = type;
+				return this;
+			}
 
 			public Builder stage(Stage stage) {
 				this.stage = stage;
@@ -402,7 +414,7 @@ public final class SceneOne {
 			public SceneObject build() {
 				if(stage == null) stage = new Stage();
 				scene = new Scene(root);
-				scene.getStylesheets().add(LiveSettings.theme.getStyleSheet());
+				scene.getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
 				stage.setScene(scene);
 				return new SceneObject(this);
 			}
@@ -418,7 +430,7 @@ public final class SceneOne {
 		private final Modality                               modality;
 		private final StageStyle                             style;
 		private String                          title;
-		private       EventHandler<WindowEvent> stageEventHandler = null;
+		private       EventHandler<WindowEvent> stageEventHandler;
 
 		private SceneObject(Builder build) {
 			stage             = build.stage;
@@ -436,7 +448,7 @@ public final class SceneOne {
 			if (width != -1) stage.setWidth(width);
 			if (height != -1) stage.setWidth(height);
 			setTitle(title);
-			if (build.sceneEventHandler == null) {
+			if (build.sceneEventHandler == null && build.type.equals(Choice.MAIN)) {
 				setStageCloseEvent(e -> System.exit(13));
 			}
 		}

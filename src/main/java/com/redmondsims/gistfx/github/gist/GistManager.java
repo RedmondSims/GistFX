@@ -2,15 +2,21 @@ package com.redmondsims.gistfx.github.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.ui.GistWindow;
+import com.redmondsims.gistfx.ui.LoginWindow;
 import com.redmondsims.gistfx.ui.preferences.AppSettings;
 import com.redmondsims.gistfx.ui.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.preferences.UISettings;
+import com.redmondsims.gistfx.utils.SceneOne;
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /*
  *  This class is used mainly by GistWindow but in some cases also by GistFile.
@@ -59,19 +65,24 @@ public class GistManager {
 			}
 		}
 		GistManager.setGistMap(gistMap);
+		LoginWindow.updateProcess("Loading GUI");
 		Platform.runLater(() -> new GistWindow().showMainWindow(fromReload));
 		if (AppSettings.getFirstRun()) {
 			AppSettings.setFirstRun(false);
 		}
-		AppSettings.setLoadSource(LOCAL);
-		LiveSettings.dataSource = LOCAL;
+		AppSettings.setDataSource(LOCAL);
+		LiveSettings.setDataSource(LOCAL);
 	}
 
 	public static void startFromDatabase() {
 		Action.loadBestNameMap();
 		Map<String, Gist> gistMap = Action.getGistMap();
-		Platform.runLater(() -> new GistWindow().showMainWindow(false));
 		GistManager.setGistMap(gistMap);
+		LoginWindow.updateProcess("Loading GUI");
+		SceneOne.close();
+		Platform.runLater(() -> new GistWindow().showMainWindow(false));
+		checkConflicts();
+		Action.loadGHGistMap();
 	}
 
 	public static Collection<Gist> getGists() {return gistMap.values();}
@@ -175,6 +186,32 @@ public class GistManager {
 		return dirty;
 	}
 
+	private static void checkConflicts() {
+		new Thread(() -> {
+			sleep(500); //Wait for gistWindow to load
+			DoubleProperty progress = new SimpleDoubleProperty();
+			GistManager.gistWindow.bindProgressBar(progress);
+			double total = 0;
+			for (Gist gist : gistMap.values()) {
+				total += gist.getFiles().size();
+			}
+			final double finalTotal = total;
+			double count = 0;
+			for (Gist gist : gistMap.values()) {
+				for (GistFile file : gist.getFiles()) {
+					count++;
+					String fileContent = Action.getGistFileContent(gist.getGistId(),file.getFilename());
+					file.setGitHubVersion(fileContent);
+					GistManager.gistWindow.setFileDirtyState(file,file.gitHubVersionConflict());
+					final double finalCount = count;
+					Platform.runLater(() -> progress.setValue(finalCount / finalTotal));
+				}
+			}
+			GistManager.gistWindow.triggerConflictWarning();
+			GistManager.gistWindow.clearProgressBar();
+		}).start();
+	}
+
 	public static void refreshDirtyFileFlags() {
 		if (gistMap != null) {
 			for (Gist gist : gistMap.values()) {
@@ -228,7 +265,8 @@ public class GistManager {
 			String filename = ghGistFile.getFileName();
 			String content  = ghGistFile.getContent();
 			int    fileId   = Action.newSQLFile(gistId, filename, content);
-			gist.addFile(new GistFile(fileId, gistId, filename, content, false));
+			Date uploadDate = new Date(System.currentTimeMillis());
+			gist.addFile(new GistFile(fileId, gistId, filename, content, uploadDate, false));
 		}
 		gistMap.put(gistId, gist);
 		Action.addGistToSQL(gist);
@@ -245,13 +283,22 @@ public class GistManager {
 		GistManager.gistWindow = gistWindow;
 	}
 
-	public static void setPBStyle(String style) {
-		gistWindow.setPBarStyle(style);
+	public static void setPBarStyle() {
+		GistManager.gistWindow.setPBarStyle(AppSettings.getProgressBarStyle());
 	}
 
 	public static void handleButtons() {
 		if(gistWindow != null) {
 			gistWindow.handleButtonBar();
+		}
+	}
+
+	private static void sleep(long milliseconds) {
+		try {
+			TimeUnit.MILLISECONDS.sleep(milliseconds);
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 

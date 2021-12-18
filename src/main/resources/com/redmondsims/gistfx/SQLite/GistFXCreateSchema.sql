@@ -1,10 +1,10 @@
 CREATE TABLE "GistFiles" (
-  "fileID" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "fileId" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   "gistId" TEXT,
   "filename" TEXT,
   "content" TEXT,
   "dirty" INT DEFAULT 0,
-  "undoUUID" text,
+  "uploadDate" DATE,
   CONSTRAINT "fk_GistFiles_Gists_1" FOREIGN KEY ("gistId") REFERENCES "Gists" ("gistId") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "Unique" UNIQUE ("gistId", "fileName") ON CONFLICT IGNORE
 );

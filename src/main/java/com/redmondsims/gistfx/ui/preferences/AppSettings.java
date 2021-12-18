@@ -1,7 +1,8 @@
 package com.redmondsims.gistfx.ui.preferences;
 
-import javafx.scene.paint.Color;
 import com.redmondsims.gistfx.ui.preferences.UISettings.ProgressColorSource;
+import javafx.scene.paint.Color;
+
 import java.util.Random;
 import java.util.prefs.Preferences;
 
@@ -22,7 +23,8 @@ public class AppSettings {
 		SECURITY_OPTION,
 		FLAG_DIRTY_FILES,
 		DIRTY_FILE_FLAG_COLOR,
-		JSON_GIST;
+		JSON_GIST,
+		PROGRESS_BAR_STYLE;
 
 		public String Name(SETTING this) {
 			return switch (this) {
@@ -40,6 +42,7 @@ public class AppSettings {
 				case FLAG_DIRTY_FILES -> "GFX_FlagDirtyFile";
 				case DIRTY_FILE_FLAG_COLOR -> "GFX_DirtyFileFlagColor";
 				case JSON_GIST -> "GFX_StoreJsonDataInGist";
+				case PROGRESS_BAR_STYLE -> "GFX_ProgressBarStyle";
 			};
 		}
 	}
@@ -114,6 +117,12 @@ public class AppSettings {
 		return setting.equals("true");
 	}
 
+	public static String getProgressBarStyle() {
+		String colorString = "#" + getProgressBarColor().toString().replaceFirst("0x","").substring(0,6);
+		String defaultStyle ="-fx-accent: " + colorString + ";";
+		return prefs.get(SETTING.PROGRESS_BAR_STYLE.Name(), defaultStyle);
+	}
+
 	//SETTERS - Always remove before setting
 
 	public static void setHashedToken(String tokenHash) {
@@ -126,7 +135,7 @@ public class AppSettings {
 		prefs.put(SETTING.PASSWORD_HASH.Name(), passwordHash);
 	}
 
-	public static void setLoadSource(UISettings.DataSource option) {
+	public static void setDataSource(UISettings.DataSource option) {
 		clearLoadSource();
 		prefs.put(SETTING.LOAD_SOURCE.Name(), option.Name());
 	}
@@ -181,6 +190,11 @@ public class AppSettings {
 		prefs.put(SETTING.JSON_GIST.Name(), String.valueOf(setting));
 	}
 
+	public static void setProgressBarStyle(String style) {
+		clearProgressBarStyle();
+		prefs.put(SETTING.PROGRESS_BAR_STYLE.Name(), style);
+	}
+
 	//REMOVERS
 
 	private static void clearLoadSource()                 {prefs.remove(SETTING.LOAD_SOURCE.Name());}
@@ -213,6 +227,8 @@ public class AppSettings {
 
 	public static void clearJsonGist() { prefs.remove(SETTING.JSON_GIST.Name());}
 
+	public static void clearProgressBarStyle() {prefs.remove(SETTING.PROGRESS_BAR_STYLE.Name());}
+
 	public static void resetPreferences() {
 		clearLoadSource();
 		clearLogonScreenChoice();
@@ -223,8 +239,9 @@ public class AppSettings {
 		clearButtonBar();
 		clearSecurityOption();
 		clearJsonGist();
+		clearProgressBarStyle();
 
-		setLoadSource(getLoadSource());
+		setDataSource(getLoadSource());
 		setLoginScreenChoice(getLoginScreenChoice());
 		setProgressColorSource(getProgressColorSource());
 		setProgressBarColor(getProgressBarColor());
@@ -232,6 +249,7 @@ public class AppSettings {
 		setFirstRun(true);
 		setShowButtonBar(getShowButtonBar());
 		setSaveToGist(getSaveToGist());
+		setProgressBarStyle(getProgressBarStyle());
 	}
 
 	public static void resetCredentials() {

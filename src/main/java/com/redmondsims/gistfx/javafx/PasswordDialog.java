@@ -33,7 +33,7 @@ public class PasswordDialog {
 		thisResponse = WAITING;
 		Platform.runLater(() -> {
 			Alert alert = new Alert(Alert.AlertType.NONE);
-			alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.theme.getStyleSheet());
+			alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
 			PasswordField tfPassword = new PasswordField();
 			alert.getDialogPane().getButtonTypes().clear();
 			alert.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);

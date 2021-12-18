@@ -80,7 +80,7 @@ public class UISettings {
 				}
 			}
 			AppSettings.setSaveToGist(checkBox.isSelected());
-			LiveSettings.applyUserPreferences();
+			LiveSettings.applyAppSettings();
 			Action.accommodateUserSettingChange();
 		});
 		Tooltip.install(checkBox,new Tooltip("Enables or disables saving custom Gist names to your GitHub account"));
@@ -106,11 +106,11 @@ public class UISettings {
 		checkBox.setSelected(LiveSettings.flagDirtyFiles);
 		colorPicker.setOnAction(e->{
 			AppSettings.setDirtyFileFlagColor(colorPicker.getValue());
-			LiveSettings.applyUserPreferences();
+			LiveSettings.applyAppSettings();
 		});
 		checkBox.setOnAction(e -> {
 			AppSettings.setFlagDirtyFile(checkBox.isSelected());
-			LiveSettings.applyUserPreferences();
+			LiveSettings.applyAppSettings();
 		});
 		return newVBox(hboxCheck,hboxColor);
 	}
@@ -165,7 +165,7 @@ public class UISettings {
 			choiceBox.setOnAction(e -> {
 				Theme theme = choiceBox.getValue();
 				AppSettings.setTheme(theme);
-				LiveSettings.applyUserPreferences();
+				LiveSettings.applyAppSettings();
 				callingScene.getStylesheets().clear();
 				callingScene.getStylesheets().add(theme.getStyleSheet());
 				UISettings.setStyleSheet(theme.getStyleSheet());
@@ -257,7 +257,7 @@ public class UISettings {
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
 				AppSettings.setLoginScreenChoice(choiceBox.getValue());
-				LiveSettings.applyUserPreferences();
+				LiveSettings.applyAppSettings();
 			});
 			choiceBox.setValue(AppSettings.getLoginScreenChoice());
 			return newHBox(hboxLeft(label), hboxRight(choiceBox));
@@ -358,15 +358,15 @@ public class UISettings {
 			checkBox.setSelected(AppSettings.getProgressColorSource().equals(ProgressColorSource.USER_CHOICE));
 			colorPicker.setOnAction(e->{
 				AppSettings.setProgressBarColor(colorPicker.getValue());
-				LiveSettings.applyUserPreferences();
+				LiveSettings.applyAppSettings();
 				String colorString = "#" + colorPicker.getValue().toString().replaceFirst("0x","").substring(0,6);
 				String style ="-fx-accent: " + colorString + ";";
-				GistManager.setPBStyle(style);
-
+				AppSettings.setProgressBarStyle(style);
+				GistManager.setPBarStyle();
 			});
 			checkBox.setOnAction(e -> {
 				AppSettings.setProgressColorSource(checkBox.isSelected() ? USER_CHOICE : RANDOM);
-				LiveSettings.applyUserPreferences();
+				LiveSettings.applyAppSettings();
 			});
 			return newVBox(hboxCheck,hboxColor);
 		}
@@ -412,7 +412,7 @@ public class UISettings {
 		alert.getButtonTypes().add(0, new ButtonType("Close", ButtonBar.ButtonData.LEFT));//For some reason, .LEFT centers the button when there is only one button in the alert
 		alert.setTitle("GistFX Setting Options");
 		alert.getDialogPane().setContent(formContent);
-		alert.getDialogPane().getStylesheets().add(LiveSettings.theme.getStyleSheet());
+		alert.getDialogPane().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
 		alert.showAndWait();
 	}
 
