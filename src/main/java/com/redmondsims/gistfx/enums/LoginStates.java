@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.ui.enums;
+package com.redmondsims.gistfx.enums;
 
 public enum LoginStates {
 	WRONG_PASSWORD_ENTERED,

@@ -1,10 +1,10 @@
-package com.redmondsims.gistfx.ui.alerts;
+package com.redmondsims.gistfx.alerts;
 
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.ui.preferences.AppSettings;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.preferences.AppSettings;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.utils.AppConstants;
 import com.redmondsims.gistfx.utils.Modify;
 import javafx.geometry.Insets;

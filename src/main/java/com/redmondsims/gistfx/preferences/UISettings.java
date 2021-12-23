@@ -1,10 +1,10 @@
-package com.redmondsims.gistfx.ui.preferences;
+package com.redmondsims.gistfx.preferences;
 
 import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.github.gist.GistManager;
+import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.ui.CodeEditor;
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -94,25 +94,29 @@ public class UISettings {
 	}
 
 	private static VBox getDirtyFileNode() {
-		Label lblChkBox = newLabel("Flag Dirty Files");
-		CheckBox checkBox = new CheckBox();
-		HBox hboxCheck = newHBox(hboxLeft(lblChkBox), getCheckHBox(checkBox,77));
-		Label lblColorPicker = newLabel("Flag Color");
+		Label lblFlagDirty = newLabel("Show Dirty File Flag");
+		Label lblDisableWarning = newLabel("\tDisable Exit Warning");
+		CheckBox flagDirtyCheckBox = new CheckBox();
+		CheckBox disableWarningCheckBox = new CheckBox();
+		Label lblColorPicker = newLabel("\tFlag Color");
 		lblColorPicker.setMinWidth(125);
 		ColorPicker colorPicker = new ColorPicker();
+		colorPicker.setValue(LiveSettings.getDirtyFileFlagColor());
+		flagDirtyCheckBox.setSelected(LiveSettings.flagDirtyFiles());
+		disableWarningCheckBox.setSelected(LiveSettings.disableDirtyWarning());
+		colorPicker.setOnAction(e-> LiveSettings.setDirtyFileFlagColor(colorPicker.getValue()));
+		HBox hboxFlagDirty = newHBox(hboxLeft(lblFlagDirty), getCheckHBox(flagDirtyCheckBox,77));
 		HBox hboxColor = newHBox(hboxLeft(lblColorPicker),hboxRight(colorPicker));
-		colorPicker.setValue(AppSettings.getDirtyFileFlagColor());
-		hboxColor.visibleProperty().bind(checkBox.selectedProperty());
-		checkBox.setSelected(LiveSettings.flagDirtyFiles);
-		colorPicker.setOnAction(e->{
-			AppSettings.setDirtyFileFlagColor(colorPicker.getValue());
-			LiveSettings.applyAppSettings();
+		hboxColor.visibleProperty().bind(flagDirtyCheckBox.selectedProperty());
+		HBox hboxSetWarn = newHBox(hboxLeft(lblDisableWarning), getCheckHBox(disableWarningCheckBox, 77));
+		flagDirtyCheckBox.setOnAction(e -> LiveSettings.setFlagDirtyFiles(flagDirtyCheckBox.isSelected()));
+		disableWarningCheckBox.setOnAction(e -> {
+			LiveSettings.setDisableDirtyWarning(disableWarningCheckBox.isSelected());
+			if(disableWarningCheckBox.isSelected()) {
+				CustomAlert.showInfo("Disabling this feature prevents GistFX from throwing a warning when you close the app, if you have data that has not been uploaded to GitHub.\n\nHowever, GistFX will automatically upload your unsaved data when you close the app, when this box is checked.",null);
+			}
 		});
-		checkBox.setOnAction(e -> {
-			AppSettings.setFlagDirtyFile(checkBox.isSelected());
-			LiveSettings.applyAppSettings();
-		});
-		return newVBox(hboxCheck,hboxColor);
+		return newVBox(hboxFlagDirty, hboxSetWarn, hboxColor);
 	}
 
 	public enum Theme {
@@ -362,7 +366,7 @@ public class UISettings {
 				String colorString = "#" + colorPicker.getValue().toString().replaceFirst("0x","").substring(0,6);
 				String style ="-fx-accent: " + colorString + ";";
 				AppSettings.setProgressBarStyle(style);
-				GistManager.setPBarStyle();
+				WindowManager.setPBarStyle(style);
 			});
 			checkBox.setOnAction(e -> {
 				AppSettings.setProgressColorSource(checkBox.isSelected() ? USER_CHOICE : RANDOM);

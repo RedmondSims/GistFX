@@ -1,9 +1,9 @@
-package com.redmondsims.gistfx.javafx.controls;
+package com.redmondsims.gistfx.javafx;
 
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.ProgressColorSource;
-import com.redmondsims.gistfx.ui.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
+import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
+import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.paint.Color;

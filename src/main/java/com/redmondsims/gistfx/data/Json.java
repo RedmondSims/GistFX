@@ -1,10 +1,9 @@
 package com.redmondsims.gistfx.data;
 
-import com.redmondsims.gistfx.github.gist.Gist;
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
-import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
+import com.google.gson.GsonBuilder;
+import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.preferences.LiveSettings;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
@@ -50,7 +49,7 @@ class Json {
 		getBestNameMap();
 		for (String gistId : nameMap.keySet()) {
 			String name = nameMap.get(gistId);
-			Action.addToSQLNameMap(gistId, name);
+			Action.addToNameMap(gistId, name);
 		}
 	}
 
@@ -99,8 +98,8 @@ class Json {
 		}
 	}
 
-	public String getGistName() {
-		return gistDescription;
+	public String getGistName(String gistId) {
+		return nameMap.getOrDefault(gistId,"");
 	}
 
 	public void accommodateUserSettingChange() {

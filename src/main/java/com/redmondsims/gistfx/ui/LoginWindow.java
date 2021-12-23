@@ -1,19 +1,19 @@
 package com.redmondsims.gistfx.ui;
 
 import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.alerts.Help;
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.LoginStates;
+import com.redmondsims.gistfx.enums.Response;
+import com.redmondsims.gistfx.javafx.CProgressBar;
 import com.redmondsims.gistfx.javafx.PasswordDialog;
-import com.redmondsims.gistfx.javafx.controls.CProgressBar;
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
-import com.redmondsims.gistfx.ui.alerts.Help;
-import com.redmondsims.gistfx.ui.enums.LoginStates;
-import com.redmondsims.gistfx.ui.enums.Response;
-import com.redmondsims.gistfx.ui.preferences.AppSettings;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.LoginScreen;
-import com.redmondsims.gistfx.ui.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.preferences.AppSettings;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
+import com.redmondsims.gistfx.preferences.UISettings.LoginScreen;
+import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.utils.SceneOne;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -35,7 +35,7 @@ import javafx.stage.StageStyle;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static com.redmondsims.gistfx.ui.enums.LoginStates.*;
+import static com.redmondsims.gistfx.enums.LoginStates.*;
 import static javafx.scene.layout.AnchorPane.*;
 
 /**
@@ -57,38 +57,38 @@ import static javafx.scene.layout.AnchorPane.*;
 
 public class LoginWindow {
 
-	static final         TextArea          taInfo               = new TextArea();
-	private static final Label             lblProgress          = new Label(" ");
-	private static final Label             lblLoggedIn          = new Label(" ");
-	private final        StringProperty    loginPassword        = new SimpleStringProperty("");
-	private final        StringProperty    userToken            = new SimpleStringProperty("");
+	static final         TextArea        taInfo               = new TextArea();
+	private static final Label           lblProgress          = new Label(" ");
+	private static final Label           lblLoggedIn          = new Label(" ");
+	private final        StringProperty  loginPassword        = new SimpleStringProperty("");
+	private final        StringProperty  userToken            = new SimpleStringProperty("");
 	private final        BooleanProperty saved                = new SimpleBooleanProperty();
 	private final        LoginStates     preCheckState;
 	private final        String          questionMarkIconPath = Objects.requireNonNull(Main.class.getResource("HelpFiles/QuestionMarkIcon.png")).toExternalForm();
-	private final        TextField         tfToken;
-	private final        PasswordField     tfPassword;
-	private final        CheckBox          cbSave;
-	private final        Button            buttonLogin;
-	private final        AnchorPane        ap                   = new AnchorPane();
-	private final        LoginScreen       PASSWORD_LOGIN       = LoginScreen.PASSWORD_LOGIN;
-	private final        LoginScreen       TOKEN_LOGIN          = LoginScreen.TOKEN_LOGIN;
-	private final        LoginScreen       UNKNOWN              = LoginScreen.UNKNOWN;
-	private final        LoginScreen       currentSecurityMode  = AppSettings.getSecurityOption();
-	private              int               passwordAttempts     = 0;
-	private              boolean           usingLocalCreds;
-	private              boolean           skip                 = false;
-	private              boolean           tokenChecked         = false;
-	private              boolean           tokenValid           = false;
-	private LoginStates  postState;
-	private CProgressBar pBar;
-	private HBox         hboxToken;
-	private              HBox              hboxPassword;
-	private              HBox              hboxTop;
-	private              HBox              hboxBottom;
-	private              HBox              hboxBlank;
-	private              HBox              hboxPBar;
-	private              LoginScreen       newSecurityMode      = UNKNOWN;
-	private              boolean           passwordChanged      = false;
+	private final        TextField       tfToken;
+	private final        PasswordField   tfPassword;
+	private final        CheckBox        cbSave;
+	private final        Button          buttonLogin;
+	private final        AnchorPane      ap                   = new AnchorPane();
+	private final        LoginScreen     PASSWORD_LOGIN       = LoginScreen.PASSWORD_LOGIN;
+	private final        LoginScreen     TOKEN_LOGIN          = LoginScreen.TOKEN_LOGIN;
+	private final        LoginScreen     UNKNOWN              = LoginScreen.UNKNOWN;
+	private final        LoginScreen     currentSecurityMode  = AppSettings.getSecurityOption();
+	private              int             passwordAttempts     = 0;
+	private              boolean         usingLocalCreds;
+	private              boolean         skip                 = false;
+	private              boolean         tokenChecked         = false;
+	private              boolean         tokenValid           = false;
+	private              LoginStates     postState;
+	private              CProgressBar    pBar;
+	private              HBox            hboxToken;
+	private              HBox            hboxPassword;
+	private              HBox            hboxTop;
+	private              HBox            hboxBottom;
+	private              HBox            hboxBlank;
+	private              HBox            hboxPBar;
+	private              LoginScreen     newSecurityMode      = UNKNOWN;
+	private              boolean         passwordChanged      = false;
 
 	/**
 	 * For preCheck and password state check
@@ -113,6 +113,7 @@ public class LoginWindow {
 		assert LiveSettings.getLoginScreen() != null;
 		String styleClass = LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD) ? "standard" : "graphic";
 		tfToken    = newTextField("", "GitHub Token", styleClass);
+		tfToken.setId("login");
 		tfPassword = newPasswordField("GistFX Password", styleClass);
 		tfPassword.setText("");
 		cbSave          = new CheckBox("Save Access Token");
@@ -173,6 +174,7 @@ public class LoginWindow {
 			processCredentials();
 		});
 		tfPassword.setOnAction(e -> {
+			tfToken.setDisable(true);
 			tfPassword.setDisable(true);
 			processCredentials();
 		});
@@ -376,6 +378,8 @@ public class LoginWindow {
 					passwordChanged = true;
 					AppSettings.clearPasswordHash();
 					AppSettings.clearTokenHash();
+					Action.deleteDatabaseFile();
+					Action.setDatabaseConnection();
 					tfPassword.clear();
 					tfToken.clear();
 					option = BUILD_TOKEN_ONLY;
@@ -592,11 +596,13 @@ public class LoginWindow {
 					newSecurityMode = TOKEN_LOGIN;
 					Crypto.setSessionKey("");
 				}
+				else {
+					tfToken.setDisable(false);
+					tfPassword.setDisable(false);
+				}
 				tokenChecked = true;
 			}
 		}
-		tfToken.setDisable(false);
-		tfPassword.setDisable(false);
 	}
 
 	private boolean checkPassword() {
@@ -607,8 +613,10 @@ public class LoginWindow {
 			Crypto.setSessionKey(tfPassword.getText());
 			userToken.setValue(Crypto.decryptWithSessionKey(hashedAccessToken));
 		}
-		tfToken.setDisable(false);
-		tfPassword.setDisable(false);
+		else {
+			tfToken.setDisable(false);
+			tfPassword.setDisable(false);
+		}
 		return valid;
 	}
 
@@ -662,23 +670,23 @@ public class LoginWindow {
 
 				case TOKEN_VALID -> new Thread(this::logIntoGitHub).start();
 
-				case TOKEN_FAILURE -> CustomAlert.showWarning("Token Failure", "Your token could not authenticate.\n\nPlease click on the question mark for more information.");
+				case TOKEN_FAILURE -> Platform.runLater(() -> CustomAlert.showWarning("Token Failure", "Your token could not authenticate.\n\nPlease click on the question mark for more information."));
 
-				case NO_CREDS_GIVEN -> CustomAlert.showWarning("Need Credentials", "You need to provide the required information.");
+				case NO_CREDS_GIVEN -> Platform.runLater(() -> CustomAlert.showWarning("Need Credentials", "You need to provide the required information."));
 
 				case USER_CANCELED_CONFIRM_PASSWORD -> tfPassword.selectAll();
 
-				case NEED_TOKEN -> {
+				case NEED_TOKEN -> Platform.runLater(() -> {
 					CustomAlert.showInfo("Need Token", "You did not provide an access token.", SceneOne.getOwner());
 					tfToken.requestFocus();
-				}
+				});
 
-				case NEED_PASSWORD -> {
+				case NEED_PASSWORD -> Platform.runLater(() -> {
 					CustomAlert.showInfo("Need Password", "You did not provide a password.", SceneOne.getOwner());
 					tfPassword.requestFocus();
-				}
+				});
 
-				case AMBIGUOUS -> CustomAlert.showInfo("Ambiguous", "This isn't really an error, it's just a default when everything else has run its course. I don't expect anyone to ever see this alert.", SceneOne.getOwner());
+				case AMBIGUOUS -> Platform.runLater(() -> CustomAlert.showInfo("Ambiguous", "This isn't really an error, it's just a default when everything else has run its course. I don't expect anyone to ever see this alert.", SceneOne.getOwner()));
 			}
 		}).start();
 		buttonLogin.setDisable(true); //Lock button to prevent double clicking
@@ -703,8 +711,6 @@ public class LoginWindow {
 		else {
 			Action.loadData();
 			Platform.runLater(() -> pBar.progressProperty().unbind());
-			tfPassword.setText(Crypto.randomText(255));
-			tfToken.setText(Crypto.randomText(255));
 			Platform.runLater(SceneOne::close);
 		}
 		loggingIn = false;

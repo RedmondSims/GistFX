@@ -1,7 +1,7 @@
 package com.redmondsims.gistfx.javafx;
 
-import com.redmondsims.gistfx.ui.enums.Response;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
+import com.redmondsims.gistfx.enums.Response;
+import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
@@ -14,7 +14,7 @@ import javafx.stage.Window;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static com.redmondsims.gistfx.ui.enums.Response.*;
+import static com.redmondsims.gistfx.enums.Response.*;
 
 public class PasswordDialog {
 

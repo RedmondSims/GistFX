@@ -31,6 +31,8 @@
     -fx-prompt-text-fill: gray;
 }
 
+
+
 .titulo {
     -fx-font-weight: bold;
     -fx-font-size: 18px;
@@ -42,6 +44,14 @@
 
 .button:hover {
     -fx-text-fill: white;
+}
+
+#GitHubCompare {
+    -fx-text-fill: darkorange;
+}
+
+#GitHubCompare.button:hover {
+    -fx-text-fill: black;
 }
 
 .separator *.line {

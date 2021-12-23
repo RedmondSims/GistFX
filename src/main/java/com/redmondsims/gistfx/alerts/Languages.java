@@ -1,6 +1,5 @@
-package com.redmondsims.gistfx.github;
+package com.redmondsims.gistfx.alerts;
 
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;

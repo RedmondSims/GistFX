@@ -84,12 +84,12 @@ public class Crypto {
 	//Password Hashing
 
 	public static String hashPassword(String password) {
-		Pbkdf2PasswordEncoder pwe = new Pbkdf2PasswordEncoder(SEED, 24, 150000, 4096);
+		Pbkdf2PasswordEncoder pwe = new Pbkdf2PasswordEncoder(SEED, 24, 75000, 4096);
 		return pwe.encode(password);
 	}
 
 	public static boolean validatePassword(String password, String hash) {
-		Pbkdf2PasswordEncoder pwe = new Pbkdf2PasswordEncoder(SEED, 24, 150000, 4096);
+		Pbkdf2PasswordEncoder pwe = new Pbkdf2PasswordEncoder(SEED, 24, 75000, 4096);
 		return pwe.matches(password, hash);
 	}
 

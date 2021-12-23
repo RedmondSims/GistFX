@@ -1,12 +1,13 @@
 package com.redmondsims.gistfx.data;
 
-import com.redmondsims.gistfx.github.gist.Gist;
-import com.redmondsims.gistfx.github.gist.GistFile;
-import com.redmondsims.gistfx.github.gist.GistManager;
+import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.enums.State;
+import com.redmondsims.gistfx.gist.Gist;
+import com.redmondsims.gistfx.gist.GistFile;
+import com.redmondsims.gistfx.gist.GistManager;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings.DataSource;
 import com.redmondsims.gistfx.ui.LoginWindow;
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.DataSource;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -15,7 +16,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 import org.kohsuke.github.GitHubBuilder;
-import org.kohsuke.github.extras.HttpClientGitHubConnector;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -45,24 +45,30 @@ class GitHub {
 	private void notifyUser() {
 		new Thread(() -> {
 			Platform.runLater(() -> uploading.setValue(true));
-			sleep(4500);
+			sleep(2500);
 			Platform.runLater(() -> uploading.setValue(false));
 		}).start();
 	}
 
+	public String getName() {
+		try {
+			return gitHub.getMyself().getName();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+
 	public boolean tokenValid(String token) {
 		try {
-			gitHub = new GitHubBuilder().withOAuthToken(token).withConnector(new HttpClientGitHubConnector()).build();
+			gitHub = new GitHubBuilder().withOAuthToken(token).build();
 			return gitHub.isCredentialValid();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 		return false;
-	}
-
-	public void loadGHGistMap() {
-		new Thread(this::getGHGistMap).start();
 	}
 
 	public void loadData() {
@@ -72,8 +78,8 @@ class GitHub {
 		}
 		if (dataSource.equals(GITHUB)) {
 			LoginWindow.updateProcess("Downloading Gist Objects");
-			getGHGistMap();
-			GistManager.startFromGit(ghGistMap, false);
+			getNewGHGistMap();
+			GistManager.startFromGit(ghGistMap, State.GITHUB);
 		}
 	}
 
@@ -81,7 +87,7 @@ class GitHub {
 		Platform.runLater(() -> progress.setValue(value));
 	}
 
-	private void getGHGistMap() {
+	public Map<String, GHGist> getNewGHGistMap() {
 		try {
 			List<GHGist> list = gitHub.getMyself().listGists().toList();
 			double       size = list.size();
@@ -97,11 +103,12 @@ class GitHub {
 		catch (IOException ignored) {
 			//    e.printStackTrace();
 		}
+		return ghGistMap;
 	}
 
 	public void refreshAllData() {
-		getGHGistMap();
-		GistManager.startFromGit(ghGistMap, true);
+		getNewGHGistMap();
+		GistManager.startFromGit(ghGistMap,State.RELOAD);
 	}
 
 	public GHGist getGist(String gistId) {

@@ -1,12 +1,12 @@
 package com.redmondsims.gistfx.data;
 
 import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.cryptology.Crypto;
-import com.redmondsims.gistfx.github.gist.Gist;
-import com.redmondsims.gistfx.github.gist.GistFile;
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.DataSource;
+import com.redmondsims.gistfx.gist.Gist;
+import com.redmondsims.gistfx.gist.GistFile;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings.DataSource;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.github.GHGist;
 
@@ -247,6 +247,7 @@ class SQLite {
 			}
 			rs.close();
 			pst.close();
+			if (name.length() == 0) name = Action.getJSonGistName(gistId);
 		}
 		catch (SQLException sqe) {sqe.printStackTrace();}
 		return name.length() > 0 ? name : description;

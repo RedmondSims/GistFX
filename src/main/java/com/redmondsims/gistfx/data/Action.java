@@ -1,8 +1,8 @@
 package com.redmondsims.gistfx.data;
 
-import com.redmondsims.gistfx.github.gist.Gist;
-import com.redmondsims.gistfx.github.gist.GistFile;
-import com.redmondsims.gistfx.javafx.controls.CProgressBar;
+import com.redmondsims.gistfx.gist.Gist;
+import com.redmondsims.gistfx.gist.GistFile;
+import com.redmondsims.gistfx.javafx.CProgressBar;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.paint.Color;
@@ -53,7 +53,7 @@ public class Action {
 		return GITHUB.delete(gistId);
 	}
 
-	public static void addToSQLNameMap(String gistId, String name) {
+	public static void addToNameMap(String gistId, String name) {
 		SQLITE.addToNameMap(gistId, name);
 	}
 
@@ -88,6 +88,10 @@ public class Action {
 	/**
 	 * GitHub ONLY Methods
 	 */
+
+	public static String getName() {
+		return GITHUB.getName();
+	}
 
 	public static GHGist addGistToGitHub(String description, String filename, String content, boolean isPublic) {
 		return GITHUB.newGist(description, filename, content, isPublic);
@@ -129,13 +133,13 @@ public class Action {
 		return GITHUB.uploading;
 	}
 
-	public static String getGistFileContent(String gistId, String filename) {
+	public static String getGitHubFileContent(String gistId, String filename) {
 		GHGistFile file = GITHUB.getGistFile(gistId,filename);
 		return file.getContent();
 	}
 
-	public static void loadGHGistMap() {
-		GITHUB.loadGHGistMap();
+	public static Map<String, GHGist> getNewGhGistMap() {
+		return GITHUB.getNewGHGistMap();
 	}
 
 	public static Date getGistUpdateDate(String gistId) {
@@ -164,8 +168,8 @@ public class Action {
 		JSON.accommodateUserSettingChange();
 	}
 
-	public static String getJSonGistName() {
-		return JSON.getGistName();
+	public static String getJSonGistName(String gistId) {
+		return JSON.getGistName(gistId);
 	}
 
 	public static void removeJsonName(String gistId) {
@@ -186,9 +190,12 @@ public class Action {
 		return true;
 	}
 
-	public static boolean updateGistDescription(Gist gist) {
+	public static void updateLocalGistDescription(Gist gist) {
 		SQLITE.updateGistDescription(gist);
-		return GITHUB.update(gist);
+	}
+
+	public static void updateGitHubGistDescription(Gist gist) {
+		GITHUB.update(gist);
 	}
 
 	public static boolean updateGistFile(GistFile file) {
@@ -196,7 +203,7 @@ public class Action {
 		return GITHUB.update(file);
 	}
 
-	public static void saveToSQL(GistFile file) {
+	public static void localFileSave(GistFile file) {
 		SQLITE.saveFile(file);
 	}
 

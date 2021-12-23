@@ -1,6 +1,5 @@
-package com.redmondsims.gistfx.ui.preferences;
+package com.redmondsims.gistfx.preferences;
 
-import com.redmondsims.gistfx.ui.preferences.UISettings.ProgressColorSource;
 import javafx.scene.paint.Color;
 
 import java.util.Random;
@@ -24,7 +23,8 @@ public class AppSettings {
 		FLAG_DIRTY_FILES,
 		DIRTY_FILE_FLAG_COLOR,
 		JSON_GIST,
-		PROGRESS_BAR_STYLE;
+		PROGRESS_BAR_STYLE,
+		DISABLE_DIRTY_WARNING;
 
 		public String Name(SETTING this) {
 			return switch (this) {
@@ -43,6 +43,7 @@ public class AppSettings {
 				case DIRTY_FILE_FLAG_COLOR -> "GFX_DirtyFileFlagColor";
 				case JSON_GIST -> "GFX_StoreJsonDataInGist";
 				case PROGRESS_BAR_STYLE -> "GFX_ProgressBarStyle";
+				case DISABLE_DIRTY_WARNING -> "GFX_DisableDirtyWarning";
 			};
 		}
 	}
@@ -77,9 +78,9 @@ public class AppSettings {
 		return UISettings.LoginScreen.get(option);
 	}
 
-	public static ProgressColorSource getProgressColorSource() {
-		String choice = prefs.get(SETTING.PROGRESS_COLOR_SOURCE.Name(), ProgressColorSource.RANDOM.getName());
-		return ProgressColorSource.get(choice);
+	public static UISettings.ProgressColorSource getProgressColorSource() {
+		String choice = prefs.get(SETTING.PROGRESS_COLOR_SOURCE.Name(), UISettings.ProgressColorSource.RANDOM.getName());
+		return UISettings.ProgressColorSource.get(choice);
 	}
 
 	public static boolean getFirstRun() {
@@ -121,6 +122,11 @@ public class AppSettings {
 		String colorString = "#" + getProgressBarColor().toString().replaceFirst("0x","").substring(0,6);
 		String defaultStyle ="-fx-accent: " + colorString + ";";
 		return prefs.get(SETTING.PROGRESS_BAR_STYLE.Name(), defaultStyle);
+	}
+
+	public static boolean getDisableDirtyWarning() {
+		String setting = prefs.get(SETTING.DISABLE_DIRTY_WARNING.Name(), "false");
+		return setting.equals("true");
 	}
 
 	//SETTERS - Always remove before setting
@@ -195,6 +201,11 @@ public class AppSettings {
 		prefs.put(SETTING.PROGRESS_BAR_STYLE.Name(), style);
 	}
 
+	public static void setDisableDirtyWarning(boolean setting) {
+		clearDisableDirtyWarning();
+		prefs.put(SETTING.DISABLE_DIRTY_WARNING.Name(), String.valueOf(setting));
+	}
+
 	//REMOVERS
 
 	private static void clearLoadSource()                 {prefs.remove(SETTING.LOAD_SOURCE.Name());}
@@ -229,6 +240,9 @@ public class AppSettings {
 
 	public static void clearProgressBarStyle() {prefs.remove(SETTING.PROGRESS_BAR_STYLE.Name());}
 
+	public static void clearDisableDirtyWarning() {prefs.remove(SETTING.DISABLE_DIRTY_WARNING.Name());}
+
+
 	public static void resetPreferences() {
 		clearLoadSource();
 		clearLogonScreenChoice();
@@ -240,6 +254,7 @@ public class AppSettings {
 		clearSecurityOption();
 		clearJsonGist();
 		clearProgressBarStyle();
+		clearDisableDirtyWarning();
 
 		setDataSource(getLoadSource());
 		setLoginScreenChoice(getLoginScreenChoice());
@@ -250,6 +265,7 @@ public class AppSettings {
 		setShowButtonBar(getShowButtonBar());
 		setSaveToGist(getSaveToGist());
 		setProgressBarStyle(getProgressBarStyle());
+		setDisableDirtyWarning(getDisableDirtyWarning());
 	}
 
 	public static void resetCredentials() {

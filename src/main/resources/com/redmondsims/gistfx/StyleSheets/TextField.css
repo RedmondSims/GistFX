@@ -32,6 +32,9 @@
     -unfocus-color: #4d4d4d;
 }
 
+#login {
+    -fx-font-size: 15;
+}
 /*
 .text-field .error-label, .password-field .error-label, .text-area .error-label {
     -fx-text-fill: ghostwhite;

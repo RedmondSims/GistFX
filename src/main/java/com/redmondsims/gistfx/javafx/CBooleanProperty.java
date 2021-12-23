@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.javafx.controls;
+package com.redmondsims.gistfx.javafx;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;

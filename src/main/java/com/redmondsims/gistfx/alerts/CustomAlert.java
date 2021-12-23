@@ -1,8 +1,8 @@
-package com.redmondsims.gistfx.ui.alerts;
+package com.redmondsims.gistfx.alerts;
 
-import com.redmondsims.gistfx.ui.enums.Response;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.enums.Response;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

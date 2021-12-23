@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.github.gist;
+package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.utils.Modify;
@@ -48,11 +48,8 @@ public class Gist {
 
 	public String getName()        {return name.getValue();}
 
-	public GistFile getGistFile(String filename) {
-		for (GistFile file : fileList) {
-			if (file.getFilename().equals(filename)) return file;
-		}
-		return null;
+	public StringProperty getDescriptionProperty() {
+		return description;
 	}
 
 	/*
@@ -75,11 +72,16 @@ public class Gist {
 		fileList.removeIf(file -> file.getFilename().equals(filename));
 	}
 
-	public boolean setDescription(String description) {
+	public void setLocalDescription(String description) {
 		this.description.setValue(description);
-		return Action.updateGistDescription(this);
+		Action.updateLocalGistDescription(this);
 	}
 
+	public void newDescription(String description) {
+		this.description.setValue(description);
+		Action.updateGitHubGistDescription(this);
+		Action.updateLocalGistDescription(this);
+	}
 	public int getForkCount() {return Action.getForkCount(gistId);}
 
 	@Override

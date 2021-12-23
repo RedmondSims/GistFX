@@ -1,9 +1,9 @@
-package com.redmondsims.gistfx.ui.preferences;
+package com.redmondsims.gistfx.preferences;
 
 import com.redmondsims.gistfx.Main;
-import com.redmondsims.gistfx.github.gist.GistManager;
-import com.redmondsims.gistfx.ui.preferences.UISettings.DataSource;
-import com.redmondsims.gistfx.ui.preferences.UISettings.ProgressColorSource;
+import com.redmondsims.gistfx.gist.GistManager;
+import com.redmondsims.gistfx.preferences.UISettings.DataSource;
+import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
 import javafx.scene.CacheHint;
 import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
@@ -15,7 +15,7 @@ import javafx.scene.paint.Color;
 
 import java.util.Objects;
 
-import static com.redmondsims.gistfx.ui.preferences.UISettings.Theme.DARK;
+import static com.redmondsims.gistfx.preferences.UISettings.Theme.DARK;
 
 public class LiveSettings {
 
@@ -26,22 +26,26 @@ public class LiveSettings {
 	public static  Color                  progressBarColor = AppSettings.getProgressBarColor();
 	public static  ProgressColorSource    progressBarColorSource;
 	public static  Boolean                useJsonGist;
-	public static  boolean                flagDirtyFiles;
-	public static  Color                  dirtyFileFlagColor;
+	private static  boolean               flagDirtyFiles;
+	private static boolean				  disableDirtyWarning;
+	private static  Color                  dirtyFileFlagColor;
 	public static  boolean                doMasterReset    = false;
 
 	public static void applyAppSettings() {
+		dataSource             = AppSettings.getLoadSource();
 		progressBarColorSource = AppSettings.getProgressColorSource();
 		useJsonGist            = AppSettings.getSaveToGist();
 		theme                  = AppSettings.getTheme();
 		flagDirtyFiles         = AppSettings.getFlagDirtyFile();
 		dirtyFileFlagColor     = AppSettings.getDirtyFileFlagColor();
+		disableDirtyWarning	   = AppSettings.getDisableDirtyWarning();
 		setLoginScreen(AppSettings.getLoginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
 	}
 
 	public static void setDataSource(DataSource source) {
-		dataSource = source;
+		AppSettings.setDataSource(source);
+		applyAppSettings();
 	}
 
 	public static DataSource getDataSource() {
@@ -53,7 +57,8 @@ public class LiveSettings {
 	}
 
 	public static void setTheme(UISettings.Theme theme) {
-		LiveSettings.theme = theme;
+		AppSettings.setTheme(theme);
+		applyAppSettings();
 	}
 
 	public static ImageView getDirtyFlag() {
@@ -88,5 +93,28 @@ public class LiveSettings {
 
 	public static void setLoginScreen(UISettings.LoginScreen loginScreen) {
 		LiveSettings.loginScreen = loginScreen;
+	}
+
+	public static boolean disableDirtyWarning() {return disableDirtyWarning;}
+
+	public static void setDisableDirtyWarning(boolean setting) {
+		AppSettings.setDisableDirtyWarning(setting);
+		applyAppSettings();
+	}
+
+	public static boolean flagDirtyFiles() {
+		return flagDirtyFiles;
+	}
+
+	public static void setFlagDirtyFiles(boolean setting) {
+		AppSettings.setFlagDirtyFile(setting);
+		applyAppSettings();
+	}
+
+	public static Color getDirtyFileFlagColor() {return dirtyFileFlagColor;}
+
+	public static void setDirtyFileFlagColor(Color color) {
+		AppSettings.setDirtyFileFlagColor(color);
+		applyAppSettings();
 	}
 }

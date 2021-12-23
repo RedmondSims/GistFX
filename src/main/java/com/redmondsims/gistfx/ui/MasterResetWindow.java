@@ -1,8 +1,8 @@
 package com.redmondsims.gistfx.ui;
 
+import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.ui.alerts.CustomAlert;
-import com.redmondsims.gistfx.ui.preferences.AppSettings;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.utils.SceneOne;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -14,7 +14,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import static com.redmondsims.gistfx.utils.SceneOne.Choice.*;
+import static com.redmondsims.gistfx.utils.SceneOne.Choice.APP_MODAL;
+import static com.redmondsims.gistfx.utils.SceneOne.Choice.CENTERED;
 
 public class MasterResetWindow {
 
@@ -41,9 +42,7 @@ public class MasterResetWindow {
 		vbox.setSpacing(8);
 		SceneOne.close();
 		SceneOne.set(vbox).show(APP_MODAL, CENTERED);
-		button.setOnAction(e -> {
-			performReset(cbDatabase.isSelected(),cbSettings.isSelected(),cbCredentials.isSelected(),cbLocalCustomNames.isSelected(), cbGitHubCustomNames.isSelected());
-		});
+		button.setOnAction(e -> performReset(cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalCustomNames.isSelected(), cbGitHubCustomNames.isSelected()));
 	}
 
 	private HBox centeredHBox(Node node) {

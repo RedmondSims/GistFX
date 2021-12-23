@@ -1,11 +1,11 @@
 package com.redmondsims.gistfx;
 
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.preferences.AppSettings;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
+import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.ui.LoginWindow;
-import com.redmondsims.gistfx.ui.preferences.AppSettings;
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings;
-import com.redmondsims.gistfx.ui.preferences.UISettings.Theme;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

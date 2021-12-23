@@ -1,6 +1,6 @@
-package com.redmondsims.gistfx.github.gist;
+package com.redmondsims.gistfx.gist;
 
-import com.redmondsims.gistfx.ui.enums.Type;
+import com.redmondsims.gistfx.enums.Type;
 
 //This class is used in the Tree Items and provides flexibility
 //to include either a Gist as a tree item or a GistFile.

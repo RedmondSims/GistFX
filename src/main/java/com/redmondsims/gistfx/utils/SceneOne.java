@@ -1,6 +1,6 @@
 package com.redmondsims.gistfx.utils;
 
-import com.redmondsims.gistfx.ui.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
