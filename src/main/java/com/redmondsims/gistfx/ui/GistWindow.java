@@ -21,6 +21,8 @@ import com.redmondsims.gistfx.utils.SceneOne;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.NodeOrientation;
@@ -558,7 +560,7 @@ public class GistWindow {
 				String  gistName    = choices[1];
 				String  filename    = choices[2];
 				String  description = choices[3];
-				String  newGistID   = GistManager.addNewGist(gistName, description, filename, getDefaultJavaText(FilenameUtils.getBaseName(filename)), isPublic);
+				String  newGistID   = GistManager.addNewGistToGitHub(gistName, description, filename, getDefaultJavaText(FilenameUtils.getBaseName(filename)), isPublic);
 				if (!newGistID.isEmpty()) {
 					addGistBranch(GistManager.getGist(newGistID),0);
 				}
@@ -568,18 +570,25 @@ public class GistWindow {
 
 	private void newFile() {
 		if (checkSelectedGist("New File")) {
-			String                gistId      = gist.getGistId();
-			Map<Response, String> responseMap = CustomAlert.showNewFileAlert(gist.getName());
+			String                             gistId      = gist.getGistId();
+			StringProperty                     filename    = new SimpleStringProperty();
+			StringProperty                     contents    = new SimpleStringProperty();
+			Map<Response, Map<String, String>> responseMap = CustomAlert.showNewFileAlert(gist.getName(), getDefaultJavaText(gist.getName()));
 			new Thread(() -> {
 				for (Response response : responseMap.keySet()) {
 					if (response == PROCEED) {
-						String   filename = responseMap.get(response);
-						String     contents = getDefaultJavaText(FilenameUtils.getBaseName(filename));
-						file     = GistManager.addNewFile(gistId, filename, contents);
+						for (Map<String, String> fileMap : responseMap.values()) {
+							for (String mapFilename : fileMap.keySet()) {
+								filename.setValue(mapFilename);
+								contents.setValue(fileMap.get(mapFilename));
+							}
+						}
+						GistFile file = GistManager.addNewFileToGitHub(gistId, filename.getValue(), contents.getValue());
 						if (file != null) {
 							TreeItem<GistType> leaf = new TreeItem<>(new GistType(file));
-							Objects.requireNonNull(getBranch(gistId)).getChildren().add(leaf);
-							Objects.requireNonNull(getBranch(gistId)).setExpanded(true);
+							TreeItem<GistType> branch = getBranch(gistId);
+							addLeafToBranch(branch, leaf);
+							branch.setExpanded(true);
 						}
 					}
 				}
@@ -747,7 +756,7 @@ public class GistWindow {
 	 * Tree Methods
 	 */
 
-	public void setSelectedBranchOrLeaf(GistType treeSelection) {
+	private void setSelectedBranchOrLeaf(GistType treeSelection) {
 		lblFileName.textProperty().unbind();
 		lblGistName.setText("");
 		lblFileName.setText("");
@@ -787,13 +796,18 @@ public class GistWindow {
 		handleButtonBar();
 	}
 
-	public void addGistBranch(Gist gist,int index) {
+	private void addLeafToBranch(TreeItem<GistType> branch, TreeItem<GistType> leaf) {
+		GistFile gistFile = leaf.getValue().getFile();
+		leaf.graphicProperty().bind(gistFile.getFlagNode());
+		gistFile.addedToTree();
+		branch.getChildren().add(leaf);
+	}
+
+	private void addGistBranch(Gist gist,int index) {
 		TreeItem<GistType> branch = new TreeItem<>(new GistType(gist));
 		for(GistFile file : gist.getFiles()) {
-			TreeItem<GistType> leaf = new TreeItem<>(new GistType(file));
-			leaf.graphicProperty().bind(file.getFlagNode());
-			file.addedToTree();
-			branch.getChildren().add(leaf);
+			TreeItem<GistType> leaf   = new TreeItem<>(new GistType(file));
+			addLeafToBranch(branch,leaf);
 			if (file.isDirty()) branch.setExpanded(true);
 		}
 		if (index == -1) treeRoot.getChildren().add(branch);

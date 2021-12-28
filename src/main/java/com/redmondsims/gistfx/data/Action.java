@@ -57,7 +57,7 @@ public class Action {
 		SQLITE.addToNameMap(gistId, name);
 	}
 
-	public static int newSQLFile(String gistId, String filename, String content) {
+	public static int addFileToSQL(String gistId, String filename, String content) {
 		return SQLITE.newSQLFile(gistId, filename, content);
 	}
 
@@ -97,7 +97,7 @@ public class Action {
 		return GITHUB.newGist(description, filename, content, isPublic);
 	}
 
-	public static GHGistFile addFileToGist(String gistId, String filename, String content) {
+	public static GHGistFile addFileToGitHub(String gistId, String filename, String content) {
 		return GITHUB.addFileToGist(gistId, filename, content);
 	}
 

@@ -2,7 +2,9 @@ package com.redmondsims.gistfx.alerts;
 
 import com.redmondsims.gistfx.enums.Response;
 import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
+import eu.mihosoft.monacofx.MonacoFX;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -16,6 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.apache.commons.io.FilenameUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -335,15 +338,19 @@ public class CustomAlert {
 		return choices;
 	}
 
-	public static Map<Response, String> showNewFileAlert(String gistName) {
+	public static Map<Response, Map<String,String>> showNewFileAlert(String gistName, String fileContent) {
 		Response response   = Response.CANCELED;
 		Label    lblMessage = new Label("Creating a new file in Gist named:\n\n" + gistName + "\n\nPlease enter a name for this new file then click on Create File");
+		MonacoFX codeEditor = new MonacoFX();
+		codeEditor.getEditor().setCurrentTheme(LiveSettings.getTheme().equals(UISettings.Theme.DARK) ? "vs-dark" : "vs-light");
+		codeEditor.getEditor().getDocument().setText(fileContent);
 		lblMessage.setWrapText(true);
 		Label     lblFilename = new Label("Filename:");
 		TextField tfFilename  = newTextField("", "New Filename");
+		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> codeEditor.getEditor().setCurrentLanguage(getFileExtension(newValue)));
 		HBox      filenameBox = new HBox(lblFilename, tfFilename);
 		filenameBox.setSpacing(8);
-		VBox content = new VBox(lblMessage, filenameBox);
+		VBox content = new VBox(lblMessage, filenameBox, codeEditor);
 		content.setSpacing(8);
 		Alert alert = getAlert(Alert.AlertType.NONE, "", content);
 		alert.getDialogPane().setContent(content);
@@ -353,9 +360,11 @@ public class CustomAlert {
 		alert.getButtonTypes().addAll(createFile, ButtonType.CANCEL);
 		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
 		Optional<ButtonType> option = alert.showAndWait();
+		Map<String,String> fileMap = new HashMap<>();
+		fileMap.put(tfFilename.getText(),codeEditor.getEditor().getDocument().getText());
 		if (option.isPresent() && option.get().equals(createFile)) response = Response.PROCEED;
-		Map<Response, String> responseMap = new HashMap<>();
-		responseMap.put(response, tfFilename.getText());
+		Map<Response, Map<String,String>> responseMap = new HashMap<>();
+		responseMap.put(response, fileMap);
 		return responseMap;
 	}
 
@@ -406,4 +415,12 @@ public class CustomAlert {
 			}
 		}
 	}
+
+	private static String getFileExtension(String filename) {
+		if (!filename.contains(".")) {
+			return "";
+		}
+		return FilenameUtils.getExtension(filename);
+	}
+
 }
