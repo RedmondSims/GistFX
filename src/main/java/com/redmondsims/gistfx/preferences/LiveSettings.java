@@ -23,12 +23,13 @@ public class LiveSettings {
 	private static DataSource             dataSource;
 	private static UISettings.Theme       theme            = DARK;
 	private static UISettings.LoginScreen loginScreen;
+	private static UISettings.LoginScreenColor loginScreenColor;
 	public static  Color                  progressBarColor = AppSettings.getProgressBarColor();
 	public static  ProgressColorSource    progressBarColorSource;
 	public static  Boolean                useJsonGist;
 	private static  boolean               flagDirtyFiles;
 	private static boolean				  disableDirtyWarning;
-	private static  Color                  dirtyFileFlagColor;
+	private static  Color                 dirtyFileFlagColor;
 	public static  boolean                doMasterReset    = false;
 
 	public static void applyAppSettings() {
@@ -39,6 +40,7 @@ public class LiveSettings {
 		flagDirtyFiles         = AppSettings.getFlagDirtyFile();
 		dirtyFileFlagColor     = AppSettings.getDirtyFileFlagColor();
 		disableDirtyWarning	   = AppSettings.getDisableDirtyWarning();
+		loginScreenColor = AppSettings.getLoginScreenColor();
 		setLoginScreen(AppSettings.getLoginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
 	}
@@ -89,6 +91,12 @@ public class LiveSettings {
 
 	public static UISettings.LoginScreen getLoginScreen() {
 		return loginScreen;
+	}
+
+	public static UISettings.LoginScreenColor getLoginScreenColor() {return loginScreenColor;}
+
+	public static String getLoginColor() {
+		return loginScreenColor.folderName(loginScreenColor);
 	}
 
 	public static void setLoginScreen(UISettings.LoginScreen loginScreen) {

@@ -340,18 +340,22 @@ public class CustomAlert {
 
 	public static Map<Response, Map<String,String>> showNewFileAlert(String gistName, String fileContent) {
 		Response response   = Response.CANCELED;
-		Label    lblMessage = new Label("Creating a new file in Gist named:\n\n" + gistName + "\n\nPlease enter a name for this new file then click on Create File");
+		Label    lblMessage = new Label("Creating a new file in Gist: " + gistName + "\n\nPlease enter a name for this new file then click on Create File\n");
 		MonacoFX codeEditor = new MonacoFX();
 		codeEditor.getEditor().setCurrentTheme(LiveSettings.getTheme().equals(UISettings.Theme.DARK) ? "vs-dark" : "vs-light");
 		codeEditor.getEditor().getDocument().setText(fileContent);
 		lblMessage.setWrapText(true);
 		Label     lblFilename = new Label("Filename:");
+		lblFilename.setAlignment(Pos.BOTTOM_CENTER);
 		TextField tfFilename  = newTextField("", "New Filename");
+		tfFilename.setMinWidth(250);
 		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> codeEditor.getEditor().setCurrentLanguage(getFileExtension(newValue)));
 		HBox      filenameBox = new HBox(lblFilename, tfFilename);
-		filenameBox.setSpacing(8);
+		filenameBox.setSpacing(10);
+		filenameBox.setPadding(new Insets(5,5,5,5));
 		VBox content = new VBox(lblMessage, filenameBox, codeEditor);
-		content.setSpacing(8);
+		content.setPadding(new Insets(5,5,5,5));
+		content.setSpacing(10);
 		Alert alert = getAlert(Alert.AlertType.NONE, "", content);
 		alert.getDialogPane().setContent(content);
 		tfFilename.requestFocus();

@@ -302,28 +302,37 @@ public class LoginWindow {
 	private void graphicLogin() {
 		pBar = Action.getProgressNode(13);
 		ap.setStyle("-fx-background-color: black");
-		String    pathBoth       = Objects.requireNonNull(Main.class.getResource("LoginForm/Background/BackBoth.png")).toExternalForm();
-		String    pathPassword   = Objects.requireNonNull(Main.class.getResource("LoginForm/Background/BackPassword.png")).toExternalForm();
-		String    pathToken      = Objects.requireNonNull(Main.class.getResource("LoginForm/Background/BackToken.png")).toExternalForm();
-		String    chkBoxPath     = Objects.requireNonNull(Main.class.getResource("LoginForm/Checkbox.png")).toExternalForm();
-		String    qmPath         = Objects.requireNonNull(Main.class.getResource("LoginForm/QuestionMark.png")).toExternalForm();
-		String    chkMarkPath    = Objects.requireNonNull(Main.class.getResource("LoginForm/chkMark.png")).toExternalForm();
-		String    kittyKittyPath = Objects.requireNonNull(Main.class.getResource("LoginForm/KittyKitty.png")).toExternalForm();
-		Image     imgCheckBox    = new Image(chkBoxPath);
-		Image     imageBoth      = new Image(pathBoth);
-		Image     imagePassword  = new Image(pathPassword);
-		Image     imageToken     = new Image(pathToken);
-		Image     imgQMark       = new Image(qmPath);
-		Image     imgCheckMark   = new Image(chkMarkPath);
-		Image     imgKittyKitty  = new Image(kittyKittyPath);
-		ImageView ivBackBoth     = new ImageView(imageBoth);
-		ImageView ivBackPassword = new ImageView(imagePassword);
-		ImageView ivBackToken    = new ImageView(imageToken);
-		ImageView ivCheckBox     = new ImageView(imgCheckBox);
-		ImageView ivQMark        = new ImageView(imgQMark);
-		ImageView ivCheckMark    = new ImageView(imgCheckMark);
-		ImageView ivKittyKitty   = new ImageView(imgKittyKitty);
-
+		String    backBothBase     = "Artwork/%s/LoginForm/Background/BackBoth.png";
+		String    backPasswordBase = "Artwork/%s/LoginForm/Background/BackPassword.png";
+		String    backTokenBase    = "Artwork/%s/LoginForm/Background/BackToken.png";
+		String    checkBoxBase     = "Artwork/%s/LoginForm/Checkbox.png";
+		String    questionBase     = "Artwork/%s/LoginForm/QuestionMark.png";
+		String    chkMarkBase      = "Artwork/%s/LoginForm/chkMark.png";
+		String    kittyKittyBase   = "Artwork/%s/LoginForm/KittyKitty.png";
+		String    colorOption      = LiveSettings.getLoginScreenColor().folderName(LiveSettings.getLoginScreenColor());
+		String    pathBoth         = Objects.requireNonNull(Main.class.getResource(String.format(backBothBase, colorOption))).toExternalForm();
+		String    pathPassword     = Objects.requireNonNull(Main.class.getResource(String.format(backPasswordBase, colorOption))).toExternalForm();
+		String    pathToken        = Objects.requireNonNull(Main.class.getResource(String.format(backTokenBase, colorOption))).toExternalForm();
+		String    chkBoxPath       = Objects.requireNonNull(Main.class.getResource(String.format(checkBoxBase, colorOption))).toExternalForm();
+		String    qmPath           = Objects.requireNonNull(Main.class.getResource(String.format(questionBase, colorOption))).toExternalForm();
+		String    chkMarkPath      = Objects.requireNonNull(Main.class.getResource(String.format(chkMarkBase, colorOption))).toExternalForm();
+		String    kittyKittyPath   = Objects.requireNonNull(Main.class.getResource(String.format(kittyKittyBase, colorOption))).toExternalForm();
+		Image     imgCheckBox      = new Image(chkBoxPath);
+		Image     imageBoth        = new Image(pathBoth);
+		Image     imagePassword    = new Image(pathPassword);
+		Image     imageToken       = new Image(pathToken);
+		Image     imgQMark         = new Image(qmPath);
+		Image     imgCheckMark     = new Image(chkMarkPath);
+		Image     imgKittyKitty    = new Image(kittyKittyPath);
+		ImageView ivBackBoth       = new ImageView(imageBoth);
+		ImageView ivBackPassword   = new ImageView(imagePassword);
+		ImageView ivBackToken      = new ImageView(imageToken);
+		ImageView ivCheckBox       = new ImageView(imgCheckBox);
+		ImageView ivQMark          = new ImageView(imgQMark);
+		ImageView ivCheckMark      = new ImageView(imgCheckMark);
+		ImageView ivKittyKitty     = new ImageView(imgKittyKitty);
+		tfPassword.setId(colorOption);
+		tfToken.setId(colorOption);
 
 		ivCheckBox.setPreserveRatio(true);
 		ivQMark.setPreserveRatio(true);
@@ -344,7 +353,8 @@ public class LoginWindow {
 		ivBackPassword.setFitHeight(323);
 		ivBackBoth.setFitHeight(323);
 		ivKittyKitty.setPreserveRatio(true);
-		ivKittyKitty.setFitWidth(670);
+		ivKittyKitty.setFitWidth(700);
+		//ivKittyKitty.setFitWidth(73);
 
 		addAPNode(ivBackToken, 0, 0, 0, 0);
 		addAPNode(ivBackPassword, 0, 0, 0, 0);
@@ -352,7 +362,8 @@ public class LoginWindow {
 		addAPNode(ivCheckBox, 15, -1, 18, -1);
 		addAPNode(ivCheckMark, 15, -1, 15, -1);
 		addAPNode(ivQMark, -1, 30, -1, 30);
-		addAPNode(ivKittyKitty,5,-1,3.75,-1);
+		//addAPNode(ivKittyKitty,78.5,-1,49,-1);
+		addAPNode(ivKittyKitty,0,0,0,0);
 		addAPNode(tfToken, 184, -1, 216, -1);
 		addAPNode(tfPassword, 184, -1, 269, -1);
 		addAPNode(taInfo, 20, 250, 90, 135);
@@ -477,12 +488,13 @@ public class LoginWindow {
 					Platform.runLater(() -> iv.setOpacity(opacity));
 					sleep(75);
 				}
-				for (double x = .23; x >= .02; x-=.009) {
+				sleep(200);
+				for (double x = .24; x >= .02; x-=.009) {
 					final double opacity = x;
 					Platform.runLater(() -> iv.setOpacity(opacity));
 					sleep(75);
 				}
-				sleep(10000);
+				sleep(7000);
 			}
 		}).start();
 	}

@@ -16,6 +16,7 @@ public class AppSettings {
 		PROGRESS_BAR_COLOR,
 		PROGRESS_COLOR_SOURCE,
 		LOGIN_SCREEN,
+		LOGIN_SCREEN_COLOR,
 		LOAD_SOURCE,
 		FIRST_RUN,
 		BUTTON_BAR,
@@ -35,6 +36,7 @@ public class AppSettings {
 				case PROGRESS_BAR_COLOR -> "GFX_ProgressBarColor";
 				case PROGRESS_COLOR_SOURCE -> "GFX_ProgressColorSource";
 				case LOGIN_SCREEN -> "GFX_LoginScreen";
+				case LOGIN_SCREEN_COLOR -> "GFX_LoginScreenColor";
 				case LOAD_SOURCE -> "GFX_LoadSource";
 				case FIRST_RUN -> "GFX_FirstRun";
 				case BUTTON_BAR -> "GFX_ShowButtonBar";
@@ -76,6 +78,11 @@ public class AppSettings {
 	public static UISettings.LoginScreen getLoginScreenChoice() {
 		String option = prefs.get(SETTING.LOGIN_SCREEN.Name(), UISettings.LoginScreen.GRAPHIC.Name());
 		return UISettings.LoginScreen.get(option);
+	}
+
+	public static UISettings.LoginScreenColor getLoginScreenColor() {
+		String option = prefs.get(SETTING.LOGIN_SCREEN_COLOR.Name(), UISettings.LoginScreenColor.GREEN.Name());
+		return UISettings.LoginScreenColor.get(option);
 	}
 
 	public static UISettings.ProgressColorSource getProgressColorSource() {
@@ -156,6 +163,11 @@ public class AppSettings {
 		prefs.put(SETTING.LOGIN_SCREEN.Name(), option.Name());
 	}
 
+	public static void setLoginScreenColor(UISettings.LoginScreenColor option) {
+		clearLogonScreenChoice();
+		prefs.put(SETTING.LOGIN_SCREEN_COLOR.Name(), option.Name());
+	}
+
 	public static void setProgressColorSource(UISettings.ProgressColorSource choice) {
 		clearProgressColorSource();
 		prefs.put(SETTING.PROGRESS_COLOR_SOURCE.Name(), String.valueOf(choice));
@@ -211,6 +223,8 @@ public class AppSettings {
 	private static void clearLoadSource()                 {prefs.remove(SETTING.LOAD_SOURCE.Name());}
 
 	private static void clearLogonScreenChoice() {prefs.remove(SETTING.LOGIN_SCREEN.Name());}
+
+	private static void clearLogonScreenColor() {prefs.remove(SETTING.LOGIN_SCREEN_COLOR.Name());}
 
 	private static void clearProgressColorSource() {prefs.remove(SETTING.PROGRESS_COLOR_SOURCE.Name());}
 

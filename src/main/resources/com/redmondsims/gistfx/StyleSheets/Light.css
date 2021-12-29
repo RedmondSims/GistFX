@@ -25,6 +25,37 @@
     -fx-prompt-text-fill: black;
 }
 
+#Red{
+    -fx-text-fill: rgb(255,0,0);
+    -fx-prompt-text-fill: rgb(255,0,0);
+    -fx-highlight-fill: rgb(175,0,0);
+}
+
+#Blue{
+    -fx-text-fill: rgb(0,91,255);
+    -fx-prompt-text-fill: rgb(0,91,255);
+    -fx-highlight-fill: rgb(0,0,255);
+}
+
+#HotPink{
+    -fx-text-fill: rgb(255,0,179);
+    -fx-prompt-text-fill: rgb(255,0,179);
+    -fx-highlight-fill: rgb(255,0,179);
+}
+
+#Green{
+    -fx-text-fill: rgb(0,255,234);
+    -fx-prompt-text-fill: rgb(0,255,234);
+    -fx-highlight-fill: rgb(0,255,234);
+}
+
+#Yellow{
+    -fx-text-fill: rgb(255,255,0);
+    -fx-prompt-text-fill: rgb(255,255,0);
+    -fx-highlight-fill: rgb(255,255,0);
+}
+
+
 .titulo {
     -fx-font-weight: bold;
     -fx-font-size: 18px;

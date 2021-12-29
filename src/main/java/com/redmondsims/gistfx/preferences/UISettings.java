@@ -64,6 +64,10 @@ public class UISettings {
 		return LoginScreen.getNode();
 	}
 
+	private static Node loginScreenColor() {
+		return LoginScreenColor.getNode();
+	}
+
 	private static Node progressBarChoiceNode() {
 		return ProgressColorSource.getNode();
 	}
@@ -254,10 +258,12 @@ public class UISettings {
 			};
 		}
 
+		public static ChoiceBox<LoginScreen> choiceBox;
+
 		public static HBox getNode() {
 			ObservableList<LoginScreen> list      = FXCollections.observableArrayList(LoginScreen.STANDARD, LoginScreen.GRAPHIC);
 			Label                       label     = newLabel("Preferred Login Screen");
-			ChoiceBox<LoginScreen>      choiceBox = new ChoiceBox<>(list);
+			choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
 				AppSettings.setLoginScreenChoice(choiceBox.getValue());
@@ -274,6 +280,80 @@ public class UISettings {
 				case PASSWORD_LOGIN -> "password.login";
 				case TOKEN_LOGIN -> "token.login";
 				case UNKNOWN -> "unknown";
+			};
+		}
+
+	}
+
+	public enum LoginScreenColor {
+		RED,
+		GREEN,
+		BLUE,
+		YELLOW,
+		HOTPINK;
+
+		public static String get(LoginScreenColor pref) {
+			return switch (pref) {
+				case RED -> "Red";
+				case GREEN -> "Green";
+				case BLUE -> "Blue";
+				case YELLOW -> "Yellow";
+				case HOTPINK -> "Hotpink";
+			};
+		}
+
+		public String folderName(LoginScreenColor pref) {
+			return switch(pref) {
+				case RED -> "Red";
+				case GREEN -> "Green";
+				case BLUE -> "Blue";
+				case YELLOW -> "Yellow";
+				case HOTPINK -> "HotPink";
+			};
+		}
+
+		private static ObservableList<LoginScreenColor> colorList () {
+			return FXCollections.observableArrayList(
+					LoginScreenColor.RED,
+					LoginScreenColor.GREEN,
+					LoginScreenColor.BLUE,
+					LoginScreenColor.YELLOW,
+					LoginScreenColor.HOTPINK);
+		}
+
+		public static LoginScreenColor get(String pref) {
+			return switch (pref) {
+				case "Red" -> RED;
+				case "Green" -> GREEN;
+				case "Blue" -> BLUE;
+				case "Yellow" -> YELLOW;
+				case "Hotpink" -> HOTPINK;
+				default -> null;
+			};
+		}
+
+		public static HBox getNode() {
+			ObservableList<LoginScreenColor> list      = colorList();
+			Label                            label     = newLabel("Login Screen Color");
+			ChoiceBox<LoginScreenColor>      choiceBox = new ChoiceBox<>(list);
+			choiceBox.setPrefWidth(cbw);
+			choiceBox.setOnAction(e -> {
+				AppSettings.setLoginScreenColor(choiceBox.getValue());
+				LiveSettings.applyAppSettings();
+			});
+			choiceBox.setValue(AppSettings.getLoginScreenColor());
+			choiceBox.visibleProperty().bind(LoginScreen.choiceBox.getSelectionModel().selectedIndexProperty().isEqualTo(1));
+			label.visibleProperty().bind(LoginScreen.choiceBox.getSelectionModel().selectedIndexProperty().isEqualTo(1));
+			return newHBox(hboxLeft(label), hboxRight(choiceBox));
+		}
+
+		public String Name(LoginScreenColor this) {
+			return switch (this) {
+				case RED -> "Red";
+				case GREEN -> "Green";
+				case BLUE -> "Blue";
+				case YELLOW -> "Yellow";
+				case HOTPINK -> "Hotpink";
 			};
 		}
 
@@ -406,6 +486,7 @@ public class UISettings {
 									progressBarChoiceNode(),
 									theme(callingScene),
 									loginScreen(),
+									loginScreenColor(),
 									getDirtyFileNode(),
 									hboxButtonReset);
 		formContent.setPadding(new Insets(10, 10, 10, 10));
