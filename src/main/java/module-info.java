@@ -14,7 +14,6 @@ module com.redmondsims.gistfx {
 	requires spring.security.crypto;
 	requires java.sql;
 	requires com.google.gson;
-	requires org.jetbrains.annotations;
 
 	exports com.redmondsims.gistfx.javafx;
 	exports com.redmondsims.gistfx.preferences to javafx.graphics;
