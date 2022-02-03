@@ -19,18 +19,17 @@ import static com.redmondsims.gistfx.preferences.UISettings.Theme.DARK;
 
 public class LiveSettings {
 
-
-	private static DataSource             dataSource;
-	private static UISettings.Theme       theme            = DARK;
-	private static UISettings.LoginScreen loginScreen;
+	private static DataSource                  dataSource;
+	private static UISettings.Theme            theme            = DARK;
+	private static UISettings.LoginScreen      loginScreen;
 	private static UISettings.LoginScreenColor loginScreenColor;
-	public static  Color                  progressBarColor = AppSettings.getProgressBarColor();
-	public static  ProgressColorSource    progressBarColorSource;
-	public static  Boolean                useJsonGist;
-	private static  boolean               flagDirtyFiles;
-	private static boolean				  disableDirtyWarning;
-	private static  Color                 dirtyFileFlagColor;
-	public static  boolean                doMasterReset    = false;
+	public static  Color                       progressBarColor = AppSettings.getProgressBarColor();
+	public static  ProgressColorSource         progressBarColorSource;
+	public static  Boolean                     useJsonGist;
+	private static boolean                     flagDirtyFiles;
+	private static boolean                     disableDirtyWarning;
+	private static Color                       dirtyFileFlagColor;
+	public static  boolean                     doMasterReset    = false;
 
 	public static void applyAppSettings() {
 		dataSource             = AppSettings.getLoadSource();
