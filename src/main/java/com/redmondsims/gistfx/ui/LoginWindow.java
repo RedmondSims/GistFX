@@ -63,7 +63,7 @@ public class LoginWindow {
 	private final        StringProperty  loginPassword        = new SimpleStringProperty("");
 	private final        StringProperty  userToken            = new SimpleStringProperty("");
 	private final        BooleanProperty saved                = new SimpleBooleanProperty();
-	private final        LoginStates     preCheckState;
+	private         LoginStates     preCheckState;
 	private final        String          questionMarkIconPath = Objects.requireNonNull(Main.class.getResource("HelpFiles/QuestionMarkIcon.png")).toExternalForm();
 	private final        TextField       tfToken;
 	private final        PasswordField   tfPassword;
@@ -79,6 +79,7 @@ public class LoginWindow {
 	private              boolean         skip                 = false;
 	private              boolean         tokenChecked         = false;
 	private              boolean         tokenValid           = false;
+	private              boolean         passwordValid        = false;
 	private              LoginStates     postState;
 	private              CProgressBar    pBar;
 	private              HBox            hboxToken;
@@ -112,7 +113,7 @@ public class LoginWindow {
 		taInfo.setDisable(true);
 		assert LiveSettings.getLoginScreen() != null;
 		String styleClass = LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD) ? "standard" : "graphic";
-		tfToken    = newTextField("", "GitHub Token", styleClass);
+		tfToken    = newTextField(styleClass);
 		tfToken.setId("login");
 		tfPassword = newPasswordField("GistFX Password", styleClass);
 		tfPassword.setText("");
@@ -134,9 +135,9 @@ public class LoginWindow {
 		}
 	}
 
-	private static TextField newTextField(String text, String prompt, String styleClass) {
-		TextField tf = new TextField(text);
-		tf.setPromptText(prompt);
+	private static TextField newTextField(String styleClass) {
+		TextField tf = new TextField("");
+		tf.setPromptText("GitHub Token");
 		tf.getStylesheets().add(Theme.TEXT_FIELD.getStyleSheet());
 		tf.getStyleClass().add(styleClass);
 		Tooltip.install(tf, new Tooltip("Enter required information then press Enter"));
@@ -169,15 +170,8 @@ public class LoginWindow {
 		loginPassword.bind(tfPassword.textProperty());
 		userToken.bindBidirectional(tfToken.textProperty());
 		buttonLogin.setOnAction(e -> processCredentials());
-		tfToken.setOnAction(e -> {
-			tfToken.setDisable(true);
-			processCredentials();
-		});
-		tfPassword.setOnAction(e -> {
-			tfToken.setDisable(true);
-			tfPassword.setDisable(true);
-			processCredentials();
-		});
+		tfToken.setOnAction(e -> processCredentials());
+		tfPassword.setOnAction(e -> processCredentials());
 		tfToken.setMinWidth(200);
 		tfPassword.setMinWidth(200);
 		tfToken.setPromptText("GitHub Token");
@@ -299,6 +293,10 @@ public class LoginWindow {
 		SceneOne.set(content).title("Login").onCloseEvent(e-> System.exit(242)).show();
 	}
 
+	private ImageView ivBackBoth;
+	private ImageView ivBackPassword;
+	private ImageView ivBackToken;
+
 	private void graphicLogin() {
 		pBar = Action.getProgressNode(13);
 		ap.setStyle("-fx-background-color: black");
@@ -324,9 +322,9 @@ public class LoginWindow {
 		Image     imgQMark         = new Image(qmPath);
 		Image     imgCheckMark     = new Image(chkMarkPath);
 		Image     imgKittyKitty    = new Image(kittyKittyPath);
-		ImageView ivBackBoth       = new ImageView(imageBoth);
-		ImageView ivBackPassword   = new ImageView(imagePassword);
-		ImageView ivBackToken      = new ImageView(imageToken);
+		ivBackBoth       = new ImageView(imageBoth);
+		ivBackPassword   = new ImageView(imagePassword);
+		ivBackToken      = new ImageView(imageToken);
 		ImageView ivCheckBox       = new ImageView(imgCheckBox);
 		ImageView ivQMark          = new ImageView(imgQMark);
 		ImageView ivCheckMark      = new ImageView(imgCheckMark);
@@ -510,7 +508,9 @@ public class LoginWindow {
 	private LoginStates preCheck() {
 		LoginStates loginStates;
 		setBooleans();
-		if (hasHashedPassword && hasHashedToken) {loginStates = HAS_LOCAL_CREDS;}
+		if (hasHashedPassword) {
+			loginStates = hasHashedToken ? HAS_LOCAL_CREDS : NEED_TOKEN;
+		}
 		else {loginStates = NO_LOCAL_CREDS;}
 		return loginStates;
 	}
@@ -518,12 +518,56 @@ public class LoginWindow {
 	private LoginStates postCheck() {
 		LoginStates loginStates;
 		setBooleans();
+		boolean processCreds = false;
 		if (saveToken) {
 			if (illegalPassword) {
 				return ILLEGAL_PASSWORD;
 			}
 			if (hasHashedPassword && hasHashedToken && hasTypedPassword) {
-				if (checkPassword()) {
+				processCreds = true;
+			}
+			else if (noHashedPassword && hasTypedPassword && noHashedToken && hasTypedToken) {
+				//Handle the creation of a new local password with an access token.
+				checkToken(false);
+				if (tokenValid) {
+					Response response = new PasswordDialog().ConfirmPasswordYesNoCancel(loginPassword.getValue(), SceneOne.getOwner());
+					if (response == Response.YES) {
+						new Thread(() -> {
+							updateProcess("Hashing Password");
+							String passwordHash = Crypto.hashPassword(loginPassword.getValue());
+							AppSettings.setHashedPassword(passwordHash);
+							AppSettings.setHashedToken(Crypto.encryptWithSessionKey(userToken.getValue()));
+						}).start();
+						return HASHING_NEW_PASSWORD;
+					}
+					else if (response == Response.NO) {return PASSWORD_MISMATCH;}
+					else {return USER_CANCELED_CONFIRM_PASSWORD;}
+				}
+				else {return TOKEN_FAILURE;}
+			}
+			else if (hasHashedPassword && hasTypedPassword && noHashedToken && hasTypedToken) {
+				if (passwordValid) {
+					checkToken(false);
+					if(tokenValid) {
+						AppSettings.setHashedToken(Crypto.encryptWithSessionKey(tfToken.getText()));
+						return ALL_CREDS_VALID;
+					}
+					else {
+						return TOKEN_FAILURE;
+					}
+				}
+				else {
+					processCreds = true;
+				}
+			}
+			else if (noHashedToken && noTypedToken) {return NEED_TOKEN;}
+			else if (noHashedPassword && noTypedPassword) {return NEED_PASSWORD;}
+			else if (noTypedPassword && noTypedToken) {return NO_CREDS_GIVEN;}
+			else if (noTypedPassword) {return NEED_PASSWORD;}
+			else if (noTypedToken) return NEED_TOKEN;
+			if (processCreds) {
+				checkPassword();
+				if (passwordValid) {
 					checkToken(false);
 					if (tokenValid) {
 						return ALL_CREDS_VALID;
@@ -543,30 +587,6 @@ public class LoginWindow {
 					return loginStates;
 				}
 			}
-			else if (noHashedPassword && noHashedToken && hasTypedPassword && hasTypedToken) {
-				//Handle the creation of a new local password with an access token.
-				checkToken(false);
-				if (tokenValid) {
-					Response response = new PasswordDialog().ConfirmPasswordYesNoCancel(loginPassword.getValue(), SceneOne.getOwner());
-					if (response == Response.YES) {
-						new Thread(() -> {
-							updateProcess("Hashing Password");
-							String passwordHash = Crypto.hashPassword(loginPassword.getValue());
-							AppSettings.setHashedPassword(passwordHash);
-							AppSettings.setHashedToken(Crypto.encryptWithSessionKey(userToken.getValue()));
-						}).start();
-						return HASHING_NEW_PASSWORD;
-					}
-					else if (response == Response.NO) {return PASSWORD_MISMATCH;}
-					else {return USER_CANCELED_CONFIRM_PASSWORD;}
-				}
-				else {return TOKEN_FAILURE;}
-			}
-			else if (noHashedToken && noTypedToken) {return NEED_TOKEN;}
-			else if (noHashedPassword && noTypedPassword) {return NEED_PASSWORD;}
-			else if (noTypedPassword && noTypedToken) {return NO_CREDS_GIVEN;}
-			else if (noTypedPassword) {return NEED_PASSWORD;}
-			else if (noTypedToken) return NEED_TOKEN;
 		}
 		else if (noTypedToken) {
 			AppSettings.clearPasswordHash();
@@ -617,9 +637,9 @@ public class LoginWindow {
 		}
 	}
 
-	private boolean checkPassword() {
-		boolean valid = Crypto.validatePassword(loginPassword.getValue(), hashedPassword);
-		if (valid) {
+	private void checkPassword() {
+		passwordValid = Crypto.validatePassword(loginPassword.getValue(), hashedPassword);
+		if (passwordValid) {
 			updateProcess("Password Valid");
 			newSecurityMode = PASSWORD_LOGIN;
 			Crypto.setSessionKey(tfPassword.getText());
@@ -629,10 +649,11 @@ public class LoginWindow {
 			tfToken.setDisable(false);
 			tfPassword.setDisable(false);
 		}
-		return valid;
 	}
 
 	private void processCredentials() {
+		tfToken.setDisable(true);
+		tfPassword.setDisable(true);
 		new Thread(() -> {
 			if (usingLocalCreds) {
 				updateProcess("Checking Password...");
@@ -642,24 +663,28 @@ public class LoginWindow {
 			}
 			postState = postCheck();
 			switch (postState) {
-				case ILLEGAL_PASSWORD -> {
-					CustomAlert.showWarning("Password Invalid", "Password must be more than 5 characters long.");
-					tfPassword.clear();
-					buttonLogin.setDisable(false);
-				}
-				case PASSWORD_MISMATCH -> {
-					CustomAlert.showWarning("Password Mismatch", "Your passwords did not match, please try again.");
-					tfPassword.selectAll();
-					buttonLogin.setDisable(false);
-				}
+				case ILLEGAL_PASSWORD -> Platform.runLater(() -> {
+						CustomAlert.showWarning("Password Invalid", "Password must be more than 5 characters long.");
+						tfPassword.clear();
+						tfPassword.setDisable(false);
+						buttonLogin.setDisable(false);
+						tfPassword.requestFocus();
+					});
 
-				case WRONG_PASSWORD_ENTERED -> {
-					Platform.runLater(() -> CustomAlert.showWarning("Incorrect Password", "The password you entered is incorrect. After six failed attempts, GistFX will reset your password and access token so that you can create a new password with a working access token.\n\nYou have " + (6 - passwordAttempts) + " attempts remaining."));
-					buttonLogin.setDisable(false);
-					updateProcess("clear");
-				}
+				case PASSWORD_MISMATCH -> Platform.runLater(() -> {
+						CustomAlert.showWarning("Password Mismatch", "Your passwords did not match, please try again.");
+						tfPassword.selectAll();
+						buttonLogin.setDisable(false);
+					});
 
-				case ALL_CREDS_VALID -> new Thread(this::logIntoGitHub).start();
+				case WRONG_PASSWORD_ENTERED -> 	Platform.runLater(() -> {
+						CustomAlert.showWarning("Incorrect Password", "The password you entered is incorrect. After six failed attempts, GistFX will reset your password and access token so that you can create a new password with a working access token.\n\nYou have " + (6 - passwordAttempts) + " attempts remaining.");
+						buttonLogin.setDisable(false);
+						updateProcess("clear");
+					});
+
+
+				case ALL_CREDS_VALID, TOKEN_VALID -> new Thread(this::logIntoGitHub).start();
 
 				case TOO_MANY_PASSWORD_ATTEMPTS -> Platform.runLater(() -> {
 					tooManyPasswords = true;
@@ -680,9 +705,20 @@ public class LoginWindow {
 					new Thread(this::logIntoGitHub).start();
 				}
 
-				case TOKEN_VALID -> new Thread(this::logIntoGitHub).start();
-
-				case TOKEN_FAILURE -> Platform.runLater(() -> CustomAlert.showWarning("Token Failure", "Your token could not authenticate.\n\nPlease click on the question mark for more information."));
+				case TOKEN_FAILURE -> Platform.runLater(() -> {
+					CustomAlert.showWarning("Token Failure", "Your token could not authenticate, it might be expired.\n\nPlease click on the question mark for more information.");
+					if(LiveSettings.getLoginScreen() == LoginScreen.GRAPHIC) {
+						ivBackBoth.setVisible(true);
+						ivBackToken.setVisible(false);
+						ivBackPassword.setVisible(false);
+					}
+					tfToken.setText("");
+					tfToken.setVisible(true);
+					tfToken.requestFocus();
+					AppSettings.clearTokenHash();
+					preCheckState = preCheck();
+					usingLocalCreds = preCheckState.equals(HAS_LOCAL_CREDS);
+				});
 
 				case NO_CREDS_GIVEN -> Platform.runLater(() -> CustomAlert.showWarning("Need Credentials", "You need to provide the required information."));
 
@@ -702,6 +738,10 @@ public class LoginWindow {
 			}
 		}).start();
 		buttonLogin.setDisable(true); //Lock button to prevent double clicking
+	}
+
+	private void delay() {
+		Action.sleep(100);
 	}
 
 	private void logIntoGitHub() {

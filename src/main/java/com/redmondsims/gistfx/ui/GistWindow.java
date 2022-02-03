@@ -766,11 +766,15 @@ public class GistWindow {
 		String dark = "-fx-text-fill: rgba(155,200,155,1)";
 		String light = "-fx-text-fill: rgba(155,0,0,.5)";
 		lblLanguageSetting.setStyle(AppSettings.getTheme().equals(Theme.DARK) ? dark : light);
-		labelsVisible(false);
+		gist = treeSelection.getGist();
+		lblDescription.textProperty().unbind();
+		lblDescription.textProperty().bind(gist.getDescriptionProperty());
+		lblGistName.setText(gist.getName().replaceAll("\\n", " "));
+		gistURL = gist.getURL();
+		publicCheckBox.setSelected(gist.isPublic());
 		switch (treeSelection.getType()) {
 			case FILE -> {
 				file = treeSelection.getFile();
-				gist = treeSelection.getGist();
 				lblLanguageSetting.setVisible(true);
 				file.setActiveWith(lblFileName.textProperty(), lblLanguageSetting.textProperty());
 				CodeEditor.show();
@@ -778,21 +782,17 @@ public class GistWindow {
 				setAnchors(CodeEditor.get(), 20, 20, 120, 20);
 			}
 			case GIST -> {
-				gist = treeSelection.getGist();
 				file = null;
+				lblLanguageSetting.setVisible(false);
 				CodeEditor.hide();
-				lblGistName.setVisible(true);
-				lblGistNameLabel.setVisible(true);
-				lblDescriptionLabel.setVisible(true);
-				lblDescription.setVisible(true);
-				lblDescription.textProperty().unbind();
-				lblDescription.textProperty().bind(gist.getDescriptionProperty());
+				labelsVisible(false);
 				setAnchors(CodeEditor.get(), 20, 20, 20, 20);
 			}
 		}
-		lblGistName.setText(gist.getName().replaceAll("\\n", " "));
-		gistURL = gist.getURL();
-		publicCheckBox.setSelected(gist.isPublic());
+		lblGistName.setVisible(true);
+		lblGistNameLabel.setVisible(true);
+		lblDescription.setVisible(true);
+		lblDescriptionLabel.setVisible(true);
 		handleButtonBar();
 	}
 

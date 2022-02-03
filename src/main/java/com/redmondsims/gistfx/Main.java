@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx;
 
+import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
@@ -16,17 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Main extends Application {
 
-    public static final String APP_TITLE = "GistFX";
-    private static String dockIconBase = "Artwork/%s/Icons/AppleDock.png";
-
-    private static void sleep(long time) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(time);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+    public static final  String APP_TITLE    = "GistFX";
+    private static final String dockIconBase = "Artwork/%s/Icons/AppleDock.png";
 
     public static void main(String[] args) {
         Toolkit toolkit = Toolkit.getDefaultToolkit();

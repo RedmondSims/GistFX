@@ -7,7 +7,7 @@ module com.redmondsims.gistfx {
 	requires org.apache.commons.codec;
 	requires org.apache.commons.io;
 	requires org.apache.commons.lang3;
-	requires org.kohsuke.github.api;
+	requires github.api;
 	requires java.desktop;
 	requires okhttp3;
 	requires eu.mihosoft.monacofx;

@@ -12,6 +12,7 @@ import org.kohsuke.github.GHGistFile;
 import java.io.File;
 import java.sql.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /*
  * One class to rule them all - Action is the class that isolates the rest of the program from those classes that affect change on data.
@@ -238,6 +239,15 @@ public class Action {
 
 	public static DoubleProperty getGitHubDownloadProgress() {
 		return GITHUB.progress;
+	}
+
+	public static void sleep(long milliseconds) {
+		try {
+			TimeUnit.MILLISECONDS.sleep(milliseconds);
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
