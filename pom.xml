@@ -6,7 +6,7 @@
 
     <groupId>com.redmondsims</groupId>
     <artifactId>gistfx</artifactId>
-    <version>3.3.2</version>
+    <version>3.3.3</version>
     <name>gistfx</name>
     <url>https://github.com/redmondsims/gistfx</url>
 
@@ -106,10 +106,21 @@
                     <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
+            <!-- Default configuration for packaging with: mvn clean javafx:jlink -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
+                <configuration>
+                    <stripDebug>true</stripDebug>
+                    <compress>2</compress>
+                    <noHeaderFiles>true</noHeaderFiles>
+                    <noManPages>true</noManPages>
+                    <launcher>gistfx</launcher>
+                    <jlinkImageName>gistfx</jlinkImageName>
+                    <jlinkZipName>gistfxzip</jlinkZipName>
+                    <mainClass>com.redmondsims.gistfx/com.redmondsims.gistfx.Main</mainClass>
+                </configuration>
                 <executions>
                     <execution>
                         <!-- Default configuration for running with: mvn clean javafx:run -->
@@ -136,6 +147,7 @@
                         <manifestEntries>
                             <Main-Class>com.redmondsims.gistfx.Main</Main-Class>
                             <Automatic-Module-Name>com.redmondsims.gistfx</Automatic-Module-Name>
+                            <Program-Version>${version}</Program-Version>
                         </manifestEntries>
                     </archive>
                 </configuration>

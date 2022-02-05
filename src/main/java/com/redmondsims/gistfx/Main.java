@@ -1,6 +1,5 @@
 package com.redmondsims.gistfx;
 
-import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
@@ -13,7 +12,6 @@ import javafx.stage.Stage;
 import java.awt.*;
 import java.net.URL;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class Main extends Application {
 
