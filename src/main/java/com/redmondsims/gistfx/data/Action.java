@@ -151,7 +151,7 @@ public class Action {
 	 * Json Methods
 	 */
 
-	public static void initJson() {JSON.initPath(SQLITE.getCorePath());}
+	public static void initCustomData() {JSON.initPath(SQLITE.getCorePath());}
 
 	public static void deleteJsonLocalFile() {JSON.deleteLocalJsonFile();}
 
@@ -248,6 +248,13 @@ public class Action {
 		catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static Double round(double number) {
+		double finalNumber = number * 100;
+		finalNumber = Math.round(finalNumber);
+		finalNumber = finalNumber / 100;
+		return finalNumber;
 	}
 
 }

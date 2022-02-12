@@ -1,5 +1,4 @@
-
-## GistFX
+![Login image](./img/GistFXLogo.png)
 
 Forget using your default text editor application to jot down pieces of
 code. Why not store these, instead, in a version controlled format?
@@ -9,12 +8,19 @@ projects. GistFX provides a desktop Gist client, to make editing, creating, and
 managing Gists a breeze.
 
 ### Features
+  - Built-in syntax highlighting for most  languages, using MonacoFX  - the same code editor used in Microsofts open source Visual Studio.
   - Easily manage existing Gists, edit, or create new ones.
+  - Easily create new files within your Gists.
+  - Gists are downloaded and accessible via a JavaFX TreeView.
   - Assign names to your Gists in addition to the descriptions that GitHub requires.
-  - Built-in syntax highlighting for most modern languages, using MonacoFX  - the same code editor used in Microsofts open source Visual Studio.
-  - Authenticate with a GitHub access token, that can be saved locally in an encrypted format. GistFX has been designed to ensure your private information is for your eyes only. We value your security just as much as we value our own.
-    - Click the question mark on the login screen to learn how to create a proper access token.
-  - GistFX makes sure that even if you edit your Gists somewhere else,it never overwrites your most recent changes.
+  - Authenticate with a GitHub access token, that can be saved locally in an encrypted format.
+  - Flags edited files that need to be uploaded to GitHub and you decide when to push your edits.
+  - Wide Mode: Maximize screen space for code editing.
+  - Distraction Free Mode - Just the code editor in full screen.
+
+### Coming soon
+  - Categories: Group your gists into categories that you create.
+  - Keyboard shortcuts for mouse free navigation
 ### Getting started
 
   1. Create a GitHub Personal Access Token for this application
@@ -40,13 +46,14 @@ managing Gists a breeze.
 
 ### On first run
 
-You will first be shown a window that explains the need for an access token as well as how to find the instructions for creating one.
+You will first be shown a window that explains the need for an access token, this window only shows on the first run.
 
-Next, you will be presented with a login screen. Enter the GitHub personal access token that you created, along with a password that will be used to encrypt then locally store your personal access token.
-
+Next, you will be presented with a login screen, click on the question mark for detailed instructions for creating a proper access token.
 
  ![Login image](./img/GistFX-Login.png) 
- 
+
+Enter the GitHub personal access token that you created, along with a password that will be used to encrypt then locally store your personal access token.
+
 If you uncheck the Save Token checkbox, you will be able to authenticate by simply entering your personal access token. However, each time you run GistFX, you will need to enter your token again.
 
 ---

@@ -16,16 +16,17 @@ module com.redmondsims.gistfx {
 	requires com.google.gson;
 
 	exports com.redmondsims.gistfx.javafx;
-	exports com.redmondsims.gistfx.preferences to javafx.graphics;
+	exports com.redmondsims.gistfx.preferences to javafx.graphics, com.google.gson;
 	exports com.redmondsims.gistfx.enums to javafx.graphics;
 	exports com.redmondsims.gistfx.utils to javafx.graphics;
 	exports com.redmondsims.gistfx.data to com.google.gson;
 	exports com.redmondsims.gistfx.ui to javafx.graphics;
 	exports com.redmondsims.gistfx to javafx.graphics;
+	exports com.redmondsims.gistfx.gist;
 
 	opens com.redmondsims.gistfx.gist to javafx.base;
 	opens com.redmondsims.gistfx.data to com.google.gson, javafx.base;
-	exports com.redmondsims.gistfx.gist;
+	opens com.redmondsims.gistfx.preferences to com.google.gson;
 	exports com.redmondsims.gistfx.alerts;
 	opens com.redmondsims.gistfx.alerts to javafx.base;
 }

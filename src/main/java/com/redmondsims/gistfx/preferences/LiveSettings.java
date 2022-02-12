@@ -20,16 +20,18 @@ import static com.redmondsims.gistfx.preferences.UISettings.Theme.DARK;
 public class LiveSettings {
 
 	private static DataSource                  dataSource;
-	private static UISettings.Theme            theme            = DARK;
+	private static UISettings.Theme            theme              = DARK;
 	private static UISettings.LoginScreen      loginScreen;
 	private static UISettings.LoginScreenColor loginScreenColor;
-	public static  Color                       progressBarColor = AppSettings.getProgressBarColor();
+	public static  Color                       progressBarColor   = AppSettings.getProgressBarColor();
 	public static  ProgressColorSource         progressBarColorSource;
 	public static  Boolean                     useJsonGist;
 	private static boolean                     flagDirtyFiles;
 	private static boolean                     disableDirtyWarning;
 	private static Color                       dirtyFileFlagColor;
-	public static  boolean                     doMasterReset    = false;
+	private static boolean                     wideMode;
+	public static  boolean                     doMasterReset      = false;
+	private static Double                      lastPaneSplitValue = 0.0;
 
 	public static void applyAppSettings() {
 		dataSource             = AppSettings.getLoadSource();
@@ -38,8 +40,10 @@ public class LiveSettings {
 		theme                  = AppSettings.getTheme();
 		flagDirtyFiles         = AppSettings.getFlagDirtyFile();
 		dirtyFileFlagColor     = AppSettings.getDirtyFileFlagColor();
-		disableDirtyWarning	   = AppSettings.getDisableDirtyWarning();
-		loginScreenColor = AppSettings.getLoginScreenColor();
+		disableDirtyWarning    = AppSettings.getDisableDirtyWarning();
+		loginScreenColor       = AppSettings.getLoginScreenColor();
+		wideMode               = AppSettings.getWideMode();
+		AppSettings.getDividerPositions();
 		setLoginScreen(AppSettings.getLoginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
 	}
@@ -58,8 +62,7 @@ public class LiveSettings {
 	}
 
 	public static void setTheme(UISettings.Theme theme) {
-		AppSettings.setTheme(theme);
-		applyAppSettings();
+		LiveSettings.theme = theme;
 	}
 
 	public static ImageView getDirtyFlag() {
@@ -123,5 +126,17 @@ public class LiveSettings {
 	public static void setDirtyFileFlagColor(Color color) {
 		AppSettings.setDirtyFileFlagColor(color);
 		applyAppSettings();
+	}
+
+	public static boolean getWideMode() {
+		return wideMode;
+	}
+
+	public static void setLastPaneSplitValue(Double lastPaneSplitValue) {
+		LiveSettings.lastPaneSplitValue = lastPaneSplitValue;
+	}
+
+	public static Double getLastPaneSplitValue() {
+		return lastPaneSplitValue;
 	}
 }

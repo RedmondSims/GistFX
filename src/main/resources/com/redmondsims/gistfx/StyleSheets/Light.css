@@ -10,6 +10,15 @@
     -fx-text-fill: black;
 }
 
+#SettingsOne {
+    -fx-text-fill: rgba(55,55,55,1);
+}
+
+#SettingsTwo {
+    -fx-text-fill: rgba(0,0,0,1);
+}
+
+
 #notify {
     -fx-text-fill: red
 }

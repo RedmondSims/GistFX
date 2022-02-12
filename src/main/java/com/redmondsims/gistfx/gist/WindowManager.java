@@ -31,5 +31,8 @@ public class WindowManager {
 		gistWindow.setPBarStyle(style);
 	}
 
+	public static void updateFileContent(String content) {
+		gistWindow.updateFileContent(content);
+	}
 
 }

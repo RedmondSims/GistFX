@@ -4,13 +4,13 @@ import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import eu.mihosoft.monacofx.MonacoFX;
+import javafx.application.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CodeEditor {
 
-	private static final List<GistFile> GIST_FILE_LIST = new ArrayList<>();
 	private static       MonacoFX       monacoFX;
 
 	private static void checkNull() {
@@ -31,10 +31,13 @@ public class CodeEditor {
 	}
 
 	public static void bindDocumentTo(GistFile fileObject) {
-		if (!GIST_FILE_LIST.contains(fileObject)) {
-			GIST_FILE_LIST.add(fileObject);
-		}
 		fileObject.setContentListener(monacoFX.getEditor().getDocument().textProperty());
+	}
+
+	public static void setContent(String content) {
+		Platform.runLater(() -> {
+			monacoFX.getEditor().getDocument().setText(content);
+		});
 	}
 
 	public static void requestFocus() {monacoFX.requestFocus();}

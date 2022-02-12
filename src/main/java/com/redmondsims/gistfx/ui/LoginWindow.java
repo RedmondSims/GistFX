@@ -14,7 +14,7 @@ import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.LoginScreen;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
-import com.redmondsims.gistfx.utils.SceneOne;
+import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -50,7 +50,7 @@ import static javafx.scene.layout.AnchorPane.*;
  * we call the postCheck method which handles the appropriate action based on what the user is trying to do ... validate their local password, decrypt their token and check that it's
  * valid with GitHub, or go through the process of resetting hte users password etc. etc. And each action has a response that we can act on if necessary.
  * <p>
- * Finally, we have buildScene(), which builds the GUI login window based on the results of the preCheck, and then logIntoGitHub() which finishes everything off when
+ * Finally, we have buildScene(), which builds the GUI login window based on the results of the preCheck, and then postLoginTasks() which finishes everything off when
  * everything checks out and is in order.
  * <p>
  */
@@ -63,7 +63,7 @@ public class LoginWindow {
 	private final        StringProperty  loginPassword        = new SimpleStringProperty("");
 	private final        StringProperty  userToken            = new SimpleStringProperty("");
 	private final        BooleanProperty saved                = new SimpleBooleanProperty();
-	private         LoginStates     preCheckState;
+	private              LoginStates     preCheckState;
 	private final        String          questionMarkIconPath = Objects.requireNonNull(Main.class.getResource("HelpFiles/QuestionMarkIcon.png")).toExternalForm();
 	private final        TextField       tfToken;
 	private final        PasswordField   tfPassword;
@@ -90,6 +90,10 @@ public class LoginWindow {
 	private              HBox            hboxPBar;
 	private              LoginScreen     newSecurityMode      = UNKNOWN;
 	private              boolean         passwordChanged      = false;
+	private              ImageView       ivBackBoth;
+	private              ImageView       ivBackPassword;
+	private              ImageView ivBackToken;
+	private static final String sceneId  = "LoginScreen";
 
 	/**
 	 * For preCheck and password state check
@@ -109,18 +113,26 @@ public class LoginWindow {
 	private boolean noTypedToken;
 
 
+	public static String getSceneId() {
+		return sceneId;
+	}
+
 	public LoginWindow() {
-		taInfo.setDisable(true);
-		assert LiveSettings.getLoginScreen() != null;
 		String styleClass = LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD) ? "standard" : "graphic";
-		tfToken    = newTextField(styleClass);
-		tfToken.setId("login");
-		tfPassword = newPasswordField("GistFX Password", styleClass);
-		tfPassword.setText("");
+		tfToken         = newTextField(styleClass);
 		cbSave          = new CheckBox("Save Access Token");
 		buttonLogin     = new Button("Login to GitHub");
+		tfPassword      = newPasswordField("GistFX Password", styleClass);
 		preCheckState   = preCheck();
 		usingLocalCreds = preCheckState.equals(HAS_LOCAL_CREDS);
+		startLoginForm();
+	}
+
+	private void startLoginForm() {
+		taInfo.setDisable(true);
+		assert LiveSettings.getLoginScreen() != null;
+		tfToken.setId("login");
+		tfPassword.setText("");
 		setControlProperties();
 		if (AppSettings.getFirstRun()) {
 			Help.showIntro();
@@ -169,9 +181,9 @@ public class LoginWindow {
 		cbSave.setSelected(usingLocalCreds);
 		loginPassword.bind(tfPassword.textProperty());
 		userToken.bindBidirectional(tfToken.textProperty());
-		buttonLogin.setOnAction(e -> processCredentials());
-		tfToken.setOnAction(e -> processCredentials());
-		tfPassword.setOnAction(e -> processCredentials());
+		buttonLogin.setOnAction(e -> actOnCredentials());
+		tfToken.setOnAction(e -> actOnCredentials());
+		tfPassword.setOnAction(e -> actOnCredentials());
 		tfToken.setMinWidth(200);
 		tfPassword.setMinWidth(200);
 		tfToken.setPromptText("GitHub Token");
@@ -274,7 +286,7 @@ public class LoginWindow {
 			}
 			tfToken.requestFocus();
 		});
-		SceneOne.show();
+		SceneOne.show(sceneId);
 		cbSave.setSelected(currentSecurityMode == PASSWORD_LOGIN || currentSecurityMode == UNKNOWN);
 	}
 
@@ -290,12 +302,8 @@ public class LoginWindow {
 		lblLoggedIn.setMinHeight(26);
 		content.getChildren().addAll(hboxPBar, hboxBottom);
 		buttonLogin.setDisable(false);
-		SceneOne.set(content).title("Login").onCloseEvent(e-> System.exit(242)).show();
+		SceneOne.set(content, sceneId).newStage().title("Login").onCloseEvent(e-> System.exit(242)).show();
 	}
-
-	private ImageView ivBackBoth;
-	private ImageView ivBackPassword;
-	private ImageView ivBackToken;
 
 	private void graphicLogin() {
 		pBar = Action.getProgressNode(13);
@@ -458,14 +466,16 @@ public class LoginWindow {
 			tfToken.setPromptText("Paste Token (enter)");
 		}
 		cbSave.setSelected(currentSecurityMode == PASSWORD_LOGIN || currentSecurityMode == UNKNOWN);
-		SceneOne.set(ap)
+		SceneOne.set(ap, sceneId)
+				.newStage()
 				.initStyle(StageStyle.TRANSPARENT)
-				.widthHeight(700,323)
+				.size(700,323)
+				.onCloseEvent(e -> System.exit(0))
 				.show();
 		fadeKitty(ivKittyKitty);
 	}
 
-	private boolean loggingIn = true;
+	private boolean fadeKitty = true;
 
 	private void sleep(long milliseconds) {
 		try {
@@ -480,7 +490,7 @@ public class LoginWindow {
 		new Thread(() -> {
 			iv.setOpacity(0);
 			sleep(2500);
-			while(loggingIn) {
+			while(fadeKitty) {
 				for (double x = .02; x < .25; x+=.009) {
 					final double opacity = x;
 					Platform.runLater(() -> iv.setOpacity(opacity));
@@ -495,6 +505,10 @@ public class LoginWindow {
 				sleep(7000);
 			}
 		}).start();
+	}
+
+	private void stopFadeKitty() {
+		fadeKitty = false;
 	}
 
 	private void addAPNode(Node node, double left, double right, double top, double bottom) {
@@ -530,7 +544,7 @@ public class LoginWindow {
 				//Handle the creation of a new local password with an access token.
 				checkToken(false);
 				if (tokenValid) {
-					Response response = new PasswordDialog().ConfirmPasswordYesNoCancel(loginPassword.getValue(), SceneOne.getOwner());
+					Response response = new PasswordDialog().ConfirmPasswordYesNoCancel(loginPassword.getValue(), SceneOne.getOwner(sceneId));
 					if (response == Response.YES) {
 						new Thread(() -> {
 							updateProcess("Hashing Password");
@@ -651,7 +665,7 @@ public class LoginWindow {
 		}
 	}
 
-	private void processCredentials() {
+	private void actOnCredentials() {
 		tfToken.setDisable(true);
 		tfPassword.setDisable(true);
 		new Thread(() -> {
@@ -684,11 +698,11 @@ public class LoginWindow {
 					});
 
 
-				case ALL_CREDS_VALID, TOKEN_VALID -> new Thread(this::logIntoGitHub).start();
+				case ALL_CREDS_VALID, TOKEN_VALID -> new Thread(this::postLoginTasks).start();
 
 				case TOO_MANY_PASSWORD_ATTEMPTS -> Platform.runLater(() -> {
 					tooManyPasswords = true;
-					CustomAlert.showRequireOK("Mandatory Reset", "You have entered the wrong password too many times. Your Gist access token and password have both been reset. You can enter a new (or the same) access token and type in a new password.\n\nThe program will now close. Please re-open it to continue.", SceneOne.getOwner());
+					CustomAlert.showRequireOK("Mandatory Reset", "You have entered the wrong password too many times. Your Gist access token and password have both been reset. You can enter a new (or the same) access token and type in a new password.\n\nThe program will now close. Please re-open it to continue.", SceneOne.getOwner(sceneId));
 					System.exit(241);
 					tfPassword.clear();
 					tfToken.clear();
@@ -702,7 +716,7 @@ public class LoginWindow {
 				case HASHING_NEW_PASSWORD -> {
 					newSecurityMode = PASSWORD_LOGIN;
 					Crypto.setSessionKey(tfPassword.getText());
-					new Thread(this::logIntoGitHub).start();
+					new Thread(this::postLoginTasks).start();
 				}
 
 				case TOKEN_FAILURE -> Platform.runLater(() -> {
@@ -725,26 +739,22 @@ public class LoginWindow {
 				case USER_CANCELED_CONFIRM_PASSWORD -> tfPassword.selectAll();
 
 				case NEED_TOKEN -> Platform.runLater(() -> {
-					CustomAlert.showInfo("Need Token", "You did not provide an access token.", SceneOne.getOwner());
+					CustomAlert.showInfo("Need Token", "You did not provide an access token.", SceneOne.getOwner(sceneId));
 					tfToken.requestFocus();
 				});
 
 				case NEED_PASSWORD -> Platform.runLater(() -> {
-					CustomAlert.showInfo("Need Password", "You did not provide a password.", SceneOne.getOwner());
+					CustomAlert.showInfo("Need Password", "You did not provide a password.", SceneOne.getOwner(sceneId));
 					tfPassword.requestFocus();
 				});
 
-				case AMBIGUOUS -> Platform.runLater(() -> CustomAlert.showInfo("Ambiguous", "This isn't really an error, it's just a default when everything else has run its course. I don't expect anyone to ever see this alert.", SceneOne.getOwner()));
+				case AMBIGUOUS -> Platform.runLater(() -> CustomAlert.showInfo("Ambiguous", "This isn't really an error, it's just a default when everything else has run its course. I don't expect anyone to ever see this alert.", SceneOne.getOwner(sceneId)));
 			}
 		}).start();
 		buttonLogin.setDisable(true); //Lock button to prevent double clicking
 	}
 
-	private void delay() {
-		Action.sleep(100);
-	}
-
-	private void logIntoGitHub() {
+	private void postLoginTasks() {
 		LiveSettings.applyAppSettings();
 		if (!currentSecurityMode.equals(newSecurityMode) || passwordChanged) {
 			/*
@@ -756,16 +766,17 @@ public class LoginWindow {
 			LiveSettings.setDataSource(UISettings.DataSource.GITHUB);
 			AppSettings.setSecurityOption(newSecurityMode);
 		}
-		Action.initJson();
+		Action.initCustomData();
 		if (LiveSettings.doMasterReset) {
 			Platform.runLater(MasterResetWindow::new);
 		}
 		else {
 			Action.loadData();
 			Platform.runLater(() -> pBar.progressProperty().unbind());
-			Platform.runLater(SceneOne::close);
 		}
-		loggingIn = false;
+		Platform.runLater(() -> {
+			SceneOne.hide(sceneId);
+		});
+		stopFadeKitty();
 	}
-
 }

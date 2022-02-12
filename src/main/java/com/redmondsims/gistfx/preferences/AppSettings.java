@@ -25,7 +25,10 @@ public class AppSettings {
 		DIRTY_FILE_FLAG_COLOR,
 		JSON_GIST,
 		PROGRESS_BAR_STYLE,
-		DISABLE_DIRTY_WARNING;
+		DISABLE_DIRTY_WARNING,
+		WIDE_MODE,
+		DIVIDER_POSITIONS,
+		DISTRACTION_FREE_WARNING;
 
 		public String Name(SETTING this) {
 			return switch (this) {
@@ -45,7 +48,10 @@ public class AppSettings {
 				case DIRTY_FILE_FLAG_COLOR -> "GFX_DirtyFileFlagColor";
 				case JSON_GIST -> "GFX_StoreJsonDataInGist";
 				case PROGRESS_BAR_STYLE -> "GFX_ProgressBarStyle";
+				case WIDE_MODE -> "GFX_WideMode";
+				case DIVIDER_POSITIONS -> "GFX_DividerPosition";
 				case DISABLE_DIRTY_WARNING -> "GFX_DisableDirtyWarning";
+				case DISTRACTION_FREE_WARNING -> "GFX_DistractionFreeWarning";
 			};
 		}
 	}
@@ -136,6 +142,20 @@ public class AppSettings {
 		return setting.equals("true");
 	}
 
+	public static boolean getWideMode() {
+		String setting = prefs.get(SETTING.WIDE_MODE.Name(), "false");
+		return setting.equals("true");
+	}
+
+	public static String getDividerPositions() {
+		return prefs.get(SETTING.DIVIDER_POSITIONS.Name(), "");
+	}
+
+	public static boolean getDistractionFreeWarning() {
+		String setting = prefs.get(SETTING.DISTRACTION_FREE_WARNING.Name(), "true");
+		return setting.equals("true");
+	}
+
 	//SETTERS - Always remove before setting
 
 	public static void setHashedToken(String tokenHash) {
@@ -188,7 +208,7 @@ public class AppSettings {
 		prefs.put(SETTING.SECURITY_OPTION.Name(), option.Name());
 	}
 
-	public static void setTheme(UISettings.Theme theme) {
+	public static void setTheme(UISettings.Theme theme, String source) {
 		clearTheme();
 		prefs.put(SETTING.THEME.Name(), theme.Name());
 	}
@@ -216,6 +236,21 @@ public class AppSettings {
 	public static void setDisableDirtyWarning(boolean setting) {
 		clearDisableDirtyWarning();
 		prefs.put(SETTING.DISABLE_DIRTY_WARNING.Name(), String.valueOf(setting));
+	}
+
+	public static void setWideMode(boolean setting) {
+		clearWideMode();
+		prefs.put(SETTING.WIDE_MODE.Name(), String.valueOf(setting));
+	}
+
+	public static void setDividerPositions(String positions) {
+		clearDividerPositions();
+		prefs.put(SETTING.DIVIDER_POSITIONS.Name(), positions);
+	}
+
+	public static void setDistractionFreeWarning(boolean setting) {
+		clearDistractionFreeWarning();
+		prefs.put(SETTING.DISTRACTION_FREE_WARNING.Name(), String.valueOf(setting));
 	}
 
 	//REMOVERS
@@ -256,6 +291,16 @@ public class AppSettings {
 
 	public static void clearDisableDirtyWarning() {prefs.remove(SETTING.DISABLE_DIRTY_WARNING.Name());}
 
+	public static void clearWideMode() {prefs.remove(SETTING.WIDE_MODE.Name());}
+
+	public static void clearDividerPositions() {
+		prefs.remove(SETTING.DIVIDER_POSITIONS.Name());
+	}
+
+	public static void clearDistractionFreeWarning() {
+		prefs.remove(SETTING.DISTRACTION_FREE_WARNING.Name());
+	}
+
 
 	public static void resetPreferences() {
 		clearLoadSource();
@@ -274,7 +319,7 @@ public class AppSettings {
 		setLoginScreenChoice(getLoginScreenChoice());
 		setProgressColorSource(getProgressColorSource());
 		setProgressBarColor(getProgressBarColor());
-		setTheme(getTheme());
+		setTheme(getTheme(),"resetPreferences");
 		setFirstRun(true);
 		setShowButtonBar(getShowButtonBar());
 		setSaveToGist(getSaveToGist());

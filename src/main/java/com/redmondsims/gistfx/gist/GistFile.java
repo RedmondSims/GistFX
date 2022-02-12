@@ -73,11 +73,11 @@ public class GistFile {
 	 */
 
 	private String getFileExtension() {
-		boolean noDot = !file.name().contains(".");
-		if (noDot) {
-			return "";
+		boolean hasDot = file.name().contains(".");
+		if (hasDot) {
+			return FilenameUtils.getExtension(file.name());
 		}
-		return FilenameUtils.getExtension(file.name());
+		return "";
 	}
 
 	/**
@@ -170,6 +170,10 @@ public class GistFile {
 		return content.get();
 	}
 
+	public CStringProperty getContentProperty() {
+		return content;
+	}
+
 	public String getGitHubVersion() {
 		return gitHubVersion;
 	}
@@ -195,6 +199,10 @@ public class GistFile {
 	public String getNewFilename() {return file.name();}
 
 	public String getOldFilename() {return oldFilename;}
+
+	public String getLanguage() {
+		return getFileExtension();
+	}
 
 	public ObjectProperty<Node> getFlagNode() {return graphicNode;}
 

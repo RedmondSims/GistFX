@@ -15,6 +15,14 @@
     -fx-text-fill: lightgray;
 }
 
+#SettingsOne {
+    -fx-text-fill: rgba(220,220,200,1);
+}
+
+#SettingsTwo {
+    -fx-text-fill: rgba(230,230,230,1);
+}
+
 #notify {
     -fx-text-fill: rgba(255,255,0,1);
 }

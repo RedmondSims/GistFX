@@ -6,7 +6,7 @@ import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
-import com.redmondsims.gistfx.utils.SceneOne;
+import com.redmondsims.gistfx.sceneone.SceneOne;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
@@ -51,7 +51,6 @@ public class GistManager {
 	public static void startFromDatabase() {
 		Action.loadBestNameMap();
 		gistMap = Action.getGistMap();
-		SceneOne.close();
 		WindowManager.newGistWindow(State.LOCAL);
 	}
 

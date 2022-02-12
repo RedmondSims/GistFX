@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx.utils;
 
+import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -7,9 +8,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.*;
+import javafx.stage.Window;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public final class SceneOne {
 
@@ -28,19 +33,13 @@ public final class SceneOne {
 	}
 
 
-	public static void init(boolean centerSceneByDefault) {
-		SceneOne.centerSceneByDefault = centerSceneByDefault;
-	}
-
 	public static void init(boolean centerSceneByDefault, double width, double height) {
-		SceneOne.centerSceneByDefault = centerSceneByDefault;
 		SceneOne.width = width;
 		SceneOne.height = height;
 	}
 
 	private static final Map<String, SceneObject> sceneMap             = new HashMap<>();
 	private static final String                   core                 = "default";
-	private static       boolean                  centerSceneByDefault = false;
 	private static       double                   width                = -1;
 	private static       double                   height               = -1;
 
@@ -58,7 +57,6 @@ public final class SceneOne {
 		private Choice type = Choice.MAIN;
 
 		private final Parent                    root;
-		private       boolean                   centered          = false;
 		private       boolean                   fullScreen        = false;
 		private       double                    width             = -1;
 		private       double                    height            = -1;
@@ -67,6 +65,7 @@ public final class SceneOne {
 		private       String                    className         = "";
 		private       String                    title             = "";
 		private       EventHandler<WindowEvent> stageEventHandler = null;
+		private       boolean                   centerSceneByDefault = false;
 
 		public Builder forClass(String className) {
 			this.className = className;
@@ -97,7 +96,7 @@ public final class SceneOne {
 		}
 
 		public Builder centered() {
-			this.centered = true;
+			this.centerSceneByDefault = true;
 			return this;
 		}
 
@@ -127,7 +126,7 @@ public final class SceneOne {
 					case UNDECORATED -> initStyle = StageStyle.UNDECORATED;
 					case UTILITY -> initStyle = StageStyle.UTILITY;
 					case UNIFIED -> initStyle = StageStyle.UNIFIED;
-					case CENTERED -> centered = true;
+					case CENTERED -> centerSceneByDefault = true;
 					case FLOATER -> type = Choice.FLOATER;
 					case MAIN -> type = Choice.MAIN;
 				}
@@ -152,17 +151,22 @@ public final class SceneOne {
 			}
 		}
 
+		public Builder showOptions(Choice... choices) {
+			setSceneOptions(choices);
+			return this;
+		}
+
 		public void show() {
 			String mapName = className.isEmpty() ? core : className;
 			buildSceneObject(mapName);
-			sceneMap.get(mapName).show(centered);
+			sceneMap.get(mapName).show();
 		}
 
 		public void show(Choice... choices) {
 			String mapName = className.isEmpty() ? core : className;
 			setSceneOptions(choices);
 			buildSceneObject(mapName);
-			sceneMap.get(mapName).show(centered);
+			sceneMap.get(mapName).show();
 		}
 
 		public void showAndWait(Choice... choices) {
@@ -185,95 +189,138 @@ public final class SceneOne {
 	public static Builder set(Parent root, String className) {return new Builder(root, className);}
 
 	public static void show(Parent root) {
-		sceneMap.get(core).show();
+		if (exists(core)) {
+			sceneMap.get(core).show();
+		}
 	}
 
 	public static void showScene(boolean centered) {
-		sceneMap.get(core).show();
-		sceneMap.get(core).center();
+		if (exists(core)) {
+			sceneMap.get(core).show();
+			sceneMap.get(core).placeScene();
+		}
 	}
 
 	public static void showScene(double width, double height, boolean centered) {
-		sceneMap.get(core).show(width,height,centered);
+		if (exists(core)) {
+			sceneMap.get(core).show(width,height,centered);
+		}
 	}
 
 	public static void show() {
-		sceneMap.get(core).show();
+		if (exists(core)) {
+			sceneMap.get(core).show();
+		}
 	}
 
 	public static void show(String className) {
-		sceneMap.get(className).show();
+		if (exists(className)) {
+			sceneMap.get(className).show();
+		}
 	}
 
 	public static void showScene(String className, boolean centered) {
-		sceneMap.get(className).show();
-		sceneMap.get(className).center();
+		if (exists(className)) {
+			sceneMap.get(className).show();
+			sceneMap.get(className).placeScene();
+		}
 	}
 
 	public static void showScene(String className, double width, double height, boolean centered) {
-		sceneMap.get(className).show(width,height,centered);
+		if (exists(className)) {
+			sceneMap.get(className).show(width,height,centered);
+		}
 	}
 
 	public static void sizeToScene() {
-		sceneMap.get(core).sizeToScene();
+		if (exists(core)) {
+			sceneMap.get(core).sizeToScene();
+		}
 	}
 
 	public static void sizeToScene(String className) {
-		sceneMap.get(className).sizeToScene();
+		if (exists(className)) {
+			sceneMap.get(className).sizeToScene();
+		}
 	}
 
 	public static void center() {
-		sceneMap.get(core).center();
+		sceneMap.get(core).placeScene();
 	}
 
 	public static void center(String className) {
-		sceneMap.get(className).center();
+		if (exists(className)) {
+			sceneMap.get(className).placeScene();
+		}
 	}
 
 	public static void setTitle(String title) {
-		sceneMap.get(core).setTitle(title);
+		if (exists(core)) {
+			sceneMap.get(core).setTitle(title);
+		}
 	}
 
 	public static void setTitle(String className, String title) {
-		sceneMap.get(className).setTitle(title);
+		if (exists(className)) {
+			sceneMap.get(className).setTitle(title);
+		}
 	}
 
 	public static void setFullScreen(boolean fullScreen) {
-		sceneMap.get(core).setFullScreen(fullScreen);
+		if (exists(core)) {
+			sceneMap.get(core).setFullScreen(fullScreen);
+		}
 	}
 
-	public static void setFullScreen(String className, boolean fullScreen) {sceneMap.get(className).setFullScreen(fullScreen);}
+	public static void setFullScreen(String className, boolean fullScreen) {
+		if (exists(className)) {
+			sceneMap.get(className).setFullScreen(fullScreen);
+		}
+	}
 
 	public static boolean isShowing(String className) {
-		return sceneMap.get(className).isShowing();
+		if (exists(className)) {
+			return sceneMap.get(className).isShowing();
+		}
+		return false;
 	}
 
 	public static boolean isFullScreen() {
-		return sceneMap.get(core).isFullScreen();
+		if (exists(core)) {
+			return sceneMap.get(core).isFullScreen();
+		}
+		return false;
 	}
 
 	public static boolean isFullScreen(String className) {
-		return sceneMap.get(className).isFullScreen();
-	}
-
-	public static void setOnKeyPressed() {
-
+		if (exists(className)) {
+			return sceneMap.get(className).isFullScreen();
+		}
+		return false;
 	}
 
 	public static void setOnKeyPressed(EventHandler<? super KeyEvent> value) {
-		sceneMap.get(core).setOnKeyPressed(value);
+		if (exists(core)) {
+			sceneMap.get(core).setOnKeyPressed(value);
+		}
 	}
 
 	public static void setOnKeyPressed(String className, EventHandler<? super KeyEvent> value) {
-		sceneMap.get(className).setOnKeyPressed(value);
+		if (exists(className)) {
+			sceneMap.get(className).setOnKeyPressed(value);
+		}
 	}
 
 	public static void setStageCloseEvent(EventHandler<WindowEvent> eventHandler) {
-		sceneMap.get(core).setStageCloseEvent(eventHandler);
+		if (exists(core)) {
+			sceneMap.get(core).setStageCloseEvent(eventHandler);
+		}
 	}
 
 	public static void setStageCloseEvent(String className, EventHandler<WindowEvent> eventHandler) {
-		sceneMap.get(className).setStageCloseEvent(eventHandler);
+		if (exists(className)) {
+			sceneMap.get(className).setStageCloseEvent(eventHandler);
+		}
 	}
 
 	public static void exit() {
@@ -284,51 +331,107 @@ public final class SceneOne {
 	}
 
 	public static Window getOwner() {
-		return sceneMap.get(core).getOwner();
+		if (exists(core)) {
+			return sceneMap.get(core).getOwner();
+		}
+		return null;
 	}
 
 	public static Window getOwner(String className) {
-		return sceneMap.get(className).getOwner();
+		if (exists(className)) {
+			return sceneMap.get(className).getOwner();
+		}
+		return null;
 	}
 
 	public static Window getWindow() {
-		return sceneMap.get(core).getWindow();
+		if (exists(core)) {
+			return sceneMap.get(core).getWindow();
+		}
+		return null;
 	}
 
 	public static Window getWindow(String className) {
-		return sceneMap.get(className).getWindow();
+		if (exists(className)) {
+			return sceneMap.get(className).getWindow();
+		}
+		return null;
 	}
 
 	public static void close() {
-		sceneMap.get(core).close();
+		if (exists(core)) {
+			sceneMap.get(core).close();
+		}
 	}
 
 	public static void close(String className) {
-		sceneMap.get(className).close();
+		if (exists(className)) {
+			sceneMap.get(className).close();
+		}
 	}
 
 	public static void showAndWait() {
-		sceneMap.get(core).showAndWait();
+		if (exists(core)) {
+			sceneMap.get(core).showAndWait();
+		}
 	}
 
 	public static void showAndWait(String className) {
-		sceneMap.get(className).showAndWait();
+		if (exists(className)) {
+			sceneMap.get(className).showAndWait();
+		}
 	}
 
 	public static Stage getStage() {
-		return sceneMap.get(core).getStage();
+		if (exists(core)) {
+			return sceneMap.get(core).getStage();
+		}
+		return null;
 	}
 
 	public static Scene getScene() {
-		return sceneMap.get(core).getScene();
+		if (exists(core)) {
+			return sceneMap.get(core).getScene();
+		}
+		return null;
 	}
 
 	public static Stage getStage(String className) {
-		return sceneMap.get(className).getStage();
+		if (exists(className)) {
+			return sceneMap.get(className).getStage();
+		}
+		return null;
 	}
 
 	public static Scene getScene(String className) {
-		return sceneMap.get(className).getScene();
+		if (exists(className)) {
+			return sceneMap.get(className).getScene();
+		}
+		return null;
+	}
+
+	public static void toggleWideMode(String className) {
+		if(exists(className)){
+			sceneMap.get(className).toggleWideMode();
+		}
+	}
+
+	public static boolean isInWideMode(String className) {
+		if (exists(className)) {
+			return sceneMap.get(className).isWideMode();
+		}
+		return false;
+	}
+
+	public static boolean windowIsResizing(String className) {
+		if (exists(className)) {
+			return sceneMap.get(className).isWindowResizing();
+		}
+		return true;
+	}
+
+	private static boolean exists (String className) {
+		return sceneMap.containsKey(className);
 	}
 
 	private static class SceneObject {
@@ -342,7 +445,7 @@ public final class SceneOne {
 			private       Stage              stage;
 			private 	  Scene				 scene;
 			private final Parent             root;
-			private       boolean            centerSceneByDefault = SceneOne.centerSceneByDefault;
+			private       boolean            centerSceneByDefault = false;
 			private       boolean            fullscreen;
 			private       double             width                = -1;
 			private       double             height               = -1;
@@ -421,16 +524,20 @@ public final class SceneOne {
 
 		}
 
-		private final Stage                                  stage;
+		private final Stage                     stage;
 		private       Scene                     scene;
-		private       boolean                                center;
-		private       boolean                                fullscreen;
-		private       double                                 width;
-		private       double                                 height;
-		private final Modality                               modality;
-		private final StageStyle                             style;
-		private String                          title;
+		private       boolean                   center;
+		private       boolean                   fullscreen;
+		private       double                    width;
+		private       double                    height;
+		private       double                    snapWidth;
+		private       boolean                   wideMode       = false;
+		private final Modality                  modality;
+		private final StageStyle                style;
+		private       String                    title;
 		private       EventHandler<WindowEvent> stageEventHandler;
+		private       boolean                   windowResizing = false;
+		private Timer resizeTimer;
 
 		private SceneObject(Builder build) {
 			stage             = build.stage;
@@ -451,56 +558,54 @@ public final class SceneOne {
 			if (build.sceneEventHandler == null && build.type.equals(Choice.MAIN)) {
 				setStageCloseEvent(e -> System.exit(13));
 			}
-		}
-
-		public void show(boolean centered) {
-			setScene();
-			setSize();
-			stage.show();
-			center = centered;
-			center();
+			scene.addPreLayoutPulseListener(() -> {
+				new Thread(() -> {
+					windowResizing = true;
+					if (resizeTimer != null) resizeTimer.cancel();
+					resizeTimer = new Timer();
+					resizeTimer.schedule(setWindowSizingTask(), 1000);
+				}).start();
+			});
 		}
 
 		private void setScene() {
 			stage.setScene(scene);
 		}
 
-		public void show() {
+		private void finalShow() {
 			setScene();
 			setSize();
 			stage.show();
-			center();
+			placeScene();
+			assignCloseEventToStage();
+		}
+
+		private TimerTask setWindowSizingTask() {
+			return new TimerTask() {
+				@Override public void run() {
+					windowResizing = false;
+				}
+			};
+		}
+
+		public void show() {
+			finalShow();
 		}
 
 		public void show(Parent root) {
-			setScene();
 			scene = new Scene(root);
-			stage.setScene(scene);
-			setSize();
-			stage.show();
-			center();
-			assignCloseEventToStage();
+			finalShow();
 		}
 
 		public void show(double width, double height) {
-			setScene();
-			this.width = width;
-			this.height = height;
 			setWidthHeight(width,height);
-			setSize();
-			stage.show();
-			center();
-			assignCloseEventToStage();
+			finalShow();
 		}
 
 		public void show(double width, double height, boolean centered) {
-			setScene();
 			setWidthHeight(width,height);
 			center = centered;
-			setSize();
-			stage.show();
-			center();
-			assignCloseEventToStage();
+			finalShow();
 		}
 
 		public void showAndWait() {
@@ -513,7 +618,7 @@ public final class SceneOne {
 			if (height != -1) stage.setHeight(height);
 		}
 
-		public void center() {
+		public void placeScene() {
 			if (center)	stage.getScene().getWindow().centerOnScreen();
 			stage.setFullScreen(fullscreen);
 		}
@@ -521,10 +626,6 @@ public final class SceneOne {
 		public Scene getScene() {return scene;}
 
 		public Stage getStage() {return stage;}
-
-		public void setCenter(boolean center) {
-			centerSceneByDefault = center;
-		}
 
 		public void setModality(Modality modality) {
 			stage.initModality(modality);
@@ -535,6 +636,8 @@ public final class SceneOne {
 		}
 
 		public void setWidthHeight(double width, double height) {
+			this.width = width;
+			this.height = height;
 			stage.setWidth(width);
 			stage.setHeight(height);
 		}
@@ -580,6 +683,23 @@ public final class SceneOne {
 			assignCloseEventToStage();
 		}
 
+		public void toggleWideMode() {
+			if (!wideMode) {
+				snapWidth = stage.getWidth();
+				Toolkit   toolkit   = Toolkit.getDefaultToolkit();
+				Dimension dimension = toolkit.getScreenSize();
+				scene.getWindow().setWidth(dimension.getWidth());
+				scene.getWindow().centerOnScreen();
+			}
+			else {
+				scene.getWindow().setWidth(snapWidth);
+				scene.getWindow().centerOnScreen();
+			}
+			wideMode = !wideMode;
+		}
+
+		public boolean isWideMode() {return wideMode;}
+
 		public Window getOwner() {
 			return stage.getOwner();
 		}
@@ -591,6 +711,9 @@ public final class SceneOne {
 		public void close() {
 			Platform.runLater(stage::close);
 		}
+
+		public boolean isWindowResizing() {return windowResizing;}
+
 
 	}
 }

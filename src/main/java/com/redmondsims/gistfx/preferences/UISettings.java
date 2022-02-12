@@ -1,10 +1,15 @@
 package com.redmondsims.gistfx.preferences;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.PaneState;
 import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.ui.CodeEditor;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -14,25 +19,39 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+import static com.redmondsims.gistfx.enums.PaneState.*;
+
 public class UISettings {
 
-	private static final double cbw   = 100;
-	private static       Alert  alert = new Alert(Alert.AlertType.NONE);
+	private static final double           cbw              = 100;
+	private static       Alert            alert            = new Alert(Alert.AlertType.NONE);
+	private static       PaneSplitSetting paneSplitSetting = new PaneSplitSetting();
+	private static final Gson             gson             = new GsonBuilder().setPrettyPrinting().create();
 
-	private static Label newLabel(String text) {
+	private static Label newLabelMain(String text) {
 		Label label = new Label(text);
 		label.setMinWidth(155);
 		label.setAlignment(Pos.CENTER_LEFT);
+		label.setId("SettingsOne");
 		return label;
 	}
 
-	private static VBox newVBox(Node... nodes) {
+	private static Label newLabelOff(String text) {
+		Label label = new Label(text);
+		label.setMinWidth(155);
+		label.setAlignment(Pos.CENTER_LEFT);
+		label.setId("SettingsTwo");
+		return label;
+	}
+
+	private static VBox newVBox(double spacing, Node... nodes) {
 		VBox vbox = new VBox(nodes);
-		vbox.setSpacing(20);
+		vbox.setSpacing(spacing);
 		return vbox;
 	}
 
@@ -42,17 +61,16 @@ public class UISettings {
 		return hbox;
 	}
 
+	private static HBox newHBox(double spacing, Node... nodes) {
+		HBox hbox = new HBox(nodes);
+		hbox.setSpacing(spacing);
+		return hbox;
+	}
+
 	private static HBox hboxLeft(Node... nodes) {
 		HBox hbox = new HBox(nodes);
 		hbox.setSpacing(0);
 		hbox.setAlignment(Pos.CENTER_LEFT);
-		return hbox;
-	}
-
-	private static HBox hboxRight(Node... nodes) {
-		HBox hbox = new HBox(nodes);
-		hbox.setSpacing(0);
-		hbox.setAlignment(Pos.CENTER_RIGHT);
 		return hbox;
 	}
 
@@ -73,7 +91,7 @@ public class UISettings {
 	}
 
 	private static Node saveJsonToGist() {
-		Label label = new Label("Save Names To Gist");
+		Label label = newLabelMain("Save Metadata To GitHub");
 		CheckBox checkBox = new CheckBox();
 		checkBox.setSelected(AppSettings.getSaveToGist());
 		checkBox.setOnAction( e -> {
@@ -87,8 +105,13 @@ public class UISettings {
 			LiveSettings.applyAppSettings();
 			Action.accommodateUserSettingChange();
 		});
-		Tooltip.install(checkBox,new Tooltip("Enables or disables saving custom Gist names to your GitHub account"));
-		HBox hb = newHBox(hboxLeft(label),getCheckHBox(checkBox,125));
+		Tooltip.install(checkBox, newTooltip("""
+								Leave this box checked to allow GistFX
+								to store your custom metadata in your
+								GitHub account. The Gist that it uses
+								is not public, and it will not show up
+								as an editable gist in GistFX."""));
+		HBox hb = newHBox(hboxLeft(label), getSpacedHBoxRight(checkBox, 88));
 		return hboxLeft(hb);
 	}
 
@@ -98,29 +121,235 @@ public class UISettings {
 	}
 
 	private static VBox getDirtyFileNode() {
-		Label lblFlagDirty = newLabel("Show Dirty File Flag");
-		Label lblDisableWarning = newLabel("\tDisable Exit Warning");
+		Label lblFlagDirty 		= newLabelOff("\tShow Dirty File Flag");
+		Label lblDisableWarning = newLabelOff("\tDisable Dirty File Exit Warning");
+		Label lblColorPicker = newLabelMain("Dirty File Flag Color");
 		CheckBox flagDirtyCheckBox = new CheckBox();
 		CheckBox disableWarningCheckBox = new CheckBox();
-		Label lblColorPicker = newLabel("\tFlag Color");
-		lblColorPicker.setMinWidth(125);
 		ColorPicker colorPicker = new ColorPicker();
-		colorPicker.setValue(LiveSettings.getDirtyFileFlagColor());
-		flagDirtyCheckBox.setSelected(LiveSettings.flagDirtyFiles());
 		disableWarningCheckBox.setSelected(LiveSettings.disableDirtyWarning());
-		colorPicker.setOnAction(e-> LiveSettings.setDirtyFileFlagColor(colorPicker.getValue()));
-		HBox hboxFlagDirty = newHBox(hboxLeft(lblFlagDirty), getCheckHBox(flagDirtyCheckBox,77));
-		HBox hboxColor = newHBox(hboxLeft(lblColorPicker),hboxRight(colorPicker));
-		hboxColor.visibleProperty().bind(flagDirtyCheckBox.selectedProperty());
-		HBox hboxSetWarn = newHBox(hboxLeft(lblDisableWarning), getCheckHBox(disableWarningCheckBox, 77));
-		flagDirtyCheckBox.setOnAction(e -> LiveSettings.setFlagDirtyFiles(flagDirtyCheckBox.isSelected()));
 		disableWarningCheckBox.setOnAction(e -> {
 			LiveSettings.setDisableDirtyWarning(disableWarningCheckBox.isSelected());
 			if(disableWarningCheckBox.isSelected()) {
 				CustomAlert.showInfo("Disabling this feature prevents GistFX from throwing a warning when you close the app, if you have data that has not been uploaded to GitHub.\n\nHowever, GistFX will automatically upload your unsaved data when you close the app, when this box is checked.",null);
 			}
 		});
-		return newVBox(hboxFlagDirty, hboxSetWarn, hboxColor);
+		flagDirtyCheckBox.setSelected(LiveSettings.flagDirtyFiles());
+		flagDirtyCheckBox.setOnAction(e -> LiveSettings.setFlagDirtyFiles(flagDirtyCheckBox.isSelected()));
+		Tooltip.install(disableWarningCheckBox, newTooltip("""
+																	If checked, this will prevent GistFX
+																	from warning you that you have edited
+																	Gists that have not been uploaded to GitHub."""));
+		Tooltip.install(flagDirtyCheckBox, newTooltip("""
+																		If NOT checked, your edited Gists that have
+																		not been uploaded to GitHub will not have
+																		a flag placed next to them."""));
+		colorPicker.setValue(LiveSettings.getDirtyFileFlagColor());
+		colorPicker.setOnAction(e-> LiveSettings.setDirtyFileFlagColor(colorPicker.getValue()));
+		colorPicker.setMaxWidth(101);
+		Tooltip.install(colorPicker, newTooltip("Chose your desired color for the dirty file flag"));
+		HBox hboxFlagDirty 	= newHBox(hboxLeft(lblFlagDirty), 		getSpacedHBoxRight(flagDirtyCheckBox, 86));
+		HBox hboxSetWarn 	= newHBox(hboxLeft(lblDisableWarning), 	getSpacedHBoxRight(disableWarningCheckBox, 57));
+		HBox hboxColor 		= newHBox(hboxLeft(lblColorPicker),		getSpacedHBoxRight(colorPicker,1));
+		VBox vbColorPicker = newVBox(15, hboxColor);
+		vbColorPicker.setPadding(new Insets(0,0,10,0));
+		hboxColor.visibleProperty().bind(flagDirtyCheckBox.selectedProperty());
+		return newVBox(10, vbColorPicker, hboxSetWarn, hboxFlagDirty);
+	}
+
+	private static boolean checkValues(Double value1, Double value2, PaneState state) {
+		boolean validateResult = false;
+		if (state.equals(REST)) {
+			validateResult = value1 < value2;
+			if (!validateResult) {
+				CustomAlert.showWarning("The value of the divider position at rest cannot be greater than the expanded value.");
+			}
+		}
+		if (state.equals(EXPANDED)) {
+			validateResult = value1 > value2;
+			if (!validateResult) {
+				CustomAlert.showWarning("The value of the divider position while expanded cannot be less than the at rest value");
+			}
+		}
+		return validateResult;
+	}
+
+	private static void savePaneSplitSettings(PaneState state, double value) {
+		paneSplitSetting.setPosition(state,value);
+		String json = gson.toJson(paneSplitSetting);
+		AppSettings.setDividerPositions(json);
+	}
+
+	private static VBox getPaneSplitNode() {
+		Label label = newLabelMain("Always start in Wide Mode");
+		String jsonString = AppSettings.getDividerPositions();
+		if (!jsonString.equals("")) paneSplitSetting = gson.fromJson(jsonString,PaneSplitSetting.class);
+		CheckBox checkBox = new CheckBox();
+		checkBox.setSelected(LiveSettings.getWideMode());
+		checkBox.setOnAction(e -> {
+			AppSettings.setWideMode(checkBox.isSelected());
+			LiveSettings.applyAppSettings();
+		});
+		ChoiceBox<Double> cbRest = new ChoiceBox<>();
+		ChoiceBox<Double> cbExpand = new ChoiceBox<>();
+		ChoiceBox<Double> cbDefault = new ChoiceBox<>();
+		ChoiceBox<Double> cbDefaultFull = new ChoiceBox<>();
+		cbRest.setValue(paneSplitSetting.getPosition(REST));
+		cbExpand.setValue(paneSplitSetting.getPosition(EXPANDED));
+		cbDefault.setValue(paneSplitSetting.getPosition(DEFAULT));
+		cbDefaultFull.setValue(paneSplitSetting.getPosition(DEFAULT_FULL));
+		Button btnUseRefRest = new Button("Get");
+		Button btnUseRefExpand = new Button("Get");
+		Button btnUseRefDefault = new Button("Get");
+		Button btnUseRefDefaultFull = new Button("Get");
+		btnUseRefRest.setOnAction(e -> {
+			Double value1 = Action.round(LiveSettings.getLastPaneSplitValue());
+			Double value2 = cbExpand.getValue();
+			if (checkValues(value1,value2,REST)) {
+				cbRest.setValue(value1);
+				savePaneSplitSettings(REST,value1);
+			}
+		});
+		btnUseRefExpand.setOnAction(e -> {
+			Double value1 = Action.round(LiveSettings.getLastPaneSplitValue());
+			Double value2 = cbRest.getValue();
+			if (checkValues(value1,value2,EXPANDED)) {
+				cbExpand.setValue(value1);
+				savePaneSplitSettings(EXPANDED,value1);
+			}
+		});
+		btnUseRefDefault.setOnAction(e -> {
+			Double value1 = Action.round(LiveSettings.getLastPaneSplitValue());
+			Platform.runLater(() -> {
+				cbDefault.setValue(value1);
+			});
+			savePaneSplitSettings(DEFAULT,value1);
+		});
+		btnUseRefDefaultFull.setOnAction(e -> {
+			Double value1 = Action.round(LiveSettings.getLastPaneSplitValue());
+			Platform.runLater(() -> {
+				cbDefaultFull.setValue(value1);
+			});
+			savePaneSplitSettings(DEFAULT_FULL,value1);
+		});
+		ObservableList<Double> choices = FXCollections.observableArrayList();
+		for (double x = .01 ; x <= .99 ; x+=.01) {
+			choices.add(Action.round(x));
+		}
+		cbRest.getItems().setAll(choices);
+		cbExpand.getItems().setAll(choices);
+		cbDefault.getItems().setAll(choices);
+		cbDefaultFull.getItems().setAll(choices);
+		cbRest.valueProperty().addListener((o, oldV, newV) -> {
+			if(!oldV.equals(newV)) {
+				double current = oldV;
+				double value1 = newV;
+				double value2 = cbExpand.getValue();
+				if (checkValues(value1,value2,REST)) {
+					savePaneSplitSettings(REST,value1);
+				}
+				else {
+					Platform.runLater(() -> {
+						cbRest.setValue(current);
+					});
+				}
+			}
+		});
+		cbExpand.valueProperty().addListener((o, oldV, newV) -> {
+			if(!oldV.equals(newV)) {
+				double current = oldV;
+				double value1 = newV;
+				double value2 = cbRest.getValue();
+				if (checkValues(value1,value2,EXPANDED)) {
+					savePaneSplitSettings(EXPANDED,value1);
+				}
+				else {
+					Platform.runLater(() -> {
+						cbExpand.setValue(current);
+					});
+				}
+			}
+		});
+		cbDefault.valueProperty().addListener((o, oldV, newV) -> {
+			double value = newV;
+			savePaneSplitSettings(DEFAULT,value);
+		});
+		cbDefaultFull.valueProperty().addListener((o, oldV, newV) -> {
+			double value = newV;
+			savePaneSplitSettings(DEFAULT_FULL,value);
+		});
+		cbRest.setPrefWidth(cbw * .6);
+		cbExpand.setPrefWidth(cbw * .6);
+		cbDefault.setPrefWidth(cbw * .6);
+		cbDefaultFull.setPrefWidth(cbw * .6);
+		Tooltip.install(checkBox, newTooltip("""
+								Checking this box tells GistFX to set the
+								main window to wide mode when it first
+								loads. Unchecking this box leaves the window
+								in default mode. Wide mode can still be
+								toggled regardless of this setting."""));
+		Tooltip.install(cbRest, newTooltip("""
+								This sets the position of the SplitPane
+								divider when wide mode IS enabled and the
+								mouse pointer is NOT hovering on the left
+								side of the divider. This value must be
+								smaller than the next one down."""));
+		Tooltip.install(cbExpand, newTooltip("""
+								This sets the position of the SplitPane
+								divider when wide mode IS enabled and the
+								mouse pointer is hovering on the left side
+								of the divider. This value must be larger
+								than the one above it."""));
+		Tooltip.install(cbDefault, newTooltip("""
+								This sets the position of the SplitPane
+								divider when wide mode IS NOT enabled
+								and you are NOT in fullscreen mode."""));
+		Tooltip.install(cbDefaultFull, newTooltip("""
+								This sets the position of the SplitPane
+								divider when wide mode IS NOT enabled
+								and you ARE in fullscreen mode."""));
+		Tooltip.install(btnUseRefRest, newTooltip("""
+								This button takes the last position value you
+								set by moving the slider then applies it to the
+								at rest position value of the slider when you
+								switch to Wide Mode.
+								
+								This makes it easier to chose the value of the
+								slider when the numbers don't always make sense."""));
+		Tooltip.install(btnUseRefExpand, newTooltip("""
+								This button takes the last position value you
+								set by moving the slider then applies it to the
+								expanded position value of the slider when you
+								switch to Wide Mode.
+								
+								This makes it easier to chose the value of the
+								slider when the numbers don't always make sense."""));
+		Tooltip.install(btnUseRefDefault, newTooltip("""
+								This button takes the last position value you
+								set by moving the slider then applies it to the
+								default position value of the slider when you
+								are not in wide mode.
+								
+								This makes it easier to chose the value of the
+								slider when the numbers don't always make sense."""));
+		Tooltip.install(btnUseRefDefaultFull, newTooltip("""
+								This button takes the last position value you
+								set by moving the slider then applies it to the
+								default position value of the slider when you
+								are not in wide mode, but you are in full screen.
+								
+								This makes it easier to chose the value of the
+								slider when the numbers don't always make sense."""));
+		Label lblRest    = newLabelOff("\tRest Position");
+		Label lblExpand  = newLabelOff("\tExpanded Position");
+		Label lblDefault  = newLabelOff("\tDefault Position");
+		Label lblDefaultFull  = newLabelOff("\tFull Screen Position");
+		HBox hbCheckBox = newHBox(hboxLeft(label), getSpacedHBoxRight(checkBox, 88));
+		HBox hbRest     = newHBox(hboxLeft(lblRest), getSpacedHBoxRight(newHBox(5,btnUseRefRest,cbRest),0));
+		HBox hbExpand   = newHBox(hboxLeft(lblExpand), getSpacedHBoxRight(newHBox(5,btnUseRefExpand,cbExpand),0));
+		HBox hbDefault   = newHBox(hboxLeft(lblDefault), getSpacedHBoxRight(newHBox(5,btnUseRefDefault,cbDefault),0));
+		HBox hbDefaultFull   = newHBox(hboxLeft(lblDefaultFull), getSpacedHBoxRight(newHBox(5,btnUseRefDefaultFull,cbDefaultFull),0));
+		return newVBox(5, hbCheckBox,hbRest,hbExpand,hbDefault,hbDefaultFull);
 	}
 
 	public enum Theme {
@@ -165,21 +394,23 @@ public class UISettings {
 		}
 
 		public static Node getNode(Scene callingScene) {
-			Label                 label     = newLabel("Application Theme");
+			Label                 lblAppTheme     = newLabelMain("Application Theme");
 			ObservableList<Theme> themeList = FXCollections.observableList(Arrays.asList(DARK, LIGHT));
 			ChoiceBox<Theme>      choiceBox = new ChoiceBox<>(themeList);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setValue(AppSettings.getTheme());
 			choiceBox.setOnAction(e -> {
 				Theme theme = choiceBox.getValue();
-				AppSettings.setTheme(theme);
+				AppSettings.setTheme(theme, "UI Preferences");
 				LiveSettings.applyAppSettings();
 				callingScene.getStylesheets().clear();
 				callingScene.getStylesheets().add(theme.getStyleSheet());
 				UISettings.setStyleSheet(theme.getStyleSheet());
 				CodeEditor.get().getEditor().setCurrentTheme(theme.equals(LIGHT) ? "vs-light" : "vs-dark");
+				toolWindow.setStyleSheet();
 			});
-			return newHBox(hboxLeft(label), hboxRight(choiceBox));
+			Tooltip.install(choiceBox, newTooltip("Which side of the Force will you chose?"));
+			return newHBox(hboxLeft(lblAppTheme), getSpacedHBoxRight(choiceBox,3.5));
 		}
 
 		public String Name(Theme this) {
@@ -262,7 +493,7 @@ public class UISettings {
 
 		public static HBox getNode() {
 			ObservableList<LoginScreen> list      = FXCollections.observableArrayList(LoginScreen.STANDARD, LoginScreen.GRAPHIC);
-			Label                       label     = newLabel("Preferred Login Screen");
+			Label                       label     = newLabelMain("Preferred Login Screen");
 			choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
@@ -270,7 +501,8 @@ public class UISettings {
 				LiveSettings.applyAppSettings();
 			});
 			choiceBox.setValue(AppSettings.getLoginScreenChoice());
-			return newHBox(hboxLeft(label), hboxRight(choiceBox));
+			Tooltip.install(choiceBox, newTooltip("Chose between the graphic login screen, or the JavaFX login screen."));
+			return newHBox(hboxLeft(label), getSpacedHBoxRight(choiceBox,3));
 		}
 
 		public String Name(LoginScreen this) {
@@ -334,7 +566,7 @@ public class UISettings {
 
 		public static HBox getNode() {
 			ObservableList<LoginScreenColor> list      = colorList();
-			Label                            label     = newLabel("Login Screen Color");
+			Label                            label     = newLabelMain("Login Screen Color");
 			ChoiceBox<LoginScreenColor>      choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
@@ -343,8 +575,12 @@ public class UISettings {
 			});
 			choiceBox.setValue(AppSettings.getLoginScreenColor());
 			choiceBox.visibleProperty().bind(LoginScreen.choiceBox.getSelectionModel().selectedIndexProperty().isEqualTo(1));
+			Tooltip.install(choiceBox, newTooltip("""
+															When using the graphic login screen (default setting)
+															you can chose from the list, which color you prefer
+															that screen to be."""));
 			label.visibleProperty().bind(LoginScreen.choiceBox.getSelectionModel().selectedIndexProperty().isEqualTo(1));
-			return newHBox(hboxLeft(label), hboxRight(choiceBox));
+			return newHBox(hboxLeft(label), getSpacedHBoxRight(choiceBox, 3));
 		}
 
 		public String Name(LoginScreenColor this) {
@@ -429,16 +665,12 @@ public class UISettings {
 		}
 
 		private static Node getNode() {
-			Label lblChkBox = newLabel("Custom Progressbar Color");
-			lblChkBox.setMinWidth(160);
+			Label lblChkBox = newLabelMain("Custom Progressbar Color");
 			CheckBox checkBox = new CheckBox();
-			HBox hboxCheck = newHBox(hboxLeft(lblChkBox), getCheckHBox(checkBox,75));
-			Label lblColorPicker = newLabel("Progressbar Color");
-			lblColorPicker.setMinWidth(127);
+			Label lblColorPicker = newLabelMain("Progressbar Color");
 			ColorPicker colorPicker = new ColorPicker();
-			HBox hboxColor = newHBox(hboxLeft(lblColorPicker),hboxRight(colorPicker));
+			colorPicker.setMaxWidth(100);
 			colorPicker.setValue(AppSettings.getProgressBarColor());
-			hboxColor.visibleProperty().bind(checkBox.selectedProperty());
 			checkBox.setSelected(AppSettings.getProgressColorSource().equals(ProgressColorSource.USER_CHOICE));
 			colorPicker.setOnAction(e->{
 				AppSettings.setProgressBarColor(colorPicker.getValue());
@@ -448,15 +680,28 @@ public class UISettings {
 				AppSettings.setProgressBarStyle(style);
 				WindowManager.setPBarStyle(style);
 			});
+			Tooltip.install(checkBox, newTooltip("""
+															If this is unchecked, GistFX will
+															select a random color for the two
+															progress bars from a pre-defined
+															color list."""));
+			Tooltip.install(colorPicker, newTooltip("""
+															Set the color of the two progress
+															bars: The one on the login screen
+															and the one in the main window.
+															"""));
 			checkBox.setOnAction(e -> {
 				AppSettings.setProgressColorSource(checkBox.isSelected() ? USER_CHOICE : RANDOM);
 				LiveSettings.applyAppSettings();
 			});
-			return newVBox(hboxCheck,hboxColor);
+			HBox hboxCheck = newHBox(hboxLeft(lblChkBox), getSpacedHBoxRight(checkBox, 87));
+			HBox hboxColor = newHBox(hboxLeft(lblColorPicker), getSpacedHBoxRight(colorPicker, 3.5));
+			hboxColor.visibleProperty().bind(checkBox.selectedProperty());
+			return newVBox(15, hboxCheck,hboxColor);
 		}
 	}
 
-	private static HBox getCheckHBox(Node checkBox, double space) {
+	private static HBox getSpacedHBoxRight(Node checkBox, double space) {
 		Label dummy = new Label(" ");
 		dummy.setMinWidth(space);
 		HBox hbox = new HBox(dummy,checkBox);
@@ -464,6 +709,14 @@ public class UISettings {
 		hbox.setAlignment(Pos.CENTER_RIGHT);
 		return hbox;
 	}
+
+	private static Tooltip newTooltip(String message) {
+		Tooltip tt = new Tooltip(message);
+		tt.setShowDuration(Duration.seconds(120));
+		return tt;
+	}
+
+	private static ToolWindow toolWindow;
 
 	public static void showWindow(Scene callingScene) {
 		Button btnReset = new Button("Reset Password And Token");
@@ -475,30 +728,58 @@ public class UISettings {
 			}
 		});
 		HBox hboxButtonReset = newHBox(btnReset);
+		VBox vboxButtonReset = newVBox(10,hboxButtonReset);
+		vboxButtonReset.setPadding(new Insets(10,0,0,0));
 		hboxButtonReset.setAlignment(Pos.CENTER);
-		Label lblButtonBar = new Label("Show button bar when form loads");
+		Label lblButtonBar = newLabelMain("Show button bar when form loads");
 		CheckBox chkButtonBar = new CheckBox();
 		chkButtonBar.selectedProperty().addListener((observable, oldValue, newValue) -> AppSettings.setShowButtonBar(newValue));
 		chkButtonBar.setSelected(AppSettings.getShowButtonBar());
-		HBox hboxBBChk   = newHBox(hboxLeft(lblButtonBar),getCheckHBox(chkButtonBar,53));
+		Tooltip.install(btnReset, newTooltip("""
+								Click this button to have GistFX
+								go into master reset mode the next
+								time you launch GistFX.
+								
+								When in master reset mode, you will
+								be taken to a screen after you login
+								which has various options for re-setting
+								different facets of GistFX such as
+								wiping out the database, or resetting
+								your token and password or all of your
+								custom data etc., depending on your needs.
+								
+								You are not required to authenticate to
+								GitHub when this mode is enabled so you
+								can just hit enter at the login screen,
+								however, you cannot remove the GitHub
+								stored version of your metadata without
+								first authenticating."""));
+		Tooltip.install(chkButtonBar, newTooltip("""
+								Show the dynamic button bar by default.
+								Otherwise, you will need to toggle it on
+								each time GistFX loads.
+								
+								The button bar changes depending on whats
+								being shown on the screen or what you
+								currently have selected in the window.
+								
+								The functionality of each button is also
+								in the programs menu structure."""));
+		HBox hboxBBChk   = newHBox(hboxLeft(lblButtonBar), getSpacedHBoxRight(chkButtonBar, 61));
 		VBox formContent = new VBox(hboxBBChk,
 									saveJsonToGist(),
+									getPaneSplitNode(),
 									progressBarChoiceNode(),
 									theme(callingScene),
 									loginScreen(),
 									loginScreenColor(),
 									getDirtyFileNode(),
-									hboxButtonReset);
+									vboxButtonReset);
 		formContent.setPadding(new Insets(10, 10, 10, 10));
-		formContent.setSpacing(20);
-		formContent.setAlignment(Pos.CENTER);
-		alert = new Alert(Alert.AlertType.NONE);
-		alert.getButtonTypes().clear();
-		alert.getButtonTypes().add(0, new ButtonType("Close", ButtonBar.ButtonData.LEFT));//For some reason, .LEFT centers the button when there is only one button in the alert
-		alert.setTitle("GistFX Setting Options");
-		alert.getDialogPane().setContent(formContent);
-		alert.getDialogPane().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
-		alert.showAndWait();
+		formContent.setSpacing(10);
+		formContent.setAlignment(Pos.CENTER_LEFT);
+		toolWindow = new ToolWindow.Builder(formContent,300,630).title("GistFX User Options").build();
+		toolWindow.showAndWait();
 	}
 
 }

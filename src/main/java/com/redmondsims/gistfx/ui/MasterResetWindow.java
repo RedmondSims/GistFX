@@ -3,7 +3,7 @@ package com.redmondsims.gistfx.ui;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.preferences.AppSettings;
-import com.redmondsims.gistfx.utils.SceneOne;
+import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,9 +13,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-
-import static com.redmondsims.gistfx.utils.SceneOne.Choice.APP_MODAL;
-import static com.redmondsims.gistfx.utils.SceneOne.Choice.CENTERED;
+import javafx.stage.Modality;
 
 public class MasterResetWindow {
 
@@ -41,7 +39,7 @@ public class MasterResetWindow {
 		vbox.setPadding(new Insets(5,5,5,5));
 		vbox.setSpacing(8);
 		SceneOne.close();
-		SceneOne.set(vbox).show(APP_MODAL, CENTERED);
+		SceneOne.set(vbox).centered().modality(Modality.APPLICATION_MODAL).show();
 		button.setOnAction(e -> performReset(cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalCustomNames.isSelected(), cbGitHubCustomNames.isSelected()));
 	}
 
@@ -72,7 +70,7 @@ public class MasterResetWindow {
 			label.setId("masterReset");
 			VBox vbox = new VBox(label);
 			SceneOne.close();
-			SceneOne.set(vbox).show(APP_MODAL, CENTERED);
+			SceneOne.set(vbox).centered().modality(Modality.APPLICATION_MODAL).show();
 			new Thread(() -> {
 				if (database) Action.deleteDatabaseFile();
 				if (appSettings) AppSettings.resetPreferences();

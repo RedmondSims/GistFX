@@ -29,6 +29,15 @@ public class CBooleanProperty extends SimpleBooleanProperty {
 		super.addListener(listener);
 	}
 
+	public void toggle() {
+		super.setValue(!super.getValue());
+	}
+
+	public boolean opposite() {
+		return !super.getValue();
+	}
+
+
 	@Override public void setValue(Boolean value) {super.setValue(value);}
 
 	@Override public Boolean getValue() {return super.getValue();}
