@@ -2,18 +2,17 @@ package com.redmondsims.gistfx.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.javafx.CBooleanProperty;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import org.apache.commons.io.FileUtils;
+import com.redmondsims.gistfx.preferences.UISettings;
 import org.kohsuke.github.GHGist;
-import org.kohsuke.github.GHGistFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+
+import static com.redmondsims.gistfx.enums.Names.*;
+import static com.redmondsims.gistfx.preferences.UISettings.DataSource.*;
 
 class Json {
 
@@ -23,239 +22,208 @@ class Json {
 		SQLITE
 	}
 
-	private final String              gistDescription = "GistFX!Data!";
-	private final Timer               syncGitHubTimer = new Timer();
-	private final String              gistFilename    = "GistFXData.json";
-	private final Gson                gson            = new GsonBuilder().setPrettyPrinting().create();
-	private       Map<String, String> nameMap         = new HashMap<>();
-	private       JsonTemplate        jsonTemplate    = new JsonTemplate();
-	private       long                lastChangeTime  = System.currentTimeMillis();
-	private       File                jsonLocalFile;
-	private       GHGist              gist;
+	private       Categories       CATEGORIES      = new Categories();
+	private       Names            NAMES           = new Names();
+	private       GHGist           ghGist;
+	private       CustomDataFile   customDataFile;
+	private final String           gistDescription = GIST_DATA_DESCRIPTION.Name();
+	private final Gson             gson            = new GsonBuilder().setPrettyPrinting().create();
+	private final CBooleanProperty useGitHub       = new CBooleanProperty(LiveSettings.useJsonGist);
+	private       Timer            saveTimer;
 
-	public void initPath(String path) {
-		File jsonPath = new File(path, "Json");
-		jsonLocalFile = new File(jsonPath, "NameMap.json");
-		try {
-			if (!jsonPath.exists()) FileUtils.createParentDirectories(jsonLocalFile);
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		syncGitHubTimer.scheduleAtFixedRate(syncWithGitHub(), 10000, 10000);
+ 	private void makeNewGist() {
+		String customDataGitHubJson = gson.toJson(customDataFile);
+		ghGist = Action.getNewGist(gistDescription, CustomDataFile.FileName, customDataGitHubJson, false);
 	}
 
-	public void loadJsonIntoDatabase() {
-		getBestNameMap();
-		for (String gistId : nameMap.keySet()) {
-			String name = nameMap.get(gistId);
-			Action.addToNameMap(gistId, name);
+	protected void getData() {
+		UISettings.DataSource dataSource           = LiveSettings.getDataSource();
+		String                customDataGitHubJson = "";
+		String                customDataLocalJson  = AppSettings.getFXData();
+		String                customDataSQLJson    = Action.getSQLFXData();
+		CustomDataFile        customGitHub;
+		CustomDataFile        customSQL;
+		CustomDataFile        customLocal;
+		boolean               haveGitHubData       = false;
+		boolean               haveLocalData        = !customDataLocalJson.equals("");
+		boolean               haveSQLData          = !customDataSQLJson.equals("");
+
+		Map<Integer, Date> dateMap = new HashMap<>();
+		customDataFile = new CustomDataFile(NAMES.getMap(), CATEGORIES.getList(), CATEGORIES.getMap());
+		if (useGitHub.isTrue()) {
+			ghGist = Action.getGistByDescription("GistFX!Data!");
 		}
-	}
-
-	public void loadBestNameMap() {
-		getBestNameMap();
-	}
-
-	public void setName(String gistId, String newName) {
-		if (nameMap.containsKey(gistId)) {
-			String currentName = nameMap.get(gistId);
-			if (currentName.equals(newName)) return;
-			else nameMap.replace(gistId, newName);
-		}
-		else {
-			nameMap.put(gistId, newName);
-		}
-		saveToLocalFile();
-		lastChangeTime = System.currentTimeMillis();
-	}
-
-	public void removeName(String gistId) {
-		nameMap.remove(gistId);
-		saveToLocalFile();
-		lastChangeTime = System.currentTimeMillis();
-	}
-
-	public void deleteLocalJsonFile() {
-		if (jsonLocalFile != null) {
-			if (jsonLocalFile.exists()) {
-				try {
-					FileUtils.forceDelete(jsonLocalFile);
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-					CustomAlert.showExceptionDialog(e,"Problem deleting local json file.");
-				}
+		if (dataSource.equals(GITHUB) && useGitHub.isTrue()) {
+			while (!LiveSettings.gitHubAuthenticated()) {
+				Action.sleep(100);
+			}
+			if (ghGist != null) {
+				customDataGitHubJson = ghGist.getFile(CustomDataFile.FileName).getContent();
+				haveGitHubData       = true;
 			}
 		}
-	}
-
-	public void deleteGistFile() {
-		if(gistExists()) {
-			if (!Action.delete(gist.getGistId())) {
-				CustomAlert.showWarning("There was a problem deleting the Gist that contains your Gist Names. See help for more information.");
+		if (haveGitHubData) {
+			customGitHub = gson.fromJson(customDataGitHubJson, CustomDataFile.class);
+			dateMap.put(1,customGitHub.getDate());
+		}
+		if (haveSQLData) {
+			customSQL = gson.fromJson(customDataSQLJson, CustomDataFile.class);
+			dateMap.put(2,customSQL.getDate());
+		}
+		if (haveLocalData) {
+			customLocal = gson.fromJson(customDataLocalJson, CustomDataFile.class);
+			dateMap.put(3,customLocal.getDate());
+		}
+		String finalJsonString = "";
+		if (dateMap.size() > 1) {
+			switch (findNewestDate(dateMap)) {
+				case 1 -> finalJsonString = customDataGitHubJson;
+				case 2 -> finalJsonString = customDataSQLJson;
+				case 3 -> finalJsonString = customDataLocalJson;
 			}
 		}
-	}
-
-	public String getGistName(String gistId) {
-		return nameMap.getOrDefault(gistId,"");
-	}
-
-	public void accommodateUserSettingChange() {
-		if (LiveSettings.useJsonGist) createGist();
-		else deleteGist();
-	}
-
-	private void getBestNameMap() {
-		GHGistFile gistFile = null;
-		if(LiveSettings.useJsonGist) {
-			if (gistExists()) {
-				gistFile = gist.getFile(gistFilename);
-			}
-		}
-
-		boolean localFileExists = jsonLocalFile.exists();
-		boolean gistFileExists = gistFile != null;
-
-		Source dataSource = localFileExists ? Source.LOCAL_FILE : gistFileExists ? Source.GIST_FILE : Source.SQLITE;
-
-		if (localFileExists && gistFileExists) {
-			try {
-				BasicFileAttributes attr = Files.readAttributes(jsonLocalFile.toPath(), BasicFileAttributes.class);
-				Date gistUpDate = gist.getUpdatedAt();
-				Date fileUpDate = new Date(attr.lastModifiedTime().toMillis());
-				if(gistUpDate.after(fileUpDate)) {
-					dataSource = Source.GIST_FILE;
+		else if (dateMap.size() == 1) {
+			for(Integer index : dateMap.keySet()) {
+				switch (index) {
+					case 1 -> finalJsonString = customDataGitHubJson;
+					case 2 -> finalJsonString = customDataSQLJson;
+					case 3 -> finalJsonString = customDataLocalJson;
 				}
 			}
-			catch (IOException e) {e.printStackTrace();}
 		}
-
-		nameMap = null;
-
-		switch(dataSource) {
-			case GIST_FILE -> {
-				String jsonString = gistFile.getContent();
-				this.jsonTemplate = gson.fromJson(jsonString, JsonTemplate.class);
-				nameMap = this.jsonTemplate.getNameMap();
+		if (!finalJsonString.equals("")) {
+			customDataFile = gson.fromJson(finalJsonString, CustomDataFile.class);
+			CATEGORIES = customDataFile.getCategories();
+			NAMES      = customDataFile.getNames();
+		}
+		else { //We have nothing!
+			Map<String,GHGist> ghGistMap = Action.getGhGistMap();
+			for (String gistId : ghGistMap.keySet()) {
+				String description = ghGistMap.get(gistId).getDescription();
+				NAMES.setName(gistId,description);
 			}
-
-			case LOCAL_FILE -> {
-				String jsonString = Action.loadTextFile(jsonLocalFile);
-				this.jsonTemplate = gson.fromJson(jsonString, JsonTemplate.class);
-				nameMap = this.jsonTemplate.getNameMap();
-			}
-
-			case SQLITE -> nameMap = Action.getNameMapFromSQL();
-
 		}
-		if (nameMap == null) {
-			nameMap = new HashMap<>();
+		if ((!haveGitHubData && useGitHub.isTrue() && dataSource.equals(GITHUB)) || (useGitHub.isTrue() && ghGist == null)) {
+			makeNewGist();
 		}
-		validateGistState();
+		saveData();
 	}
 
-	private void validateGistState() {
-		if (LiveSettings.useJsonGist) {
-			if (!gistExists()) {
-				new Thread(() -> {
-					try {
-						TimeUnit.MILLISECONDS.sleep(10000);
-						createGist();
-					}
-					catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}).start();
+	private Integer findNewestDate(Map<Integer,Date> dateMap) {
+		SortedSet<Date> dates = new TreeSet<>(dateMap.values());
+		Date finalDate = dates.first();
+		for(Integer index : dateMap.keySet()) {
+			Date date = dateMap.get(index);
+			if (date.equals(finalDate)) {
+				return index;
 			}
 		}
+		return null;
 	}
 
-	private TimerTask syncWithGitHub() {
+	private void saveData() {
+		customDataFile = new CustomDataFile(NAMES.getMap(), CATEGORIES.getList(), CATEGORIES.getMap());
+		String customDataFileJson = gson.toJson(customDataFile);
+		AppSettings.setFXData(customDataFileJson);
+		Action.saveFXData(customDataFileJson);
 		/*
-		 * The reason why this method exists, is because when I first tested the use of the Gist as a location to store the custom names that the user assigns,
-		 * When I had the Gist update after every time the name was modified, simply loading the names from the local file or the database created 20 versions
-		 * of the GistFile in the GitHub account. So I felt it would be more prudent to have a method that only commits changes to the GistFile after some time
-		 * has elapsed once a change has occurred, and 45 seconds seemed as good as any number and was chosen under the scenario when the user might be making
-		 * name changes to their gists serially, since giving them 45 seconds between their next name change seemed reasonable and will reset the clock so that
-		 * the Gist commit won't happen until 45 seconds after their last change (unless they make yet another change obviously).
-		 *
-		 * The whole point of this method is to reduce the number of times we commit changes to the GitHub Gist so that our Gist versions don't get quickly
-		 * out of control
+		 * We delay the committing of data to GitHub to minimize upload resource usage in case
+		 * the user is making many multiple changes within a short period of time.
+		 * In situations where a user might exit the app before this delay has come to pass,
+		 * it won't be a problem, because the next data load will come from a local source
 		 */
+		if (useGitHub.isTrue()) {
+			if (saveTimer != null) {
+				saveTimer.cancel();
+			}
+			saveTimer = new Timer();
+			saveTimer.schedule(saveToGitHub(customDataFileJson), 3000);
+		}
+	}
+
+	private TimerTask saveToGitHub(String jsonString) {
 		return new TimerTask() {
 			@Override public void run() {
-				long now = System.currentTimeMillis();
-				boolean update = (now - lastChangeTime) > 45000;
-				if (LiveSettings.useJsonGist && update) {
-					lastChangeTime = now;
-					boolean updateGitHub = false;
-					GHGistFile ghGistFile;
-					if(gistExists()) {
-						ghGistFile = gist.getFile(gistFilename);
-					}
-					else return;
-					String gistJsonString = ghGistFile.getContent();
-					JsonTemplate tempJson = gson.fromJson(gistJsonString, JsonTemplate.class);
-					Map<String,String> gistNameMap = tempJson.getNameMap();
-					for (String gistId : nameMap.keySet()) {
-						if (!gistNameMap.containsKey(gistId)) {
-							updateGitHub = true;
-							break;
-						}
-						String thisName = nameMap.get(gistId);
-						String gistName = gistNameMap.get(gistId);
-						if (!thisName.equals(gistName)) {
-							updateGitHub = true;
-							break;
-						}
-					}
-					if (updateGitHub) {
-						saveToGitHub();
-					}
-				}
+				customDataFile = new CustomDataFile(NAMES.getMap(), CATEGORIES.getList(), CATEGORIES.getMap());
+				String gistId = ghGist.getGistId();
+				String filename = CustomDataFile.FileName;
+				String fileContent = gson.toJson(customDataFile);
+				Action.updateGistFile(gistId,filename,fileContent);
 			}
 		};
 	}
 
-	private void saveToLocalFile() {
-		jsonTemplate.setNameMap(nameMap);
-		String jsonText = gson.toJson(this.jsonTemplate);
-		if (jsonLocalFile != null) {
-			Action.writeToTextFile(jsonLocalFile,jsonText);
-		}
+	protected void removeName(String gistId) {
+		NAMES.deleteName(gistId);
+		CATEGORIES.unMapCategory(gistId);
+		saveData();
 	}
 
- 	private void saveToGitHub() {
-		this.jsonTemplate.setNameMap(nameMap);
-		String jsonString = gson.toJson(this.jsonTemplate);
-		if (!Action.updateGistFile(gist.getGistId(),gistFilename,jsonString)) {
-			CustomAlert.showWarning("Failed saving NameMap to GitHub. See Help for more info.");
-		}
+	protected void setName(String gistId, String name) {
+		NAMES.setName(gistId,name.trim());
+		saveData();
 	}
 
-	private boolean gistExists( ) {
-		if (gist == null) {
-			gist = Action.getGistByDescription(gistDescription);
-		}
-		return gist != null;
+	protected String getName(String gistId) {
+		return NAMES.getName(gistId).trim();
 	}
 
-	private void createGist() {
-		if (LiveSettings.useJsonGist) {
-			String jsonString = gson.toJson(this.jsonTemplate);
-			gist = Action.addGistToGitHub(gistDescription, gistFilename, jsonString, false);
-		}
+	protected void addCategoryName(String categoryName) {
+		CATEGORIES.addCategory(categoryName.trim());
+		saveData();
 	}
 
-	private void deleteGist() {
-		if(!LiveSettings.useJsonGist){
-			if (!Action.delete(gist.getGistId())) {
-				CustomAlert.showWarning("There was a problem deleting the Gist that contains your Gist Names. See help for more information.");
-				return;
-			}
-			gist = null;
+	protected void deleteCategoryName(String categoryName) {
+		CATEGORIES.deleteCategory(categoryName);
+		saveData();
+	}
+
+	protected void mapCategoryNameToGist(String gistId, String categoryName) {
+		CATEGORIES.mapCategory(gistId,categoryName.trim());
+		saveData();
+	}
+
+	protected void changeCategoryName(String oldName, String newName) {
+		CATEGORIES.renameCategory(oldName,newName.trim());
+		saveData();
+	}
+
+	protected String getGistCategoryName(String gistId) {
+		return CATEGORIES.getMappedCategory(gistId);
+	}
+
+	protected List<String> getGistCategoryList() {
+		return CATEGORIES.getList();
+	}
+
+	protected Map<String,String> getGistCategoryMap() {
+		return CATEGORIES.getFormattedCategoryMap();
+	}
+
+	protected Map<String,String> getMappedCategories() {
+		return CATEGORIES.getCategoryMap();
+	}
+
+	protected void accommodateUserSettingChange() {
+		if(useGitHub.isTrue() && !LiveSettings.useJsonGist) {
+			Action.deleteFullGist(ghGist.getGistId());
 		}
+		if (useGitHub.isFalse() && LiveSettings.useJsonGist) {
+			customDataFile = new CustomDataFile(NAMES.getMap(), CATEGORIES.getList(), CATEGORIES.getMap());
+			makeNewGist();
+		}
+		useGitHub.toggle();
+	}
+
+	protected void deleteGitHubCustomData() {
+		Action.deleteFullGist(ghGist.getGistId());
+	}
+
+	protected void deleteLocalAppSettingsData() {
+		AppSettings.clearFXData();
+	}
+
+	public void loadJsonData() {
+		getData();
 	}
 }

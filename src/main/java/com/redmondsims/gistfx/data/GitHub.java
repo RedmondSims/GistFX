@@ -32,6 +32,7 @@ class GitHub {
 	private final DataSource                GITHUB    = DataSource.GITHUB;
 	private       org.kohsuke.github.GitHub gitHub;
 	private       Map<String, GHGist>       ghGistMap = null;
+	private boolean authenticated = false;
 
 	private void sleep(long milliseconds) {
 		try {
@@ -63,24 +64,14 @@ class GitHub {
 	public boolean tokenValid(String token) {
 		try {
 			gitHub = new GitHubBuilder().withOAuthToken(token).build();
-			return gitHub.isCredentialValid();
+			authenticated = gitHub.isCredentialValid();
+			LiveSettings.setGitHubAuthenticated(authenticated);
+			return authenticated;
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 		return false;
-	}
-
-	public void loadData() {
-		DataSource dataSource = LiveSettings.getDataSource();
-		if (dataSource.equals(LOCAL)) {
-			GistManager.startFromDatabase();
-		}
-		if (dataSource.equals(GITHUB)) {
-			LoginWindow.updateProcess("Downloading Gist Objects");
-			getNewGHGistMap();
-			GistManager.startFromGit(ghGistMap, State.GITHUB);
-		}
 	}
 
 	private void setProgress(double value) {
@@ -103,6 +94,10 @@ class GitHub {
 		catch (IOException ignored) {
 			//    e.printStackTrace();
 		}
+		return ghGistMap;
+	}
+
+	public Map<String, GHGist> getGHGistMap() {
 		return ghGistMap;
 	}
 
@@ -249,6 +244,38 @@ class GitHub {
 		return success;
 	}
 
+	public void deleteGistFile(String gistId, String filename) {
+		try {
+			notifyUser();
+			gitHub.getGist(gistId).update().deleteFile(filename).update();
+		}
+		catch (IOException e) {
+			throwAlert();
+			e.printStackTrace();
+		}
+	}
+
+	private void checkNullMap() {
+		if(ghGistMap == null && LiveSettings.gitHubAuthenticated()) {
+			getNewGHGistMap();
+		}
+	}
+
+	public GHGistFile addFileToGist(String gistId, String filename, String content) {
+		checkNullMap();
+		GHGistFile ghGistFile = null;
+		try {
+			notifyUser();
+			ghGistMap.get(gistId).update().addFile(filename, content).update();
+			ghGistFile = ghGistMap.get(gistId).getFile(filename);
+		}
+		catch (IOException e) {
+			throwAlert();
+			e.printStackTrace();
+		}
+		return ghGistFile;
+	}
+
 	private boolean deleteGist(String gistId) {
 		boolean success = false;
 		try {
@@ -275,20 +302,6 @@ class GitHub {
 			e.printStackTrace();
 		}
 		return ghGist;
-	}
-
-	public GHGistFile addFileToGist(String gistId, String filename, String content) {
-		GHGistFile ghGistFile = null;
-		try {
-			notifyUser();
-			gitHub.getGist(gistId).update().addFile(filename, content).update();
-			ghGistFile = gitHub.getGist(gistId).getFile(filename);
-		}
-		catch (IOException e) {
-			throwAlert();
-			e.printStackTrace();
-		}
-		return ghGistFile;
 	}
 
 	public Integer getForkCount(String gistId) {

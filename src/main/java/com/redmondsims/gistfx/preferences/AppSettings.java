@@ -28,7 +28,7 @@ public class AppSettings {
 		DISABLE_DIRTY_WARNING,
 		WIDE_MODE,
 		DIVIDER_POSITIONS,
-		DISTRACTION_FREE_WARNING;
+		FX_DATA;
 
 		public String Name(SETTING this) {
 			return switch (this) {
@@ -51,7 +51,7 @@ public class AppSettings {
 				case WIDE_MODE -> "GFX_WideMode";
 				case DIVIDER_POSITIONS -> "GFX_DividerPosition";
 				case DISABLE_DIRTY_WARNING -> "GFX_DisableDirtyWarning";
-				case DISTRACTION_FREE_WARNING -> "GFX_DistractionFreeWarning";
+				case FX_DATA -> "GFX_FX_Data";
 			};
 		}
 	}
@@ -151,10 +151,11 @@ public class AppSettings {
 		return prefs.get(SETTING.DIVIDER_POSITIONS.Name(), "");
 	}
 
-	public static boolean getDistractionFreeWarning() {
-		String setting = prefs.get(SETTING.DISTRACTION_FREE_WARNING.Name(), "true");
-		return setting.equals("true");
+	public static String getFXData() {
+		return prefs.get(SETTING.FX_DATA.Name(), "");
 	}
+
+
 
 	//SETTERS - Always remove before setting
 
@@ -184,7 +185,7 @@ public class AppSettings {
 	}
 
 	public static void setLoginScreenColor(UISettings.LoginScreenColor option) {
-		clearLogonScreenChoice();
+		clearLogonScreenColor();
 		prefs.put(SETTING.LOGIN_SCREEN_COLOR.Name(), option.Name());
 	}
 
@@ -208,7 +209,7 @@ public class AppSettings {
 		prefs.put(SETTING.SECURITY_OPTION.Name(), option.Name());
 	}
 
-	public static void setTheme(UISettings.Theme theme, String source) {
+	public static void setTheme(UISettings.Theme theme) {
 		clearTheme();
 		prefs.put(SETTING.THEME.Name(), theme.Name());
 	}
@@ -248,9 +249,9 @@ public class AppSettings {
 		prefs.put(SETTING.DIVIDER_POSITIONS.Name(), positions);
 	}
 
-	public static void setDistractionFreeWarning(boolean setting) {
-		clearDistractionFreeWarning();
-		prefs.put(SETTING.DISTRACTION_FREE_WARNING.Name(), String.valueOf(setting));
+	public static void setFXData(String value) {
+		clearFXData();
+		prefs.put(SETTING.FX_DATA.Name(), value);
 	}
 
 	//REMOVERS
@@ -297,8 +298,8 @@ public class AppSettings {
 		prefs.remove(SETTING.DIVIDER_POSITIONS.Name());
 	}
 
-	public static void clearDistractionFreeWarning() {
-		prefs.remove(SETTING.DISTRACTION_FREE_WARNING.Name());
+	public static void clearFXData() {
+		prefs.remove(SETTING.FX_DATA.Name());
 	}
 
 
@@ -319,7 +320,7 @@ public class AppSettings {
 		setLoginScreenChoice(getLoginScreenChoice());
 		setProgressColorSource(getProgressColorSource());
 		setProgressBarColor(getProgressBarColor());
-		setTheme(getTheme(),"resetPreferences");
+		setTheme(getTheme());
 		setFirstRun(true);
 		setShowButtonBar(getShowButtonBar());
 		setSaveToGist(getSaveToGist());

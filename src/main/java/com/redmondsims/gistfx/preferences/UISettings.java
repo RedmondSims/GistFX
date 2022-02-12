@@ -401,7 +401,7 @@ public class UISettings {
 			choiceBox.setValue(AppSettings.getTheme());
 			choiceBox.setOnAction(e -> {
 				Theme theme = choiceBox.getValue();
-				AppSettings.setTheme(theme, "UI Preferences");
+				AppSettings.setTheme(theme);
 				LiveSettings.applyAppSettings();
 				callingScene.getStylesheets().clear();
 				callingScene.getStylesheets().add(theme.getStyleSheet());

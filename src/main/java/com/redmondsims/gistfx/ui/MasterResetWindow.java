@@ -38,7 +38,6 @@ public class MasterResetWindow {
 		VBox vbox = new VBox(centeredHBox(lblTitle),lblMessage,cbDatabase, cbSettings,cbCredentials,cbLocalCustomNames,cbGitHubCustomNames,centeredHBox(button));
 		vbox.setPadding(new Insets(5,5,5,5));
 		vbox.setSpacing(8);
-		SceneOne.close();
 		SceneOne.set(vbox).centered().modality(Modality.APPLICATION_MODAL).show();
 		button.setOnAction(e -> performReset(cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalCustomNames.isSelected(), cbGitHubCustomNames.isSelected()));
 	}

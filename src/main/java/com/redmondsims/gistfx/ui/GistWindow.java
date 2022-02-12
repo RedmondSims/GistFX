@@ -390,22 +390,8 @@ public class GistWindow {
 
 	private void distractionFree() {
 		if (file != null) {
-			if (AppSettings.getDistractionFreeWarning()) showDistractionFreeWarning();
 			new DistractionFree().start(file.getContent(),file.getLanguage());
 		}
-	}
-
-	private void showDistractionFreeWarning() {
-		Label label = new Label("To PROPERLY exit distraction free mode, press CMD + W");
-		label.setAlignment(Pos.CENTER);
-		CheckBox cbDontShow= new CheckBox("Never show this again");
-		VBox vbox = new VBox(label,cbDontShow);
-		vbox.setCenterShape(true);
-		vbox.setAlignment(Pos.CENTER);
-		vbox.setSpacing(15);
-		ToolWindow toolWindow = new ToolWindow.Builder(vbox,400,150).title("Info").build();
-		toolWindow.showAndWait();
-		if (cbDontShow.isSelected()) AppSettings.setDistractionFreeWarning(false);
 	}
 
 	public void updateFileContent(String content) {

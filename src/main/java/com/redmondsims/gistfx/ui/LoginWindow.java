@@ -360,7 +360,6 @@ public class LoginWindow {
 		ivBackBoth.setFitHeight(323);
 		ivKittyKitty.setPreserveRatio(true);
 		ivKittyKitty.setFitWidth(700);
-		//ivKittyKitty.setFitWidth(73);
 
 		addAPNode(ivBackToken, 0, 0, 0, 0);
 		addAPNode(ivBackPassword, 0, 0, 0, 0);
@@ -368,7 +367,6 @@ public class LoginWindow {
 		addAPNode(ivCheckBox, 15, -1, 18, -1);
 		addAPNode(ivCheckMark, 15, -1, 15, -1);
 		addAPNode(ivQMark, -1, 30, -1, 30);
-		//addAPNode(ivKittyKitty,78.5,-1,49,-1);
 		addAPNode(ivKittyKitty,0,0,0,0);
 		addAPNode(tfToken, 184, -1, 216, -1);
 		addAPNode(tfPassword, 184, -1, 269, -1);
@@ -766,12 +764,11 @@ public class LoginWindow {
 			LiveSettings.setDataSource(UISettings.DataSource.GITHUB);
 			AppSettings.setSecurityOption(newSecurityMode);
 		}
-		Action.initCustomData();
 		if (LiveSettings.doMasterReset) {
 			Platform.runLater(MasterResetWindow::new);
 		}
 		else {
-			Action.loadData();
+			Action.loadWindow();
 			Platform.runLater(() -> pBar.progressProperty().unbind());
 		}
 		Platform.runLater(() -> {

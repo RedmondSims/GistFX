@@ -1,6 +1,7 @@
 package com.redmondsims.gistfx.preferences;
 
 import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.preferences.UISettings.DataSource;
 import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
@@ -16,22 +17,25 @@ import javafx.scene.paint.Color;
 import java.util.Objects;
 
 import static com.redmondsims.gistfx.preferences.UISettings.Theme.DARK;
+import static com.redmondsims.gistfx.enums.OS.*;
 
 public class LiveSettings {
 
-	private static DataSource                  dataSource;
-	private static UISettings.Theme            theme              = DARK;
-	private static UISettings.LoginScreen      loginScreen;
-	private static UISettings.LoginScreenColor loginScreenColor;
-	public static  Color                       progressBarColor   = AppSettings.getProgressBarColor();
-	public static  ProgressColorSource         progressBarColorSource;
-	public static  Boolean                     useJsonGist;
-	private static boolean                     flagDirtyFiles;
-	private static boolean                     disableDirtyWarning;
-	private static Color                       dirtyFileFlagColor;
-	private static boolean                     wideMode;
-	public static  boolean                     doMasterReset      = false;
-	private static Double                      lastPaneSplitValue = 0.0;
+	private static       DataSource                  dataSource;
+	private static       UISettings.Theme            theme              = DARK;
+	private static       UISettings.LoginScreen      loginScreen;
+	private static       UISettings.LoginScreenColor loginScreenColor;
+	public static        Color                       progressBarColor   = AppSettings.getProgressBarColor();
+	public static        ProgressColorSource         progressBarColorSource;
+	public static        Boolean                     useJsonGist;
+	private static       boolean                     flagDirtyFiles;
+	private static       boolean                     disableDirtyWarning;
+	private static       Color                       dirtyFileFlagColor;
+	private static       boolean                     wideMode;
+	public static        boolean                     doMasterReset      = false;
+	private static       Double                      lastPaneSplitValue = 0.0;
+	private static final String                      OSystem            = System.getProperty("os.name").toLowerCase();
+	private static boolean                     authenticatedToGitHub = false;
 
 	public static void applyAppSettings() {
 		dataSource             = AppSettings.getLoadSource();
@@ -139,4 +143,20 @@ public class LiveSettings {
 	public static Double getLastPaneSplitValue() {
 		return lastPaneSplitValue;
 	}
+
+	public static OS getOS() {
+		if (OSystem.toLowerCase().contains("win")) return WINDOWS;
+		else if (OSystem.toLowerCase().contains("mac")) return MAC;
+		else return LINUX;
+	}
+
+	public static void setGitHubAuthenticated(boolean authenticated) {
+		authenticatedToGitHub = authenticated;
+	}
+
+	public static boolean gitHubAuthenticated() {
+		return authenticatedToGitHub;
+	}
+
+
 }

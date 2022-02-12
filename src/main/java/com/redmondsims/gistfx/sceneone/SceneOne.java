@@ -299,7 +299,7 @@ public final class SceneOne {
 	 */
 
 	private static UnsupportedOperationException noSceneError(String sceneName) {
-		String message = "* Scene " + sceneName + " does not exist, you need to run Switcher.set(Parent, <optional sceneName>).build(); to complete a Scene *";
+		String message = "* Scene " + sceneName + " does not exist, you need to run SceneOne.set(Parent, <optional sceneName>).build(); to complete a Scene *";
 		String frame = getBoardersFor(message);
 		String finalMessage = "\n\n"+ frame + "\n" + message + "\n" + frame + "\n";
 		return new UnsupportedOperationException(finalMessage);
@@ -321,7 +321,7 @@ public final class SceneOne {
 	}
 
 	/**
-	 * SceneObject class is the meat of Switcher and the SceneBuilder class is the interface to building a scene
+	 * SceneObject class is the meat of SceneOne and the SceneBuilder class is the interface to building a scene
 	 */
 	public static class SceneBuilder{
 		public SceneBuilder(Parent root, String sceneName) {
@@ -358,7 +358,7 @@ public final class SceneOne {
 				try {
 					TimeUnit.MILLISECONDS.sleep(3000);
 					if(!buildExecuted) {
-						throw generalError("You didn't finish your Switcher.set() sentence with either build(), show() or showAndWait()");
+						throw generalError("You didn't finish your SceneOne.set() sentence with either build(), show() or showAndWait()");
 					}
 				}
 				catch (InterruptedException e) {

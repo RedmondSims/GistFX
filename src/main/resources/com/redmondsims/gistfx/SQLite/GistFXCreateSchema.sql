@@ -27,9 +27,7 @@ CREATE TABLE "GistUndoFiles" (
   CONSTRAINT "fk_GistUndoFiles_Gists_1" FOREIGN KEY ("gistId") REFERENCES "Gists" ("gistId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "NameMap" (
-  "gistId" TEXT,
-  "name" TEXT,
-  CONSTRAINT "fk_NameMap_Gists_1" FOREIGN KEY ("gistId") REFERENCES "Gists" ("gistId") ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE "FXData" (
+    "id" INT,
+    "jsonString" MEDIUMTEXT
 );
-

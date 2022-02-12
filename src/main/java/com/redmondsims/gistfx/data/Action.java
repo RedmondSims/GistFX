@@ -1,8 +1,13 @@
 package com.redmondsims.gistfx.data;
 
+import com.redmondsims.gistfx.enums.State;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
+import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.javafx.CProgressBar;
+import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
+import com.redmondsims.gistfx.ui.LoginWindow;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.paint.Color;
@@ -55,7 +60,7 @@ public class Action {
 	}
 
 	public static void addToNameMap(String gistId, String name) {
-		SQLITE.addToNameMap(gistId, name);
+		JSON.setName(gistId, name);
 	}
 
 	public static int addFileToSQL(String gistId, String filename, String content) {
@@ -75,20 +80,32 @@ public class Action {
 	}
 
 	public static String getGistName(GHGist ghGist) {
-		return SQLITE.getGistName(ghGist);
+		return JSON.getName(ghGist.getGistId());
+	}
+
+	public static String getGistName(String gistId) {
+		return JSON.getName(gistId);
 	}
 
 	public static void setGistName(String gistId, String newName) {
-		SQLITE.changeGistName(gistId, newName);
+		JSON.setName(gistId, newName);
 	}
 
-	public static Map<String, String> getNameMapFromSQL() {
-		return SQLITE.getNameMap();
+	public static String getSQLFXData() {
+		return SQLITE.getFXData();
+	}
+
+	public static void saveFXData(String jsonString) {
+		SQLITE.saveFXData(jsonString);
 	}
 
 	/**
 	 * GitHub ONLY Methods
 	 */
+
+	public static GHGist getNewGist(String description, String filename, String content, boolean isPublic) {
+		return GITHUB.newGist(description,filename,content,isPublic);
+	}
 
 	public static String getName() {
 		return GITHUB.getName();
@@ -110,8 +127,18 @@ public class Action {
 		return GITHUB.tokenValid(token);
 	}
 
-	public static void loadData() {
-		GITHUB.loadData();
+	public static void loadWindow() {
+		UISettings.DataSource dataSource = LiveSettings.getDataSource();
+		if (dataSource.equals(UISettings.DataSource.GITHUB)) {
+			LoginWindow.updateProcess("Downloading Gist Objects");
+			Map<String,GHGist> ghGistMap = GITHUB.getNewGHGistMap();
+			JSON.getData();
+			GistManager.startFromGit(ghGistMap, State.GITHUB);
+		}
+		if (dataSource.equals(UISettings.DataSource.LOCAL)) {
+			JSON.getData();
+			GistManager.startFromDatabase();
+		}
 	}
 
 	public static void refreshAllData() {
@@ -122,8 +149,8 @@ public class Action {
 		return GITHUB.getGist(gistId);
 	}
 
-	public static boolean updateGistFile(String gistId, String filename, String content) {
-		return GITHUB.updateFile(gistId,filename,content);
+	public static void updateGistFile(String gistId, String filename, String content) {
+		GITHUB.updateFile(gistId, filename, content);
 	}
 
 	public static GHGist getGistByDescription(String description) {
@@ -143,26 +170,30 @@ public class Action {
 		return GITHUB.getNewGHGistMap();
 	}
 
+	public static Map<String, GHGist> getGhGistMap() {
+		return GITHUB.getGHGistMap();
+	}
+
 	public static Date getGistUpdateDate(String gistId) {
 		return GITHUB.getGistUpdateDate(gistId);
+	}
+
+	public static void deleteGistFile(String gistId, String filename) {
+		GITHUB.deleteGistFile(gistId,filename);
+	}
+
+	public static void deleteFullGist(String gistId) {
+		GITHUB.delete(gistId);
 	}
 
 	/**
 	 * Json Methods
 	 */
 
-	public static void initCustomData() {JSON.initPath(SQLITE.getCorePath());}
+	public static void deleteJsonGistFile() {JSON.deleteGitHubCustomData();}
 
-	public static void deleteJsonLocalFile() {JSON.deleteLocalJsonFile();}
-
-	public static void deleteJsonGistFile() {JSON.deleteGistFile();}
-
-	public static void loadNameMapIntoDatabase() {
-		JSON.loadJsonIntoDatabase();
-	}
-
-	public static void loadBestNameMap() {
-		JSON.loadBestNameMap();
+	public static void loadJsonData() {
+		JSON.loadJsonData();
 	}
 
 	public static void accommodateUserSettingChange() {
@@ -170,7 +201,7 @@ public class Action {
 	}
 
 	public static String getJSonGistName(String gistId) {
-		return JSON.getGistName(gistId);
+		return JSON.getName(gistId);
 	}
 
 	public static void removeJsonName(String gistId) {
@@ -223,6 +254,10 @@ public class Action {
 
 	public static void writeToTextFile(File file, String content) {
 		DISK.writeToTextFile(file,content);
+	}
+
+	public static void deleteJsonLocalFile() {
+		JSON.deleteLocalAppSettingsData();
 	}
 
 	/**

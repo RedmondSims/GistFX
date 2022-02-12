@@ -8,7 +8,6 @@ import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings.DataSource;
 import org.apache.commons.io.FileUtils;
-import org.kohsuke.github.GHGist;
 
 import java.io.File;
 import java.io.IOException;
@@ -145,7 +144,6 @@ class SQLite {
 			pst.setString(4, eUrl);
 			pst.executeUpdate();
 			pst.close();
-			addToNameMap(gist.getGistId(), gist.getName());
 		}
 		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
@@ -179,15 +177,16 @@ class SQLite {
 
 	public Map<String, Gist> getGistMap() {
 		Map<String, Gist> map = new HashMap<>();
-		String            SQL = "SELECT A.gistId, B.name, A.description, A.isPublic, A.url FROM Gists A, NameMap B WHERE A.gistId = B.gistId;";
+		String            SQL = "SELECT gistId, description, isPublic, url FROM Gists;";
 		try {
 			ResultSet rs = conn.createStatement().executeQuery(SQL);
 			while (rs.next()) {
 				String  gistId      = rs.getString(1);
-				String  name        = Crypto.decryptWithSessionKey(rs.getString(2));
-				String  description = Crypto.decryptWithSessionKey(rs.getString(3));
-				boolean isPublic    = rs.getBoolean(4);
-				String  url         = Crypto.decryptWithSessionKey(rs.getString(5));
+				String  name        = Action.getGistName(gistId);
+				String  description = Crypto.decryptWithSessionKey(rs.getString(2));
+				if (name.equals("")) name = description;
+				boolean isPublic    = rs.getBoolean(3);
+				String  url         = Crypto.decryptWithSessionKey(rs.getString(4));
 				Gist    gist        = new Gist(gistId, name, description, isPublic, url);
 				map.put(gistId, gist);
 			}
@@ -200,73 +199,53 @@ class SQLite {
 		return map;
 	}
 
-	/**
-	 *  NameMap Actions
-	 */
 
-	public void addToNameMap(String gistId, String name) {
-		String eName = Crypto.encryptWithSessionKey(name);
-		String SQL   = "INSERT INTO NameMap (gistId, name) SELECT ?, ? WHERE NOT EXISTS(SELECT 1 FROM NameMap WHERE gistID = ?);";
-		try {
-			PreparedStatement pst = conn.prepareStatement(SQL);
-			pst.setString(1, gistId);
-			pst.setString(2, eName);
-			pst.setString(3, gistId);
-			pst.executeUpdate();
-			pst.close();
-			Action.setJsonName(gistId, name);
-		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
-	}
-
-	public void changeGistName(String gistId, String newName) {
-		String eName = Crypto.encryptWithSessionKey(newName);
-		String SQL   = "UPDATE NameMap SET name = ? WHERE gistId = ?;";
-		try {
-			PreparedStatement pst = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
-			pst.setString(1, eName);
-			pst.setString(2, gistId);
-			pst.executeUpdate();
-			pst.close();
-			Action.setJsonName(gistId, newName);
-		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
-	}
-
-	public String getGistName(GHGist ghGist) {
-		String name        = "";
-		String description = ghGist.getDescription();
-		String gistId      = ghGist.getGistId();
-		String SQL         = "SELECT name FROM NameMap WHERE gistId = ?";
-		try {
-			PreparedStatement pst = conn.prepareStatement(SQL);
-			pst.setString(1, gistId);
-			ResultSet rs = pst.executeQuery();
-			if (rs.next()) {
-				name = Crypto.decryptWithSessionKey(rs.getString(1));
-			}
-			rs.close();
-			pst.close();
-			if (name.length() == 0) name = Action.getJSonGistName(gistId);
-		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
-		return name.length() > 0 ? name : description;
-	}
-
-	public Map<String, String> getNameMap() {
-		Map<String, String> map = new HashMap<>();
-		String              SQL = "SELECT gistId, name from NameMap";
+	public String getFXData() {
+		String response = "";
+		String SQL = "SELECT jsonString FROM FXData WHERE id = 1;";
 		try {
 			ResultSet rs = conn.createStatement().executeQuery(SQL);
-			while (rs.next()) {
-				String gistId = rs.getString(1);
-				String name   = Crypto.decryptWithSessionKey(rs.getString(2));
-				map.put(gistId, name);
+			if (rs.next()) {
+				response = rs.getString(1);
+			}
+		}
+		catch (SQLException sqe) {sqe.printStackTrace();}
+		return response;
+	}
+
+
+	private boolean hasFXData() {
+		boolean response = false;
+		String SQL = "SELECT Count(*) FROM FXData;";
+		try {
+			ResultSet rs = conn.createStatement().executeQuery(SQL);
+			if (rs.next()) {
+				response = rs.getInt(1) > 0;
 			}
 			rs.close();
 		}
 		catch (SQLException sqe) {sqe.printStackTrace();}
-		return map;
+		return response;
+	}
+
+	protected void saveFXData(String jsonString) {
+		String INSERT = "INSERT INTO FXData (jsonString, id) VALUES (?,?)";
+		String UPDATE = "UPDATE FXData SET jsonString = ? WHERE id = ?;";
+		try {
+			PreparedStatement pst;
+			if (hasFXData()) {
+				pst = conn.prepareStatement(UPDATE);
+			}
+			else {
+				pst = conn.prepareStatement(INSERT);
+			}
+			pst.setString(1,jsonString);
+			pst.setInt(2,1);
+			pst.executeUpdate();
+			pst.close();
+		}
+		catch (SQLException sqe) {sqe.printStackTrace();}
+
 	}
 
 	/**

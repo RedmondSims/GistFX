@@ -1,6 +1,7 @@
 package com.redmondsims.gistfx.ui;
 
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
@@ -28,7 +29,7 @@ public class DistractionFree {
 
 	public DistractionFree() {
 		keyEvent = (EventHandler<KeyEvent>) e -> {
-			if ((e.getCode() == KeyCode.W && e.isMetaDown()) || e.getCode() == KeyCode.ESCAPE) {
+			if ((e.getCode() == KeyCode.W && e.isMetaDown()) || e.getCode() == KeyCode.ESCAPE || e.getCode() == KeyCode.Q && e.isAltDown()) {
 				updatedContent = monaco.getEditor().getDocument().getText();
 				new Thread(() -> {
 					Action.sleep(400);
@@ -60,7 +61,8 @@ public class DistractionFree {
 		stage.initStyle(StageStyle.TRANSPARENT);
 		stage.initModality(Modality.APPLICATION_MODAL);
 		stage.setFullScreenExitKeyCombination(new KeyCodeCombination(KeyCode.W, KeyCombination.META_DOWN));
-		stage.setFullScreenExitHint("CMD + W to Exit Fullscreen");
+		String hint = LiveSettings.getOS().equals(OS.MAC) ? "CMD + W to Exit Fullscreen" : "ALT + Q to Exit Fullscreen";
+		stage.setFullScreenExitHint(hint);
 		stage.setFullScreen(true);
 		scene = new Scene(ap);
 		scene.setOnKeyPressed(keyEvent);

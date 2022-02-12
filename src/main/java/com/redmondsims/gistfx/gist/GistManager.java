@@ -6,7 +6,6 @@ import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
-import com.redmondsims.gistfx.sceneone.SceneOne;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
@@ -32,24 +31,19 @@ public class GistManager {
 
 	public static void startFromGit(Map<String, GHGist> ghGistMap, State launchState) {
 		Action.cleanDatabase();
-		Action.loadNameMapIntoDatabase(); //This restores the names that have been assigned to the Gists
 		gistMap      = new HashMap<>();
 		for (GHGist ghGist : ghGistMap.values()) {
 			if (!ghGist.getDescription().equals("GistFX!Data!")) {
 				addGistToSQLFromGitHub(ghGist);
 			}
 		}
-		LoginWindow.updateProcess("Loading GUI");
 		WindowManager.newGistWindow(launchState);
-		if (AppSettings.getFirstRun()) {
-			AppSettings.setFirstRun(false);
-		}
+		AppSettings.setFirstRun(false);
 		AppSettings.setDataSource(LOCAL);
 		LiveSettings.applyAppSettings();
 	}
 
 	public static void startFromDatabase() {
-		Action.loadBestNameMap();
 		gistMap = Action.getGistMap();
 		WindowManager.newGistWindow(State.LOCAL);
 	}
