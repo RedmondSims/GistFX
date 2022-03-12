@@ -11,7 +11,7 @@ public enum Names {
 			case CATEGORIES -> "categories";
 			case CATEGORY_MAP -> "categoryMap";
 			case NAME_MAP -> "nameMap";
-			case GIST_DATA_DESCRIPTION -> "GistFX!Data!";
+			case GIST_DATA_DESCRIPTION -> "GistFX!Metadata!";
 		};
 	}
 }

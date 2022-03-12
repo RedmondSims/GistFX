@@ -1,9 +1,10 @@
-package com.redmondsims.gistfx.data;
+package com.redmondsims.gistfx.data.metadata;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Names {
+class Names {
 
 	private Map<String,String> nameMap = new HashMap<>();
 
@@ -30,6 +31,20 @@ public class Names {
 
 	public void setNameMap(Map<String,String> nameMap) {
 		this.nameMap = nameMap;
+	}
+
+	public String getGistId (String name) {
+		for (String gistId : nameMap.keySet()) {
+			String gistName = nameMap.get(gistId);
+			if (name.equals(gistName)) {
+				return gistId;
+			}
+		}
+		return "";
+	}
+
+	public Collection<String> getList() {
+		return nameMap.values();
 	}
 
 	public boolean hasData() {

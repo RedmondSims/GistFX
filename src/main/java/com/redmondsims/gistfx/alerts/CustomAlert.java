@@ -1,26 +1,37 @@
 package com.redmondsims.gistfx.alerts;
 
+import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Response;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.sceneone.SceneOne;
+import com.redmondsims.gistfx.ui.CodeEditor;
+import eu.mihosoft.monacofx.Document;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.apache.commons.io.FilenameUtils;
 
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +40,7 @@ public class CustomAlert {
 
 	private static       String iconPath;
 	private static final String applicationTitle = "";
+	private static       String response         = "";
 
 	private static TextField newTextField(String text, String prompt) {
 		TextField tf = new TextField(text);
@@ -181,42 +193,85 @@ public class CustomAlert {
 				return Response.YES;
 			}
 			else {
-				showInfo("You must type YES in the text field before clicking Yes.", null);
+				Platform.runLater(() -> showInfo("You must type YES in the text field before clicking Yes.", null));
 				return Response.MISTAKE;
 			}
 		}
 		return Response.CANCELED;
 	}
 
-	public static String showChangeGistNameAlert(String currentName) {
-		String message    = "Renaming Gist: " + currentName;
-		Label  lblMessage = new Label(message);
-		lblMessage.setWrapText(true);
-		lblMessage.setPrefWidth(300);
-		lblMessage.setPrefHeight(60);
-		Label     lblBlank       = new Label(" ");
-		Label     lblNewGistName = new Label("New getName:");
-		TextField tfGistName     = newTextField(currentName, "");
+	public static String showChangeNameAlert(String currentName, String type) {
+		double width = 275;
+		double height = 175;
+		Text txtName = newText(currentName);
+		String name = "Change"+type+"Name";
+		Label  lblMessage = newLabel("Renaming "+type+": ",85,35,false);
+		Label  lblNewGistName = newLabel("New Name:",65,35,false);
+		TextField tfGistName = newTextField(currentName, "");
 		tfGistName.setPrefWidth(165);
 		tfGistName.textProperty().addListener((observable, oldValue, newValue) -> {
-			if (newValue.isEmpty()) tfGistName.setText(currentName);
+			if (newValue.trim().isEmpty()) {
+				response = "";
+			}
+			else {
+				response = newValue.trim();
+			}
 		});
-		HBox hbox = new HBox(lblNewGistName, tfGistName);
-		hbox.setSpacing(10);
-		hbox.setPadding(new Insets(10, 10, 10, 10));
-		VBox vbox = new VBox(lblMessage, lblBlank, hbox);
-		vbox.setSpacing(10);
-		vbox.setPadding(new Insets(10, 10, 10, 10));
-		Alert      alert   = getAlert(Alert.AlertType.NONE, "", vbox);
-		ButtonType proceed = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
-		alert.getButtonTypes().clear();
-		alert.getButtonTypes().addAll(proceed, ButtonType.CANCEL);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
-		Optional<ButtonType> option = alert.showAndWait();
-		if (option.isPresent() && option.get().equals(ButtonType.CANCEL)) {
-			return "";
+		tfGistName.setOnAction(e -> SceneOne.close(name));
+		Button btnProceed = new Button("Proceed");
+		Button btnCancel = new Button("Cancel");
+		btnProceed.setOnAction(e->{
+			response = tfGistName.getText().trim();
+			SceneOne.close(name);
+		});
+		btnCancel.setOnAction(e->{
+			response = "";
+			SceneOne.close(name);
+		});
+		HBox hbMessage = newHBox(width,35,Pos.CENTER_LEFT,lblMessage,txtName);
+		HBox hbLabels = newHBox(width,35,Pos.CENTER_LEFT,lblNewGistName, tfGistName);
+		HBox hbButtons = newHBox(width,55,Pos.CENTER,btnProceed,btnCancel);
+		VBox vbox = new VBox(hbMessage, hbLabels, hbButtons);
+		vbox.setSpacing(0);
+		vbox.setPadding(new Insets(10,10, 10, 10));
+		vbox.setAlignment(Pos.CENTER);
+		AnchorPane ap = new AnchorPane(vbox);
+		SceneOne.set(ap,name).centered().size(width,height).newStage().showAndWait();
+		return response;
+	}
+
+	private static Text newText(String string) {
+		Text          text = new Text(string);
+		Color color;
+		if (LiveSettings.getTheme().equals(Theme.DARK)) {
+			color = Color.rgb(144,163,127);
 		}
-		return tfGistName.getText();
+		else {
+			color = Color.BLACK;
+		}
+		text.setFill(color);
+		return text;
+	}
+
+	private static HBox newHBox(double width, double height, Pos alignment, Node...nodes) {
+		HBox hbox = new HBox();
+		for(Node node : nodes) {
+			hbox.getChildren().add(node);
+		}
+		hbox.setSpacing(5);
+		hbox.setPadding(new Insets(5, 5, 5, 5));
+		hbox.setAlignment(alignment);
+		hbox.setPrefWidth(width);
+		hbox.setPrefHeight(height);
+		return hbox;
+	}
+
+	private static Label newLabel(String text, double width, double height, boolean wrapText) {
+		Label label = new Label(text);
+		label.setPrefWidth(width);
+		label.setPrefHeight(height);
+		label.setWrapText(wrapText);
+		return label;
 	}
 
 	public static String showChangeGistDescriptionAlert(String currentDescription) {
@@ -247,51 +302,82 @@ public class CustomAlert {
 		return taGistDescription.getText();
 	}
 
+	private static String    result;
 	public static String showFileRenameAlert(String currentFilename) {
-		String message    = "Renaming file " + currentFilename;
-		Label  lblMessage = new Label(message);
-		lblMessage.setWrapText(true);
-		lblMessage.setPrefWidth(300);
-		lblMessage.setPrefHeight(60);
+		double width  = 350;
+		double height = 150;
+		result = "";
+		String    name           = "showFileRenameAlert";
+		String    title          = "Renaming file " + currentFilename;
 		Label     lblBlank       = new Label(" ");
 		Label     lblNewFilename = new Label("New Filename:");
+		Button    btnProceed     = new Button("Proceed");
+		Button    btnCancel      = new Button("Cancel");
 		TextField tfFilename     = newTextField(currentFilename, "");
 		tfFilename.setPrefWidth(165);
 		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue.isEmpty()) tfFilename.setText(currentFilename);
+			else result = newValue;
 		});
-		HBox hbox = new HBox(lblNewFilename, tfFilename);
-		hbox.setSpacing(10);
-		hbox.setPadding(new Insets(10, 10, 10, 10));
-		VBox vbox = new VBox(lblMessage, lblBlank, hbox);
+		tfFilename.setOnAction(e -> {
+			result = tfFilename.getText();
+			SceneOne.close(name);
+		});
+		btnProceed.setOnAction(e->{
+			result = tfFilename.getText();
+			SceneOne.close(name);
+		});
+		btnCancel.setOnAction(e->{
+			result = "";
+			SceneOne.close(name);
+		});
+		HBox hbNewName = new HBox(lblNewFilename, tfFilename);
+		HBox hbButtons = newHBox(width,35,Pos.CENTER,btnProceed,btnCancel);
+		hbNewName.setSpacing(10);
+		hbNewName.setPadding(new Insets(10, 10, 10, 10));
+		VBox vbox = new VBox(hbNewName,hbButtons);
 		vbox.setSpacing(10);
 		vbox.setPadding(new Insets(10, 10, 10, 10));
-		Alert      alert   = getAlert(Alert.AlertType.NONE, "", vbox);
-		ButtonType proceed = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
-		alert.getButtonTypes().clear();
-		alert.getButtonTypes().addAll(proceed, ButtonType.CANCEL);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
-		Optional<ButtonType> option = alert.showAndWait();
-		if (option.isPresent() && option.get().equals(ButtonType.CANCEL)) {
-			return "";
-		}
-		return tfFilename.getText();
+		SceneOne.set(vbox,name).newStage().size(width,height).centered().showAndWait();
+		return result;
 	}
 
-	public static String[] newGistAlert() {
+	public static String[] newGistAlert(String fileText, boolean categorySet, String selectedCategory) {
 		Response response   = Response.CANCELED;
 		Alert    alert      = new Alert(Alert.AlertType.NONE);
 		Label    lblMessage = new Label("To create a new Gist, Provide the following information, then click Create Gist");
 		lblMessage.setWrapText(true);
-		Label lblGistDescription = new Label("Gist Description");
-		Label lblGistName        = new Label("Gist getName:");
-		Label lblFilename        = new Label(" Filename:");
-		lblGistName.setMinWidth(75);
-		lblFilename.setMinWidth(75);
+		Label lblGistFile 		 = new Label("First File");
+		Label lblGistName        = new Label("Gist Name:");
+		Label lblFilename        = new Label("Filename:");
+		Label lblCategory        = new Label("Category: " + selectedCategory);
+		Button btnPaste = new Button("Paste");
+		MonacoFX monacoFX = new MonacoFX();
+		Tooltip.install(btnPaste, new Tooltip("Paste text contents from clipboard into document."));
+		btnPaste.setOnAction(e -> {
+			try {
+				String data     = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+				monacoFX.getEditor().getDocument().setText(data);
+			}
+			catch (IOException | UnsupportedFlavorException ex) {
+				ex.printStackTrace();
+			}
+		});
+		if (LiveSettings.getTheme().equals(Theme.DARK)) monacoFX.getEditor().setCurrentTheme("vs-dark"); else monacoFX.getEditor().setCurrentTheme("vs-light");
+		lblGistFile.setAlignment(Pos.CENTER_LEFT);
+		lblGistName.setMinWidth(60);
+		lblFilename.setMinWidth(45);
+		lblCategory.setMinWidth(45);
+		lblGistFile.setMinWidth(75);
 		lblGistName.setMinHeight(21);
 		lblFilename.setMinHeight(21);
+		lblCategory.setMinHeight(21);
+		lblGistFile.setMinHeight(21);
 		lblGistName.setAlignment(Pos.BOTTOM_RIGHT);
 		lblFilename.setAlignment(Pos.BOTTOM_RIGHT);
+		lblGistFile.setAlignment(Pos.BOTTOM_RIGHT);
+		ChoiceBox<String> categoryBox = Action.getCategoryBox();
+		categoryBox.setMinWidth(75);
 		CheckBox cbPublic  = new CheckBox("Public");
 		CheckBox cbPrivate = new CheckBox("Private");
 		cbPublic.selectedProperty().addListener((observable, oldValue, newValue) -> {if (newValue) cbPrivate.setSelected(false);});
@@ -301,19 +387,31 @@ public class CustomAlert {
 		stateBox.setSpacing(20);
 		TextField tfFilename = newTextField("File.java", "");
 		tfFilename.setPromptText("New Filename");
-		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> {if (newValue.isEmpty()) tfFilename.setText("File.java");});
-		tfFilename.setMinWidth(200);
+		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue.isEmpty()) tfFilename.setText("File.java");
+			String ext = FilenameUtils.getExtension(newValue);
+			monacoFX.getEditor().setCurrentLanguage(ext);
+		});
+		tfFilename.setMinWidth(250);
 		TextField tfGistName = newTextField("New Gist", "");
 		tfGistName.setPromptText("Gist getName");
 		tfGistName.textProperty().addListener((observable, oldValue, newValue) -> {if (newValue.isEmpty()) tfGistName.setText("New Gist");});
 		tfGistName.setMinWidth(200);
 		TextArea taGistDescription = new TextArea("Gist Description");
 		taGistDescription.textProperty().addListener((observable, oldValue, newValue) -> {if (newValue.isEmpty()) taGistDescription.setText("Gist Description");});
-		taGistDescription.setPrefWidth(400);
-		taGistDescription.setPrefHeight(400);
-		HBox filenameBox = new HBox(lblFilename, tfFilename);
-		HBox gistNameBox = new HBox(lblGistName, tfGistName);
-		VBox content     = new VBox(lblMessage, stateBox, gistNameBox, filenameBox, lblGistDescription, taGistDescription);
+		taGistDescription.setPrefWidth(550);
+		taGistDescription.setPrefHeight(90);
+		Document codeDocument = monacoFX.getEditor().getDocument();
+		codeDocument.setText(fileText);
+		codeDocument.textProperty().addListener((observable, oldValue, newValue) -> {if (newValue.isEmpty()) codeDocument.setText(fileText);});
+		monacoFX.setPrefWidth(550);
+		monacoFX.setPrefHeight(290);
+		monacoFX.getEditor().setCurrentLanguage("java");
+		HBox filenameBox = new HBox(lblFilename, tfFilename,btnPaste);
+		filenameBox.setAlignment(Pos.CENTER_LEFT);
+		HBox gistNameBox = categorySet ? new HBox(lblGistName, tfGistName, lblCategory) : new HBox(lblGistName, tfGistName,lblCategory,categoryBox);
+		VBox content     = new VBox(lblMessage,stateBox,gistNameBox,taGistDescription,filenameBox,monacoFX);
+		content.setMinWidth(580);
 		filenameBox.setSpacing(8);
 		gistNameBox.setSpacing(8);
 		content.setSpacing(15);
@@ -328,11 +426,15 @@ public class CustomAlert {
 		String[]             choices = null;
 		if (option.isPresent()) {
 			if (option.get().equals(createGist)) {
+				String category = categoryBox.getValue();
+				if(category == null) category = "!@#none#@!";
 				choices = new String[]{
 						(cbPublic.isSelected() ? "Public" : "Private"),
 						tfGistName.getText(),
 						tfFilename.getText(),
-						taGistDescription.getText()
+						taGistDescription.getText(),
+						codeDocument.getText(),
+						category
 				};
 			}
 		}
@@ -345,6 +447,7 @@ public class CustomAlert {
 		MonacoFX codeEditor = new MonacoFX();
 		codeEditor.getEditor().setCurrentTheme(LiveSettings.getTheme().equals(UISettings.Theme.DARK) ? "vs-dark" : "vs-light");
 		codeEditor.getEditor().getDocument().setText(fileContent);
+		codeEditor.getEditor().setCurrentLanguage("java");
 		lblMessage.setWrapText(true);
 		Label     lblFilename = new Label("Filename:");
 		lblFilename.setAlignment(Pos.BOTTOM_CENTER);

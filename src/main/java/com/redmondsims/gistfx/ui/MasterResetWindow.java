@@ -32,14 +32,14 @@ public class MasterResetWindow {
 		CheckBox cbDatabase = new CheckBox("Reset Database (wipe out and create new)");
 		CheckBox cbSettings = new CheckBox("Reset all app settings to default");
 		CheckBox cbCredentials = new CheckBox("Reset Login Credentials");
-		CheckBox cbLocalCustomNames = new CheckBox("Wipe out Local Custom Names");
+		CheckBox cbLocalMetadata = new CheckBox("Wipe out Local Metadata");
 		CheckBox cbGitHubCustomNames = new CheckBox("Wipe out GitHub Custom Names");
 		Button button = new Button("GO");
-		VBox vbox = new VBox(centeredHBox(lblTitle),lblMessage,cbDatabase, cbSettings,cbCredentials,cbLocalCustomNames,cbGitHubCustomNames,centeredHBox(button));
+		VBox vbox = new VBox(centeredHBox(lblTitle),lblMessage,cbDatabase, cbSettings,cbCredentials,cbLocalMetadata,cbGitHubCustomNames,centeredHBox(button));
 		vbox.setPadding(new Insets(5,5,5,5));
 		vbox.setSpacing(8);
 		SceneOne.set(vbox).centered().modality(Modality.APPLICATION_MODAL).show();
-		button.setOnAction(e -> performReset(cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalCustomNames.isSelected(), cbGitHubCustomNames.isSelected()));
+		button.setOnAction(e -> performReset(cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalMetadata.isSelected(), cbGitHubCustomNames.isSelected()));
 	}
 
 	private HBox centeredHBox(Node node) {
@@ -49,17 +49,19 @@ public class MasterResetWindow {
 		return hbox;
 	}
 
-	private void performReset(boolean database, boolean appSettings, boolean credentials, boolean localNames, boolean gitHubNames) {
-		if (!database && !appSettings && !credentials && !localNames && !gitHubNames) {
-			CustomAlert.showInfo("No changes will be made.",SceneOne.getOwner());
-			System.exit(11);
+	private void performReset(boolean database, boolean appSettings, boolean credentials, boolean localMetadata, boolean gitHubNames) {
+		if (!database && !appSettings && !credentials && !localMetadata && !gitHubNames) {
+			Platform.runLater(() -> {
+				CustomAlert.showInfo("No changes will be made.",SceneOne.getOwner());
+				System.exit(11);
+			});
 		}
 		StringBuilder options = new StringBuilder("You have chosen to perform the following actions:\n\n");
 		if (database) options.append("- Delete and re-create database\n");
 		if (appSettings) options.append("- Reset all app settings to default\n");
 		if (credentials) options.append("- Wipe out local credentials\n");
-		if (localNames) options.append("- Wipe out the locally stored copy of your custom names\n");
-		if (gitHubNames) options.append("- Wipe out the GitHub stored copy of your custom names\n");
+		if (localMetadata) options.append("- Wipe out the locally stored copy of your metadata (custom names, categories and file descriptions)\n");
+		if (gitHubNames) options.append("- Wipe out the GitHub stored copy of your metadata (custom names, categories and file descriptions)\n");
 		options.append("\nAre you sure this is what you want to do?");
 		if (CustomAlert.showConfirmation(options.toString())) {
 			Label label = new Label("Working ...");
@@ -74,7 +76,7 @@ public class MasterResetWindow {
 				if (database) Action.deleteDatabaseFile();
 				if (appSettings) AppSettings.resetPreferences();
 				if (credentials) AppSettings.resetCredentials();
-				if (localNames) Action.deleteJsonLocalFile();
+				if (localMetadata) Action.deleteJsonLocalFile();
 				if (gitHubNames) Action.deleteJsonGistFile();
 				Platform.runLater(() -> {
 					CustomAlert.showInfo("It is done!",SceneOne.getOwner());
@@ -83,7 +85,7 @@ public class MasterResetWindow {
 			}).start();
 		}
 		else {
-			CustomAlert.showInfo("No changes will be made.",SceneOne.getOwner());
+			Platform.runLater(() -> CustomAlert.showInfo("No changes will be made.", SceneOne.getOwner()));
 			System.exit(11);
 		}
 	}

@@ -1,6 +1,6 @@
 package com.redmondsims.gistfx.data;
 
-import com.redmondsims.gistfx.enums.State;
+import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
@@ -8,14 +8,17 @@ import com.redmondsims.gistfx.javafx.CProgressBar;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
+import com.redmondsims.gistfx.data.metadata.Json;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.paint.Color;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
 import java.io.File;
 import java.sql.Date;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -49,22 +52,17 @@ public class Action {
 		SQLITE.cleanDatabase();
 	}
 
-	public static boolean delete(GistFile file) {
-		if (!GITHUB.delete(file)) return false;
+	public static void delete(GistFile file) {
+		GITHUB.delete(file);
 		SQLITE.deleteGistFile(file);
-		return true;
-	}
-
-	public static boolean delete(String gistId) {
-		return GITHUB.delete(gistId);
 	}
 
 	public static void addToNameMap(String gistId, String name) {
 		JSON.setName(gistId, name);
 	}
 
-	public static int addFileToSQL(String gistId, String filename, String content) {
-		return SQLITE.newSQLFile(gistId, filename, content);
+	public static int addFileToSQL(String gistId, String filename, String content, Date uploadDate) {
+		return SQLITE.newSQLFile(gistId, filename, content, uploadDate);
 	}
 
 	public static void setDirtyFile(Integer fileId, boolean dirty) {
@@ -91,12 +89,12 @@ public class Action {
 		JSON.setName(gistId, newName);
 	}
 
-	public static String getSQLFXData() {
-		return SQLITE.getFXData();
+	public static String getSQLMetadata() {
+		return SQLITE.getMetadata();
 	}
 
-	public static void saveFXData(String jsonString) {
-		SQLITE.saveFXData(jsonString);
+	public static void saveMetadata(String jsonString) {
+		SQLITE.saveMetadata(jsonString);
 	}
 
 	/**
@@ -133,7 +131,7 @@ public class Action {
 			LoginWindow.updateProcess("Downloading Gist Objects");
 			Map<String,GHGist> ghGistMap = GITHUB.getNewGHGistMap();
 			JSON.getData();
-			GistManager.startFromGit(ghGistMap, State.GITHUB);
+			GistManager.startFromGit(ghGistMap, Source.GITHUB);
 		}
 		if (dataSource.equals(UISettings.DataSource.LOCAL)) {
 			JSON.getData();
@@ -146,7 +144,7 @@ public class Action {
 	}
 
 	public static GHGist getGHGist(String gistId) {
-		return GITHUB.getGist(gistId);
+		return GITHUB.getLocalGist(gistId);
 	}
 
 	public static void updateGistFile(String gistId, String filename, String content) {
@@ -154,24 +152,15 @@ public class Action {
 	}
 
 	public static GHGist getGistByDescription(String description) {
-		return GITHUB.getGistByDescription(description);
+		return GITHUB.getGitHubGistByDescription(description);
 	}
 
 	public static BooleanProperty getNotifyProperty() {
 		return GITHUB.uploading;
 	}
 
-	public static String getGitHubFileContent(String gistId, String filename) {
-		GHGistFile file = GITHUB.getGistFile(gistId,filename);
-		return file.getContent();
-	}
-
 	public static Map<String, GHGist> getNewGhGistMap() {
 		return GITHUB.getNewGHGistMap();
-	}
-
-	public static Map<String, GHGist> getGhGistMap() {
-		return GITHUB.getGHGistMap();
 	}
 
 	public static Date getGistUpdateDate(String gistId) {
@@ -184,6 +173,18 @@ public class Action {
 
 	public static void deleteFullGist(String gistId) {
 		GITHUB.delete(gistId);
+	}
+
+	public static boolean ghGistMapIsEmpty() {
+		return GITHUB.ghGistMapIsEmpty();
+	}
+
+	public static String getGitHubFileContent(String gistId, String filename) {
+		return GITHUB.getLocalGitHubFileContent(gistId, filename);
+	}
+
+	public static GHGistFile getGitHubFile(String gistId, String filename) {
+		return GITHUB.getLocalGitHubFile(gistId, filename);
 	}
 
 	/**
@@ -213,13 +214,64 @@ public class Action {
 	}
 
 	/**
+	 * Json Category Methods
+	 */
+
+	public static ObservableList<String> getCategoryList() {
+		return JSON.getGistCategoryList();
+	}
+
+	public static void changeCategoryName(String oldName, String newName) {
+		JSON.changeCategoryName(oldName,newName);
+	}
+
+	public static void mapCategoryNameToGist(String gistId, String categoryName) {
+		JSON.mapCategoryNameToGist(gistId,categoryName);
+	}
+
+	public static void deleteCategoryName(String categoryName) {
+		JSON.deleteCategoryName(categoryName);
+	}
+
+	public static void addCategoryName(String categoryName) {
+		JSON.addCategoryName(categoryName);
+	}
+
+	public static Collection<String> getNameList() {
+		return JSON.getNameList();
+	}
+
+	public static String getGistIdByName (String name) {
+		return JSON.getGistIdByName(name);
+	}
+
+	public static String getGistCategoryName(String gistId) {
+		return JSON.getGistCategoryName(gistId);
+	}
+
+	public static ChoiceBox<String> getCategoryBox() {
+		return JSON.getGistCategoryBox();
+	}
+
+	/**
+	 * Json File Description Methods
+	 */
+
+	public static void setFileDescription(GistFile gistFile, String description) {
+		JSON.setFileDescription(gistFile,description);
+	}
+
+	public static String getFileDescription(GistFile gistFile) {
+		return JSON.getFileDescription(gistFile);
+	}
+
+	/**
 	 * GitHub AND SQLite Methods
 	 */
 
-	public static boolean delete(Gist gist) {
-		if (!GITHUB.delete(gist)) return false;
-		SQLITE.deleteGist(gist);
-		return true;
+	public static void delete(String gistId) {
+		GITHUB.delete(gistId);
+		SQLITE.deleteGist(gistId);
 	}
 
 	public static void updateLocalGistDescription(Gist gist) {
@@ -227,21 +279,35 @@ public class Action {
 	}
 
 	public static void updateGitHubGistDescription(Gist gist) {
-		GITHUB.update(gist);
+		GITHUB.updateDescription(gist);
 	}
 
-	public static boolean updateGistFile(GistFile file) {
+	public static void updateGistFile(GistFile file) {
 		SQLITE.saveFile(file);
-		return GITHUB.update(file);
+		GITHUB.updateFile(file);
 	}
 
 	public static void localFileSave(GistFile file) {
 		SQLITE.saveFile(file);
 	}
 
-	public static void renameFile(GistFile file) {
-		if (!GITHUB.renameFile(file)) return;
-		SQLITE.renameFile(file);
+	public static void renameFile(String gistId, Integer fileId, String oldFilename, String newFilename, String content) {
+		GITHUB.renameFile(gistId,oldFilename,newFilename,content);
+		SQLITE.renameFile(fileId,newFilename);
+	}
+
+	/**
+	 * Methods that require multiple disciplines
+	 */
+
+	public static void moveFile(Gist oldGist, Gist newGist, GistFile file) {
+		String oldGistId = oldGist.getGistId();
+		String newGistId = newGist.getGistId();
+		String filename = file.getFilename();
+		String content = file.getContent();
+		GITHUB.addFileToGist(newGistId,filename,content);
+		GITHUB.deleteGistFile(oldGistId,filename);
+		SQLITE.changeGistId(file,newGistId);
 	}
 
 	/**
@@ -272,10 +338,6 @@ public class Action {
 		return new CProgressBar(GITHUB.progress, height, color);
 	}
 
-	public static DoubleProperty getGitHubDownloadProgress() {
-		return GITHUB.progress;
-	}
-
 	public static void sleep(long milliseconds) {
 		try {
 			TimeUnit.MILLISECONDS.sleep(milliseconds);
@@ -290,6 +352,10 @@ public class Action {
 		finalNumber = Math.round(finalNumber);
 		finalNumber = finalNumber / 100;
 		return finalNumber;
+	}
+
+	public static void setProgress(double value) {
+		GITHUB.progress.setValue(value);
 	}
 
 }

@@ -1,4 +1,4 @@
-![Login image](./img/GistFXLogo.png)
+![Login image](./img/Logo.png)
 
 Forget using your default text editor application to jot down pieces of
 code. Why not store these, instead, in a version controlled format?
@@ -11,16 +11,19 @@ managing Gists a breeze.
   - Built-in syntax highlighting for most  languages, using MonacoFX  - the same code editor used in Microsofts open source Visual Studio.
   - Easily manage existing Gists, edit, or create new ones.
   - Easily create new files within your Gists.
-  - Gists are downloaded and accessible via a JavaFX TreeView.
+  - Group Gists under catetgories.
+  - Drag and drop Gists between categories.
+  - Assign descriptions to Gist Files.
+  - Navigate Gists and files from a TreeView.
+  - Context-sensitive menus in the tree.
   - Assign names to your Gists in addition to the descriptions that GitHub requires.
-  - Authenticate with a GitHub access token, that can be saved locally in an encrypted format.
-  - Flags edited files that need to be uploaded to GitHub and you decide when to push your edits.
+  - GitHub access token encrypted and saved locally, protected by password.
   - Wide Mode: Maximize screen space for code editing.
   - Distraction Free Mode - Just the code editor in full screen.
 
 ### Coming soon
-  - Categories: Group your gists into categories that you create.
   - Keyboard shortcuts for mouse free navigation
+  - Still working on Help content.
 ### Getting started
 
   1. Create a GitHub Personal Access Token for this application
@@ -31,7 +34,7 @@ managing Gists a breeze.
          - Check ONE box - **Gist**
     
   2. Running GistFX
-     - Currently, GistFX only runs within the IDE or by using Maven. This will be resolved soon. If you are able to change the Maven POM file so that it generates a working artifact, then please submit a pull request. Though we expect to have this working soon.
+     - Currently, GistFX only runs within the IDE or by using Maven. This will be resolved soon as I am working on creating OS based installers.
      - Here is how I set up the environment so that it will run within IntelliJ, but I'm sure these steps can be used to make it work in any IDE.
         - Install Java JDK 17.0.1 or higher.
         - Download the matching version of JavaFX 17 **SDK** and **jmods** for your operating system [using this link](https://gluonhq.com/products/javafx/)
@@ -61,5 +64,7 @@ If you uncheck the Save Token checkbox, you will be able to authenticate by simp
 Once you authenticate successfully to your GitHub account, your Gists are download and stored inside a SQLite database. The data is first encrypted before it is stored for your protection. Then, any changes you make to your gists will be kept in the database until you upload them. Your changes are not uploaded to GitHub automatically, in order to reduce the number of version changes that accumulate in your Gists.
 
 GistFX makes it very clear when you have data that needs to be committed to your GitHub account, and it will present you with an opportunity to commit those changes when you close the program or when you open the program if you have uncommitted data in the local database.
+
+GistFX always compares the local copy of your Gists with your GitHub version each time you log into GistFX and will notify you of any discrepencies, should they exist.
 
 See the Help menu for further discussion concerning the use and utility of GistFX. We think you will find this program to be very handy in the preservation of those code snippets that matter the most in your development endeavours. We not only develop this program, we use it regularly, so we do everything we can to make it a tool that is both easy to use as a relevant addition to our arsenal of development tools.

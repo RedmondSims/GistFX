@@ -54,6 +54,12 @@ public final class SceneOne {
 			this.className = className;
 		}
 
+		public Builder(Parent root, String className, String owner) {
+			this.root      = root;
+			this.className = className;
+			this.owner     = sceneMap.get(className).getStage();
+		}
+
 		private Choice type = Choice.MAIN;
 
 		private final Parent                    root;
@@ -66,6 +72,12 @@ public final class SceneOne {
 		private       String                    title             = "";
 		private       EventHandler<WindowEvent> stageEventHandler = null;
 		private       boolean                   centerSceneByDefault = false;
+		private Stage owner;
+
+		public Builder owner(String className) {
+			this.owner =  sceneMap.get(className).getStage();
+			return this;
+		}
 
 		public Builder forClass(String className) {
 			this.className = className;
@@ -143,6 +155,7 @@ public final class SceneOne {
 					.fullscreen(fullScreen)
 					.title(title)
 					.type(type)
+					.owner(owner)
 					.stageCloseEvent(stageEventHandler)
 					.build());
 			sceneMap.get(mapName).setTitle(title != null ? title : "");
@@ -442,18 +455,24 @@ public final class SceneOne {
 				this.root = root;
 			}
 
-			private       Stage              stage;
-			private 	  Scene				 scene;
-			private final Parent             root;
-			private       boolean            centerSceneByDefault = false;
-			private       boolean            fullscreen;
-			private       double             width                = -1;
-			private       double             height               = -1;
-			private       Modality           modality             = null;
-			private       StageStyle         style                = null;
-			private String title = "";
-			private       EventHandler<WindowEvent>              sceneEventHandler = null;
-			private Choice type;
+			private       Stage                     stage;
+			private       Scene                     scene;
+			private final Parent                    root;
+			private       boolean                   centerSceneByDefault = false;
+			private       boolean                   fullscreen;
+			private       double                    width                = -1;
+			private       double                    height               = -1;
+			private       Modality                  modality             = null;
+			private       StageStyle                style                = null;
+			private       String                    title                = "";
+			private       EventHandler<WindowEvent> sceneEventHandler    = null;
+			private       Choice                    type;
+			private Stage owner;
+
+			public Builder owner(Stage owner) {
+				this.owner = owner;
+				return this;
+			}
 
 			public Builder type(Choice type) {
 				this.type = type;
@@ -537,11 +556,12 @@ public final class SceneOne {
 		private       String                    title;
 		private       EventHandler<WindowEvent> stageEventHandler;
 		private       boolean                   windowResizing = false;
-		private Timer resizeTimer;
+		private       Timer                     resizeTimer;
+		private final Stage                     owner;
 
 		private SceneObject(Builder build) {
 			stage             = build.stage;
-			scene		      = build.scene;
+			scene             = build.scene;
 			width             = build.width;
 			height            = build.height;
 			modality          = build.modality;
@@ -550,6 +570,8 @@ public final class SceneOne {
 			style             = build.style;
 			center            = build.centerSceneByDefault;
 			title             = build.title;
+			owner             = build.owner;
+			if (owner != null) stage.initOwner(owner);
 			if (modality != null) stage.initModality(modality);
 			if (style != null) stage.initStyle(style);
 			if (width != -1) stage.setWidth(width);
@@ -558,14 +580,12 @@ public final class SceneOne {
 			if (build.sceneEventHandler == null && build.type.equals(Choice.MAIN)) {
 				setStageCloseEvent(e -> System.exit(13));
 			}
-			scene.addPreLayoutPulseListener(() -> {
-				new Thread(() -> {
-					windowResizing = true;
-					if (resizeTimer != null) resizeTimer.cancel();
-					resizeTimer = new Timer();
-					resizeTimer.schedule(setWindowSizingTask(), 1000);
-				}).start();
-			});
+			scene.addPreLayoutPulseListener(() -> new Thread(() -> {
+				windowResizing = true;
+				if (resizeTimer != null) resizeTimer.cancel();
+				resizeTimer = new Timer();
+				resizeTimer.schedule(setWindowSizingTask(), 1000);
+			}).start());
 		}
 
 		private void setScene() {

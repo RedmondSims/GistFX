@@ -5,10 +5,22 @@
  ******************************************************************************/
 
 .text-area {
-    -fx-font-size: 9pt;
     -fx-line-spacing: 10px;
     -fx-font-family: "Courier New";
     -fx-font-size: 15;
+    -fx-text-fill: rgb(255, 255, 0);
+    -fx-opacity: 1.0;
+    -fx-fill: ghostwhite;
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: ghostwhite;
+    -fx-border-color: transparent;
+    -fx-alignment: top-left;
+}
+
+#filedesc {
+    -fx-font-size: 15;
+    -fx-line-spacing: 10px;
+    -fx-font-family: "Arial";
     -fx-text-fill: rgb(255, 255, 0);
     -fx-opacity: 1.0;
     -fx-fill: ghostwhite;

@@ -1,11 +1,11 @@
 package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.utils.Modify;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -16,6 +16,7 @@ public class Gist {
 	private final String         gistURL;
 	private final String         gistId;
 	private       boolean        isPublic;
+	private       boolean        isExpanded = false;
 	private       List<GistFile> fileList    = new ArrayList<>();
 
 	public Gist(String gistId, String name, String description, boolean isPublic, String gistURL) {
@@ -26,9 +27,17 @@ public class Gist {
 		this.gistURL  = gistURL;
 	}
 
-	/*
-		Public setters
+	private String truncate(String string, int numChars, boolean ellipses) {
+		int    len = string.length();
+		String out = string.substring(0, Math.min(numChars, string.length()));
+		if (len > numChars && ellipses) out += "...";
+		return out;
+	}
+
+	/**
+	 * Public Setters
 	 */
+
 	public void addFiles(List<GistFile> fileList) {
 		this.fileList = fileList;
 	}
@@ -37,9 +46,18 @@ public class Gist {
 		fileList.add(file);
 	}
 
-	/*
-		Public getters
+	public void setExpanded(boolean expanded) {
+		isExpanded = expanded;
+	}
+
+	/**
+	 * Public Getters
 	 */
+
+	public boolean isExpanded() {
+		return isExpanded;
+	}
+
 	public String getGistId() {return gistId;}
 
 	public String getDescription() {return description.get();}
@@ -52,9 +70,30 @@ public class Gist {
 		return description;
 	}
 
-	/*
-		Changers to GitHub AND SQL
+	public StringProperty getNameProperty() {
+		return name;
+	}
+
+	public GistFile getFile(int fileId) {
+		for (GistFile file : fileList){
+			if (file.getFileId().equals(fileId)) return file;
+		}
+		return null;
+	}
+
+	public GistFile getFile(String fileName) {
+		for (GistFile file : fileList) {
+			if (file.getFilename().equals(fileName)) {
+				return file;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Changers to GitHub AND SQL
 	 */
+
 	public void setName(String newName) {
 		name.setValue(newName);
 		Action.setGistName(gistId, newName);
@@ -66,7 +105,10 @@ public class Gist {
 		this.isPublic = isPublic;
 	}
 
-	public List<GistFile> getFiles() {return fileList;}
+	public List<GistFile> getFiles() {
+		fileList.sort(Comparator.comparing(GistFile::getFilename));
+		return fileList;
+	}
 
 	public void deleteFile(String filename) {
 		fileList.removeIf(file -> file.getFilename().equals(filename));
@@ -77,13 +119,14 @@ public class Gist {
 		Action.updateLocalGistDescription(this);
 	}
 
-	public void newDescription(String description) {
+	public void setDescription(String description) {
 		this.description.setValue(description);
 		Action.updateGitHubGistDescription(this);
 		Action.updateLocalGistDescription(this);
 	}
+
 	public int getForkCount() {return Action.getForkCount(gistId);}
 
 	@Override
-	public String toString() {return Modify.string().truncate(name.getValue().replaceAll("\\n", " "), 30, true);}
+	public String toString() {return truncate(name.getValue().replaceAll("\\n", " "), 30, true);}
 }

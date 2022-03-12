@@ -2,7 +2,7 @@ package com.redmondsims.gistfx.ui;
 
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.alerts.CustomAlert;
-import com.redmondsims.gistfx.alerts.Help;
+import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.LoginStates;
@@ -73,13 +73,14 @@ public class LoginWindow {
 	private final        LoginScreen     PASSWORD_LOGIN       = LoginScreen.PASSWORD_LOGIN;
 	private final        LoginScreen     TOKEN_LOGIN          = LoginScreen.TOKEN_LOGIN;
 	private final        LoginScreen     UNKNOWN              = LoginScreen.UNKNOWN;
-	private final        LoginScreen     currentSecurityMode  = AppSettings.getSecurityOption();
+	private final        LoginScreen     currentSecurityMode  = AppSettings.get().securityOption();
 	private              int             passwordAttempts     = 0;
 	private              boolean         usingLocalCreds;
 	private              boolean         skip                 = false;
 	private              boolean         tokenChecked         = false;
 	private              boolean         tokenValid           = false;
 	private              boolean         passwordValid        = false;
+	private              boolean         fadeKitty            = true;
 	private              LoginStates     postState;
 	private              CProgressBar    pBar;
 	private              HBox            hboxToken;
@@ -92,8 +93,8 @@ public class LoginWindow {
 	private              boolean         passwordChanged      = false;
 	private              ImageView       ivBackBoth;
 	private              ImageView       ivBackPassword;
-	private              ImageView ivBackToken;
-	private static final String sceneId  = "LoginScreen";
+	private              ImageView       ivBackToken;
+	private static final String          sceneId              = "LoginScreen";
 
 	/**
 	 * For preCheck and password state check
@@ -134,17 +135,19 @@ public class LoginWindow {
 		tfToken.setId("login");
 		tfPassword.setText("");
 		setControlProperties();
-		if (AppSettings.getFirstRun()) {
+		if (AppSettings.get().firstRun()) {
 			Help.showIntro();
 		}
 		if (LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD)) {
-			LiveSettings.setTheme(AppSettings.getTheme());
+			LiveSettings.setTheme(AppSettings.get().theme());
 			guiLogin();
 		}
 		else {
 			LiveSettings.setTheme(Theme.DARK);
 			graphicLogin();
 		}
+		tfPassword.setText(LiveSettings.getPassword());
+		if(tfPassword.getText().length() > 4) actOnCredentials();
 	}
 
 	private static TextField newTextField(String styleClass) {
@@ -267,8 +270,8 @@ public class LoginWindow {
 			if (wasChecked && usingLocalCreds) {
 				if (confirmRemovePassword()) {
 					passwordChanged = true;
-					AppSettings.clearPasswordHash();
-					AppSettings.clearTokenHash();
+					AppSettings.clear().passwordHash();
+					AppSettings.clear().tokenHash();
 					tfPassword.clear();
 					tfToken.clear();
 					buildScene(BUILD_TOKEN_ONLY);
@@ -391,8 +394,8 @@ public class LoginWindow {
 			if (wasChecked && preCheckState == HAS_LOCAL_CREDS) {
 				if (confirmRemovePassword()) {
 					passwordChanged = true;
-					AppSettings.clearPasswordHash();
-					AppSettings.clearTokenHash();
+					AppSettings.clear().passwordHash();
+					AppSettings.clear().tokenHash();
 					Action.deleteDatabaseFile();
 					Action.setDatabaseConnection();
 					tfPassword.clear();
@@ -473,8 +476,6 @@ public class LoginWindow {
 		fadeKitty(ivKittyKitty);
 	}
 
-	private boolean fadeKitty = true;
-
 	private void sleep(long milliseconds) {
 		try {
 			TimeUnit.MILLISECONDS.sleep(milliseconds);
@@ -547,8 +548,8 @@ public class LoginWindow {
 						new Thread(() -> {
 							updateProcess("Hashing Password");
 							String passwordHash = Crypto.hashPassword(loginPassword.getValue());
-							AppSettings.setHashedPassword(passwordHash);
-							AppSettings.setHashedToken(Crypto.encryptWithSessionKey(userToken.getValue()));
+							AppSettings.set().hashedPassword(passwordHash);
+							AppSettings.set().hashedToken(Crypto.encryptWithSessionKey(userToken.getValue()));
 						}).start();
 						return HASHING_NEW_PASSWORD;
 					}
@@ -561,7 +562,7 @@ public class LoginWindow {
 				if (passwordValid) {
 					checkToken(false);
 					if(tokenValid) {
-						AppSettings.setHashedToken(Crypto.encryptWithSessionKey(tfToken.getText()));
+						AppSettings.set().hashedToken(Crypto.encryptWithSessionKey(tfToken.getText()));
 						return ALL_CREDS_VALID;
 					}
 					else {
@@ -592,8 +593,8 @@ public class LoginWindow {
 					passwordAttempts++;
 					loginStates = WRONG_PASSWORD_ENTERED;
 					if (passwordAttempts > 5) {
-						AppSettings.clearPasswordHash();
-						AppSettings.clearTokenHash();
+						AppSettings.clear().passwordHash();
+						AppSettings.clear().tokenHash();
 						loginStates = TOO_MANY_PASSWORD_ATTEMPTS;
 					}
 					return loginStates;
@@ -601,13 +602,13 @@ public class LoginWindow {
 			}
 		}
 		else if (noTypedToken) {
-			AppSettings.clearPasswordHash();
-			AppSettings.clearTokenHash();
+			AppSettings.clear().passwordHash();
+			AppSettings.clear().tokenHash();
 			return NEED_TOKEN;
 		}
 		else if (hasTypedToken) {
-			AppSettings.clearTokenHash();
-			AppSettings.clearPasswordHash();
+			AppSettings.clear().tokenHash();
+			AppSettings.clear().passwordHash();
 			checkToken(true);
 			return tokenValid ? TOKEN_VALID : TOKEN_FAILURE;
 		}
@@ -615,8 +616,8 @@ public class LoginWindow {
 	}
 
 	private void setBooleans() {
-		hashedPassword    = AppSettings.getHashedPassword();
-		hashedAccessToken = AppSettings.getHashedToken();
+		hashedPassword    = AppSettings.get().hashedPassword();
+		hashedAccessToken = AppSettings.get().hashedToken();
 		hasHashedPassword = hashedPassword.length() != 0;
 		hasHashedToken    = hashedAccessToken.length() != 0;
 		noHashedToken     = !hasHashedToken;
@@ -727,7 +728,7 @@ public class LoginWindow {
 					tfToken.setText("");
 					tfToken.setVisible(true);
 					tfToken.requestFocus();
-					AppSettings.clearTokenHash();
+					AppSettings.clear().tokenHash();
 					preCheckState = preCheck();
 					usingLocalCreds = preCheckState.equals(HAS_LOCAL_CREDS);
 				});
@@ -762,7 +763,7 @@ public class LoginWindow {
 			 */
 			Action.cleanDatabase();
 			LiveSettings.setDataSource(UISettings.DataSource.GITHUB);
-			AppSettings.setSecurityOption(newSecurityMode);
+			AppSettings.set().securityOption(newSecurityMode);
 		}
 		if (LiveSettings.doMasterReset) {
 			Platform.runLater(MasterResetWindow::new);
@@ -771,9 +772,7 @@ public class LoginWindow {
 			Action.loadWindow();
 			Platform.runLater(() -> pBar.progressProperty().unbind());
 		}
-		Platform.runLater(() -> {
-			SceneOne.hide(sceneId);
-		});
+		Platform.runLater(() -> SceneOne.hide(sceneId));
 		stopFadeKitty();
 	}
 }

@@ -1,6 +1,5 @@
 package com.redmondsims.gistfx.sceneone;
 
-import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -16,6 +15,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
 import static com.redmondsims.gistfx.sceneone.KeyWords.*;
 
 public final class SceneOne {
@@ -128,7 +128,17 @@ public final class SceneOne {
 	}
 
 	public static void close() {
-		close(defaultSceneName);
+		for(SceneObject scene : sceneMap.values()) {
+			if(scene.isShowing()) scene.close();
+		}
+	}
+
+	public static void resizeWidth(Double width) {
+		resizeWidth(defaultSceneName,width);
+	}
+
+	public static void resizeHeight(Double height) {
+		resizeHeight(defaultSceneName,height);
 	}
 
 	public static void autoSize() {
@@ -141,6 +151,10 @@ public final class SceneOne {
 
 	public static SceneBuilder set(Parent root, String sceneName) {
 		return new SceneBuilder(root, sceneName);
+	}
+
+	public static SceneBuilder set(Parent root, String sceneName, Stage ownerStage) {
+		return new SceneBuilder(root, sceneName, ownerStage);
 	}
 
 	public static Show show(String sceneName) {
@@ -266,6 +280,16 @@ public final class SceneOne {
 		return sceneMap.get(sceneName).isFullscreen();
 	}
 
+	public static void resizeWidth(String sceneName, Double width) {
+		checkScene(sceneName);
+		sceneMap.get(sceneName).resizeWidth(width);
+	}
+
+	public static void resizeHeight(String sceneName, Double height) {
+		checkScene(sceneName);
+		sceneMap.get(sceneName).resizeHeight(height);
+	}
+
 	public static void exit() {
 		for (SceneObject sceneObject : sceneMap.values()) {
 			sceneObject.close();
@@ -314,9 +338,7 @@ public final class SceneOne {
 	private static String getBoardersFor(String message) {
 		int length = message.length();
 		StringBuilder frame = new StringBuilder();
-		for (int x = 0; x < length; x++) {
-			frame.append("*");
-		}
+		frame.append("*".repeat(length));
 		return frame.toString();
 	}
 
@@ -328,6 +350,12 @@ public final class SceneOne {
 			this.root      = root;
 			this.sceneName = sceneName;
 			buildWatcher();
+		}
+
+		public SceneBuilder(Parent root, String sceneName, Stage ownerStage) {
+			this.root      = root;
+			this.sceneName = sceneName;
+			this.owner     = ownerStage;
 		}
 
 		private final Parent                         root;
@@ -352,6 +380,7 @@ public final class SceneOne {
 		private       boolean                        buildExecuted          = false;
 		private       boolean                        newStage               = false;
 		private Stage stage;
+		private Stage owner;
 
 		private void buildWatcher() {
 			new Thread(() -> {
@@ -490,9 +519,7 @@ public final class SceneOne {
 		}
 		public void build() {
 			buildExecuted = true;
-			if (!stageMap.containsKey(sceneName)) {
-				stageMap.put(sceneName,new StageObject(new Stage()));
-			}
+			stageMap.putIfAbsent(sceneName,new StageObject(new Stage()));
 			stage = stageMap.get(sceneName).get();
 			boolean optionsHasStyle = showOptions.contains(STYLE_DECORATED) || showOptions.contains(STYLE_UTILITY) || showOptions.contains(STYLE_UNIFIED) || showOptions.contains(STYLE_UNDECORATED) || showOptions.contains(STYLE_TRANSPARENT);
 			boolean optionsHasModality =  showOptions.contains(MODALITY_WINDOW)  || showOptions.contains(MODALITY_APPLICATION);
@@ -500,7 +527,6 @@ public final class SceneOne {
 			if (stageStyle != null && optionsHasStyle) throw generalError("You cannot set the initStyle specifically and also include a STYLE_ in showOptions");
 			if (modality != null && optionsHasModality) throw generalError("You cannot set the modality specifically and also include a MODALITY_ in showOptions");
 			if (showOptions.contains(FITSCENE)  && hasNoWindowHandle) throw generalError("You cannot set a style that has no Window handle and also set FITSCENE");
-			if (sceneMap.containsKey(sceneName)) sceneMap.get(sceneName).close();
 			sceneMap.remove(sceneName);
 			sceneMap.put(sceneName, new SceneObject(this));
 		}
@@ -715,6 +741,14 @@ public final class SceneOne {
 				VALUES.replace(SIZE.HEIGHT, height);
 			}
 
+			public void setWidth(Double width) {
+				VALUES.replace(SIZE.WIDTH, width);
+			}
+
+			public void setHeight(Double height) {
+				VALUES.replace(SIZE.HEIGHT, height);
+			}
+
 			public Double getWidth() {
 				return VALUES.get(SIZE.WIDTH);
 			}
@@ -782,8 +816,9 @@ public final class SceneOne {
 		private final Size                           sceneSize;
 		private final Position                       scenePosition;
 		private       Window                         window;
-		private       boolean                        autoSize  = false;
+		private final boolean                        autoSize;
 		private final Dimension                      dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		private final Stage                          owner;
 
 		private final ChangeListener<Boolean> lostFocusListener = (observable, oldValue, newValue) -> {
 			if (!newValue) {
@@ -807,7 +842,9 @@ public final class SceneOne {
 			hideOnLostFocus         = build.hideOnLostFocus;
 			autoSize                = build.autoSize;
 			stage                   = build.stage;
+			owner                   = build.owner;
 
+			if(owner != null) stage.initOwner(owner);
 			setRoot();
 			processShowOptions();
 			for(String styleSheet : styleSheets) {
@@ -987,6 +1024,7 @@ public final class SceneOne {
 				case SHOW_WAIT -> {
 					preShowProcessing();
 					stage.showAndWait();
+					stage.getScene().getWindow().centerOnScreen();
 				}
 				case SHOW -> {
 					stage.show();
@@ -1184,6 +1222,20 @@ public final class SceneOne {
 
 		public boolean isFullscreen() {
 			return stage.isMaximized();
+		}
+
+		public void resizeWidth(Double width) {
+			sceneSize.setWidth(width);
+			resize();
+		}
+
+		public void resizeHeight(Double height) {
+			sceneSize.setHeight(height);
+			resize();
+		}
+
+		public void resize() {
+			sceneSize.resize(stage);
 		}
 	}
 }

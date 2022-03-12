@@ -7,6 +7,7 @@ import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings.DataSource;
+import javafx.application.Platform;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -50,8 +51,10 @@ class SQLite {
 			System.err.println("\n\nSQLite.setDatabaseConnection(): " + e.getMessage() + "\n\n");
 			String error = "\n\nThe SQLite library failed to create the database file.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
 			System.err.println(error);
-			CustomAlert.showWarning(error);
-			System.exit(101);
+			Platform.runLater(() -> {
+				CustomAlert.showWarning(error);
+				System.exit(101);
+			});
 		}
 		if (createSchema) {
 			String schemaStatements = Action.loadTextFile(sqlScriptFile);
@@ -59,8 +62,10 @@ class SQLite {
 				deleteFile(sqliteFile);
 				String error = "\n\nThe SQLite library failed to create the schema.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
 				System.err.println(error);
-				CustomAlert.showWarning(error);
-				System.exit(101);
+				Platform.runLater(() -> {
+					CustomAlert.showWarning(error);
+					System.exit(101);
+				});
 			}
 			LiveSettings.setDataSource(GITHUB);
 		}
@@ -148,15 +153,14 @@ class SQLite {
 		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
 
-	public void deleteGist(Gist gist) {
-		String gistId = gist.getGistId();
+	public void deleteGist(String gistId) {
 		String SQL    = "DELETE FROM Gists WHERE gistId = ?";
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL);
 			pst.setString(1, gistId);
 			pst.executeUpdate();
 			pst.close();
-			Action.removeJsonName(gist.getGistId());
+			Action.removeJsonName(gistId);
 		}
 		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
@@ -199,10 +203,9 @@ class SQLite {
 		return map;
 	}
 
-
-	public String getFXData() {
+	public String getMetadata() {
 		String response = "";
-		String SQL = "SELECT jsonString FROM FXData WHERE id = 1;";
+		String SQL = "SELECT jsonString FROM Metadata WHERE id = 1;";
 		try {
 			ResultSet rs = conn.createStatement().executeQuery(SQL);
 			if (rs.next()) {
@@ -213,10 +216,9 @@ class SQLite {
 		return response;
 	}
 
-
-	private boolean hasFXData() {
+	private boolean hasMetadata() {
 		boolean response = false;
-		String SQL = "SELECT Count(*) FROM FXData;";
+		String SQL = "SELECT Count(*) FROM Metadata;";
 		try {
 			ResultSet rs = conn.createStatement().executeQuery(SQL);
 			if (rs.next()) {
@@ -228,12 +230,12 @@ class SQLite {
 		return response;
 	}
 
-	protected void saveFXData(String jsonString) {
-		String INSERT = "INSERT INTO FXData (jsonString, id) VALUES (?,?)";
-		String UPDATE = "UPDATE FXData SET jsonString = ? WHERE id = ?;";
+	protected void saveMetadata(String jsonString) {
+		String INSERT = "INSERT INTO Metadata (jsonString, id) VALUES (?,?)";
+		String UPDATE = "UPDATE Metadata SET jsonString = ? WHERE id = ?;";
 		try {
 			PreparedStatement pst;
-			if (hasFXData()) {
+			if (hasMetadata()) {
 				pst = conn.prepareStatement(UPDATE);
 			}
 			else {
@@ -291,9 +293,8 @@ class SQLite {
 		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
 
-	public void renameFile(GistFile file) {
-		Integer fileId    = file.getFileId();
-		String  eFilename = Crypto.encryptWithSessionKey(file.getFilename());
+	public void renameFile(Integer fileId, String newFilename) {
+		String  eFilename = Crypto.encryptWithSessionKey(newFilename);
 		String  SQL       = "UPDATE GistFiles SET fileName = ? WHERE fileId = ?;";
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL);
@@ -305,11 +306,10 @@ class SQLite {
 		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
 
-	public int newSQLFile(String gistId, String filename, String content) {
+	public int newSQLFile(String gistId, String filename, String content, Date uploadDate) {
 		String eFilename = Crypto.encryptWithSessionKey(filename);
 		String eContent  = Crypto.encryptWithSessionKey(content);
 		int    fileId    = 0;
-		Date uploadDate = new Date(System.currentTimeMillis());
 		String SQL       = "INSERT INTO GistFiles (gistId, fileName, content, uploadDate) VALUES (?,?,?,?)";
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
@@ -334,6 +334,19 @@ class SQLite {
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL);
 			pst.setInt(1, fileId);
+			pst.executeUpdate();
+			pst.close();
+		}
+		catch (SQLException sqe) {sqe.printStackTrace();}
+	}
+
+	public void changeGistId(GistFile file, String gistId) {
+		Integer fileId = file.getFileId();
+		String SQL = "UPDATE GistFiles SET gistId = ? WHERE fileId = ?;";
+		try {
+			PreparedStatement pst = conn.prepareStatement(SQL);
+			pst.setString(1,gistId);
+			pst.setInt(2,fileId);
 			pst.executeUpdate();
 			pst.close();
 		}

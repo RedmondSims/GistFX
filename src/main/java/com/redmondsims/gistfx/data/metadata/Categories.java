@@ -1,14 +1,16 @@
-package com.redmondsims.gistfx.data;
+package com.redmondsims.gistfx.data.metadata;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.redmondsims.gistfx.alerts.CustomAlert;
 
-public class Categories {
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-	private Map<String,String> categoryMap  = new HashMap<>();
-	private List<String>       categoryList = new ArrayList<>();
+
+class Categories {
+
+	private ConcurrentHashMap<String,String> categoryMap  = new ConcurrentHashMap<>();
+	private CopyOnWriteArrayList<String>     categoryList = new CopyOnWriteArrayList<>();
 
 	public void addCategory(String category) {
 		if (!categoryList.contains(category)) {
@@ -16,15 +18,11 @@ public class Categories {
 		}
 	}
 
-	public List<String> getList() {
-		return categoryList;
-	}
-
-	public void setList(List<String> categoryList) {
+	public void setList(CopyOnWriteArrayList<String> categoryList) {
 		this.categoryList = categoryList;
 	}
 
-	public void setMap(Map<String,String> categoryMap) {
+	public void setMap(ConcurrentHashMap<String,String> categoryMap) {
 		this.categoryMap = categoryMap;
 	}
 
@@ -51,13 +49,19 @@ public class Categories {
 	}
 
 	public void renameCategory(String oldName, String newName) {
+		for(String categoryName : categoryMap.values()) {
+			if(categoryName.equals(newName)) {
+				CustomAlert.showWarning("Category " +newName+" already exists.");
+				return;
+			}
+		}
 		for(String gistId : categoryMap.keySet()){
 			String category = categoryMap.get(gistId);
 			if (category.equals(oldName)) {
 				categoryMap.replace(gistId,newName);
 			}
 		}
-		List<String> newList = new ArrayList<>();
+		CopyOnWriteArrayList<String> newList = new CopyOnWriteArrayList<>();
 		for(String category : categoryList) {
 			if(category.equals(oldName)) newList.add(newName);
 			else newList.add(category);
@@ -65,39 +69,34 @@ public class Categories {
 		setList(newList);
 	}
 
-	public String getMappedCategory(String gistId) {
+	public String getGistCategoryName(String gistId) {
 		return categoryMap.getOrDefault(gistId,"");
 	}
 
 	public Map<String,String> getFormattedCategoryMap() {
 		Map<String,String> map = new HashMap<>();
-		for(String gistIdString : categoryMap.keySet()) {
-			String gistId = new String(gistIdString);
-			String category = categoryMap.get(gistIdString);
-			map.put(gistId,category);
+		for(String gistId : categoryMap.keySet()) {
+			String category = categoryMap.get(gistId);
+			map.put(gistId, category);
 		}
 		return map;
 	}
 
 	public Map<String,String> getCategoryMap() {
 		Map<String,String> map = new HashMap<>();
-		for(String gistIdString : categoryMap.keySet()) {
-			String gistId = new String(gistIdString);
-			String category = categoryMap.get(gistIdString);
-			map.put(gistId,category);
+		for(String gistId : categoryMap.keySet()) {
+			String category = categoryMap.get(gistId);
+			map.put(gistId, category);
 		}
 		return map;
 	}
 
-	public Map<String,String> getMap() {
+	public ConcurrentHashMap<String,String> getMap() {
 		return categoryMap;
 	}
 
-
-	public boolean hasData() {
-		return categoryMap.size() > 0;
+	public CopyOnWriteArrayList<String> getList() {
+		categoryList.sort(Comparator.comparing(String::toString));
+		return categoryList;
 	}
-
-
-
 }

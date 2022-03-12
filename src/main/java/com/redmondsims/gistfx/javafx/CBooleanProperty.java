@@ -5,12 +5,17 @@ import javafx.beans.value.ChangeListener;
 
 public class CBooleanProperty extends SimpleBooleanProperty {
 
-	public CBooleanProperty() {super();}
-
+	public CBooleanProperty() {
+		super();
+		addListener((observable, wasTrue, isTrue) -> changed = wasTrue != isTrue);
+	}
 
 	public CBooleanProperty(Boolean value) {
 		super(value);
+		addListener((observable, wasTrue, isTrue) -> changed = wasTrue != isTrue);
 	}
+
+	private boolean changed;
 
 	public boolean isTrue() {
 		return super.getValue().equals(true);
@@ -37,6 +42,9 @@ public class CBooleanProperty extends SimpleBooleanProperty {
 		return !super.getValue();
 	}
 
+	public boolean changed() {
+		return changed;
+	}
 
 	@Override public void setValue(Boolean value) {super.setValue(value);}
 

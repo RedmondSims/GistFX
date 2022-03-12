@@ -15,10 +15,8 @@ public class PaneSplitSetting {
 	private final Map<String, Double> settingMap = new HashMap<>();
 
 	public void setPosition(PaneState state, double value) {
-		double newVal = value * 100;
-		newVal = Math.round(newVal);
-		newVal = newVal / 100;
-		settingMap.replace(state.toString(), newVal);
+		settingMap.remove(state.toString());
+		settingMap.put(state.toString(), value);
 	}
 
 	public double getPosition(PaneState state) {
@@ -30,5 +28,10 @@ public class PaneSplitSetting {
 		settingMap.put(EXPANDED.toString(),.20);
 		settingMap.put(DEFAULT.toString(),.25);
 		settingMap.put(DEFAULT_FULL.toString(),.20);
+	}
+
+	public void showValues() {
+		System.out.println(REST + ": " + settingMap.get(REST.toString()));
+		System.out.println(EXPANDED + ": " + settingMap.get(EXPANDED.toString()));
 	}
 }

@@ -1,0 +1,56 @@
+package com.redmondsims.gistfx.help.html;
+
+public class GeneralHelp {
+
+	public static String html = """
+			<p>GistFX aims to do one thing - provide you with an application that makes creating and editing Gists as easy and simple as possible.</p>
+			<BR>
+			<p>The user interface is fairly straightforward, but some aspects of the program are worth mentioning.</p>
+			<BR>
+			<h3><strong>SQLite</strong></h3>
+			<p>GistFX uses a SQLite self-propelled database engine and it is packaged within GistFX. Upon the first launch, the database file will be created, and once you successfully authenticate to your GitHub account with your personal access
+			    token, all of your Gists and their files are downloaded into objects in memory and are then stored in the database. When you make edits to your Gists, they are stored in the database until you chose to save them, at which point those
+			    changes are then uploaded to GitHub.</p>
+			<BR>
+			<p>If you ever want to know exactly where the SQLite file is, pass the argument <strong>SQLPath</strong> into the program and it will kick out the absolute path to the file.</p>
+			<BR>
+			<pre>
+			<code class="language-java">java -jar GistFX.jar SQLPath</code></pre>
+			<BR>
+			<h3><strong>Custom Gist Names</strong></h3>
+			<p>You can give your Gists a simple name in addition to the description that GitHub requires. These names, of course, do not get uploaded to GitHub and are stored locally in the database. They are also kept in a JSON file as a backup in
+			    case you ever need to re-create the database file or run GistFX on another computer or a VM or whatever. You use the JSON file to restore the custom names of your Gists if that need should arise. The JSON file can be found in the same
+			    folder that GistFX.java resides in and it is called <strong>GistNames.json</strong>.&nbsp;</p>
+			<BR>
+			<h3><strong>Passwords</strong></h3>
+			<p>When you first launch GistFX, it only asks for your GitHub personal access token and provides an option to save that token locally so that you don&#39;t have to keep typing it in every time you open the program. When you choose this
+			    option, however, you will also need to type in a personal password that you will use to log into GistFX each time you run it. Your password is first hashed with an algorithm, and that hash is stored locally. The hash cannot be cracked
+			    and is brute force rated at being able to be cracked over something like three thousand years with modern computers (as of 2021) and it is the only artifact from your password that is saved locally. Next, your password is then encrypted
+			    with a simple algorithm, and that ciphertext is then used as an encryption key to encrypt your personal access token.</p>
+			<BR>
+			<p>When you then log into GistFX after saving your token, GistFX will first verify that your password is correct by checking against the hash stored locally and if it matches, it then uses your password to generate the ciphertext that is
+			    used to decrypt your locally stored Git token, which is then passed to GitHub for authentication.&nbsp;</p>
+			<BR>
+			<p>If you forget your password, simply uncheck the Save Token checkbox at login and you will be given the option to create a new password when you provide a valid access token. And as long as the database is still in your folder, nothing
+			    will change at all and no data will be lost.</p>
+			<BR>
+			<h3><strong>Login Process</strong></h3>
+			<p>When you click on the login button or hit enter from the Password field, GistFX first verifies your password (if you set one), then it passes your token to GitHub for a valid connection. When GitHub accepts your token you will see in
+			    green letters, the confirmation that you successfully logged in. Next, you will see to the right of that, the confirmation that GistFX is loading Gist Objects. This merely means that GistFX is downloading all of your Gists and the files
+			    within them into memory. Once you are logged in and you see the main window, you can go to <strong>Edit, Settings</strong>, and choose to NOT download your Gists every time you log in. With this option set, the login process will stop
+			    at authentication to GitHub, then it will load your Gists and files from the local database. And as you edit the data, or add new Gists and files, each time you chose to save your data, it will be uploaded into GitHub so that your
+			    GitHub version of your Gists remains current. Keep in mind, that if you edit your Gists through any other software or if you edit your Gists on the GitHub website, with this option set, those changes might be overwritten if you then
+			    edit the same Gist later through GistFX and then save that data. You can, at any time, go to <strong>File, Re-Download</strong> and your local copy of your Gists will be refreshed with the GitHub version, or any additions or changes
+			    that you made between GistFX sessions using other software or the GitHub website will also be pulled into the local database.</p>
+			<BR>
+			<p>... more will be written later note:&nbsp;onlinehtmleditor.dev</p>
+			</body>
+			""";
+
+	public static final String Title = "";
+
+	public static String body() {
+		return html;
+	}
+
+}

@@ -3,6 +3,7 @@ package com.redmondsims.gistfx.enums;
 public enum Type {
 	GIST,
 	FILE,
+	CATEGORY,
 	LOCAL,
 	GITHUB,
 	NEW,

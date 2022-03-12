@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx.alerts;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -121,7 +122,9 @@ public class Languages {
 	}
 
 	public static void showCodeInformation() {
-		String information = "Assigning the right file name extension to your file will change the way that the get handles code syntax highlighting and folding. These are the KNOWN file extensions that the get recognizes, feel free to try others as they might work\n\n";
-		CustomAlert.showInfo("Language Information", getColumnList(information), null);
+		Platform.runLater(() -> {
+			String information = "Assigning the right file name extension to your file will change the way that the get handles code syntax highlighting and folding. These are the KNOWN file extensions that the get recognizes, feel free to try others as they might work\n\n";
+			CustomAlert.showInfo("Language Information", getColumnList(information), null);
+		});
 	}
 }
