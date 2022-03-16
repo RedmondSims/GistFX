@@ -18,7 +18,7 @@
         <java.version>17</java.version>
         <javafx.version>17.0.2</javafx.version>
         <packaging>jar</packaging>
-        <mainClass>com.redmondsims.gistfx/com.redmondsims.gistfx.Main</mainClass>
+        <exec.mainClass>com.redmondsims.gistfx.Main</exec.mainClass>
     </properties>
     <dependencies>
         <dependency>
@@ -125,7 +125,7 @@
                     <launcher>gistfx</launcher>
                     <jlinkImageName>gistfx</jlinkImageName>
                     <jlinkZipName>gistfxzip</jlinkZipName>
-                    <mainClass>${mainClass}</mainClass>
+                    <mainClass>com.redmondsims.gistfx/${exec.mainClass}</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -139,7 +139,7 @@
                             <launcher>gistfx</launcher>
                             <jlinkImageName>gistfx</jlinkImageName>
                             <jlinkZipName>gistfxzip</jlinkZipName>
-                            <mainClass>${mainClass}</mainClass>
+                            <mainClass>com.redmondsims.gistfx/${exec.mainClass}</mainClass>
                         </configuration>
                     </execution>
                 </executions>
@@ -151,7 +151,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Main-Class>com.redmondsims.gistfx.Main</Main-Class>
+                            <Main-Class>${exec.mainClass}</Main-Class>
                             <Automatic-Module-Name>com.redmondsims.gistfx</Automatic-Module-Name>
                             <Program-Version>${project.version}</Program-Version>
                             <Implementation-Version>${project.version}</Implementation-Version>
@@ -164,12 +164,11 @@
                 <artifactId>javapackager</artifactId>
                 <version>1.6.5</version>
                 <configuration>
-                    <mainClass>${mainClass}</mainClass>
+                    <mainClass>${exec.mainClass}</mainClass>
                     <bundleJre>true</bundleJre>
                     <customizedJre>false</customizedJre>
                     <generateInstaller>true</generateInstaller>
                     <administratorRequired>false</administratorRequired>
-                    <createZipball>false</createZipball>
                 </configuration>
                 <executions>
                     <execution>
@@ -180,33 +179,15 @@
                         </goals>
                         <configuration>
                             <platform>windows</platform>
-                            <createTarball>false</createTarball>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>package-for-linux</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <configuration>
-                            <platform>linux</platform>
-                            <createTarball>true</createTarball>
-                            <!-- to bundle a jre for linux when packaging from windows  -->
-                            <!-- <jdkPath>path/to/linux/jdk</jdkPath> -->
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>package-for-mac</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <configuration>
-                            <platform>mac</platform>
-                            <createTarball>true</createTarball>
-                            <!-- to bundle a jre for mac when packaging from windows  -->
-                            <!-- <jdkPath>path/to/mac/jdk</jdkPath> -->
+                            <createZipball>false</createZipball>
+                            <vmArgs>
+                                <vmArg>--module-path=libs</vmArg>
+                                <vmArg>--add-modules=javafx.controls,javafx.graphics</vmArg>
+                            </vmArgs>
+                            <winConfig>
+                                <headerType>console</headerType>
+                                <generateMsi>false</generateMsi>
+                            </winConfig>
                         </configuration>
                     </execution>
                 </executions>
