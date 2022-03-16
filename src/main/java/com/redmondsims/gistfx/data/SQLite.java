@@ -24,7 +24,7 @@ class SQLite {
 	private final DataSource LOCAL  = DataSource.LOCAL;
 	private       File       sqliteFile;
 	private       Connection conn;
-	private       String     corePath;
+	private       File       corePath;
 
 
 	/**
@@ -32,19 +32,40 @@ class SQLite {
 	 */
 
 	public void setConnection() {
-		setSQLFile();
-		String  sqlScriptPath = Objects.requireNonNull(Main.class.getResource("SQLite/GistFXCreateSchema.sql")).toExternalForm();
-		File    sqlScriptFile = new File(sqlScriptPath.replaceFirst("file:", ""));
-		boolean createSchema  = !sqliteFile.exists();
-		String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
-
-		corePath = sqlScriptFile.getParent();
-		corePath = new File(corePath).getParent();
 
 		try {
+			corePath = new File(System.getProperty("user.dir"),"LocalData");
+			if(!corePath.exists()) corePath.mkdir();
+			setSQLFile();
+			String  sqlScriptPath = Objects.requireNonNull(Main.class.getResource("SQLite/GistFXCreateSchema.sql")).toExternalForm();
+			File    sqlScriptFile = new File(sqlScriptPath.replaceFirst("file:", ""));
+			boolean createSchema  = !sqliteFile.exists();
+			String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
 			conn = DriverManager.getConnection(connString);
 			conn.setSchema("GistFX");
 			conn.setAutoCommit(true);
+			if (createSchema) {
+				String schemaStatements = Action.loadTextFile(sqlScriptFile);
+				if (!createSchema(schemaStatements)) {
+					deleteFile(sqliteFile);
+					String error = "\n\nThe SQLite library failed to create the schema.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
+					System.err.println(error);
+					Platform.runLater(() -> {
+						CustomAlert.showWarning(error);
+						System.exit(101);
+					});
+				}
+				LiveSettings.setDataSource(GITHUB);
+			}
+			else {
+				boolean tablesHaveData = gistsHasData() && gistFilesHasData();
+				if (!tablesHaveData) {
+					LiveSettings.setDataSource(GITHUB);
+				}
+				else {
+					LiveSettings.setDataSource(LOCAL);
+				}
+			}
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -56,37 +77,14 @@ class SQLite {
 				System.exit(101);
 			});
 		}
-		if (createSchema) {
-			String schemaStatements = Action.loadTextFile(sqlScriptFile);
-			if (!createSchema(schemaStatements)) {
-				deleteFile(sqliteFile);
-				String error = "\n\nThe SQLite library failed to create the schema.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
-				System.err.println(error);
-				Platform.runLater(() -> {
-					CustomAlert.showWarning(error);
-					System.exit(101);
-				});
-			}
-			LiveSettings.setDataSource(GITHUB);
-		}
-		else {
-			boolean tablesHaveData = gistsHasData() && gistFilesHasData();
-			if (!tablesHaveData) {
-				LiveSettings.setDataSource(GITHUB);
-			}
-			else {
-				LiveSettings.setDataSource(LOCAL);
-			}
-		}
 	}
 
 	public String getCorePath() {
-		return corePath;
+		return corePath.getAbsolutePath();
 	}
 
 	private void setSQLFile() {
-		String sqlPath = Objects.requireNonNull(Main.class.getResource("SQLite")).toExternalForm().replaceFirst("file:", "");
-		sqliteFile = new File(sqlPath, "Database.sqlite");
+		sqliteFile = new File(corePath, "Database.sqlite");
 	}
 
 	public void deleteDatabaseFile() {

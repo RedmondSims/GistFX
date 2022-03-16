@@ -2,4 +2,4 @@
 /target/
 .idea
 *.iml
-GistFX Access Token
+/LocalData/
