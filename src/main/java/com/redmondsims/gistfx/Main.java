@@ -26,7 +26,7 @@ import static com.redmondsims.gistfx.enums.OS.MAC;
 public class Main extends Application {
 
     public static final  String APP_TITLE    = "GistFX";
-    private static final String dockIconBase = "Artwork/%s/Icons/AppleDock.png";
+    private static final String dockIconBase = "ArtWork/%s/Icons/AppleDock.png";
     private static final JFrame jFrame       = new JFrame();
 
     private static void setAnchors(Node node, double left, double right, double top, double bottom) {
