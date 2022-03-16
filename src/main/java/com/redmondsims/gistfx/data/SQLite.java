@@ -3,6 +3,7 @@ package com.redmondsims.gistfx.data;
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.cryptology.Crypto;
+import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.LiveSettings;
@@ -12,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
@@ -24,7 +26,6 @@ class SQLite {
 	private final DataSource LOCAL  = DataSource.LOCAL;
 	private       File       sqliteFile;
 	private       Connection conn;
-	private       File       corePath;
 
 
 	/**
@@ -32,40 +33,15 @@ class SQLite {
 	 */
 
 	public void setConnection() {
-
+		setSQLFile();
+		String  sqlScriptPath = Objects.requireNonNull(Main.class.getResource("SQLite/GistFXCreateSchema.sql")).toExternalForm();
+		File    sqlScriptFile = new File(sqlScriptPath.replaceFirst("file:", ""));
+		boolean createSchema  = !sqliteFile.exists();
+		String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
 		try {
-			corePath = new File(System.getProperty("user.dir"),"LocalData");
-			if(!corePath.exists()) corePath.mkdir();
-			setSQLFile();
-			String  sqlScriptPath = Objects.requireNonNull(Main.class.getResource("SQLite/GistFXCreateSchema.sql")).toExternalForm();
-			File    sqlScriptFile = new File(sqlScriptPath.replaceFirst("file:", ""));
-			boolean createSchema  = !sqliteFile.exists();
-			String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
 			conn = DriverManager.getConnection(connString);
 			conn.setSchema("GistFX");
 			conn.setAutoCommit(true);
-			if (createSchema) {
-				String schemaStatements = Action.loadTextFile(sqlScriptFile);
-				if (!createSchema(schemaStatements)) {
-					deleteFile(sqliteFile);
-					String error = "\n\nThe SQLite library failed to create the schema.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
-					System.err.println(error);
-					Platform.runLater(() -> {
-						CustomAlert.showWarning(error);
-						System.exit(101);
-					});
-				}
-				LiveSettings.setDataSource(GITHUB);
-			}
-			else {
-				boolean tablesHaveData = gistsHasData() && gistFilesHasData();
-				if (!tablesHaveData) {
-					LiveSettings.setDataSource(GITHUB);
-				}
-				else {
-					LiveSettings.setDataSource(LOCAL);
-				}
-			}
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -77,13 +53,42 @@ class SQLite {
 				System.exit(101);
 			});
 		}
-	}
-
-	public String getCorePath() {
-		return corePath.getAbsolutePath();
+		if (createSchema) {
+			String schemaStatements = Action.loadTextFile(sqlScriptFile);
+			if (!createSchema(schemaStatements)) {
+				deleteFile(sqliteFile);
+				String error = "\n\nThe SQLite library failed to create the schema.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
+				System.err.println(error);
+				Platform.runLater(() -> {
+					CustomAlert.showWarning(error);
+					System.exit(101);
+				});
+			}
+			LiveSettings.setDataSource(GITHUB);
+		}
+		else {
+			boolean tablesHaveData = gistsHasData() && gistFilesHasData();
+			if (!tablesHaveData) {
+				LiveSettings.setDataSource(GITHUB);
+			}
+			else {
+				LiveSettings.setDataSource(LOCAL);
+			}
+		}
 	}
 
 	private void setSQLFile() {
+		File corePath;
+		if (LiveSettings.getOS().equals(OS.MAC)) {
+			corePath = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "GistFX").toFile();
+		}
+		else if(LiveSettings.getOS().equals(OS.WINDOWS)) {
+			corePath = Paths.get(System.getProperty("user.home"),"AppData","Local","GistFX").toFile();
+		}
+		else {
+			corePath = Paths.get(System.getProperty("user.home"),".gistfx").toFile();
+		}
+		if(!corePath.exists()) corePath.mkdir();
 		sqliteFile = new File(corePath, "Database.sqlite");
 	}
 
