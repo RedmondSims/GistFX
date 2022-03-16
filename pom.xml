@@ -18,6 +18,7 @@
         <java.version>17</java.version>
         <javafx.version>17.0.2</javafx.version>
         <packaging>jar</packaging>
+        <mainClass>com.redmondsims.gistfx/com.redmondsims.gistfx.Main</mainClass>
     </properties>
     <dependencies>
         <dependency>
@@ -124,7 +125,7 @@
                     <launcher>gistfx</launcher>
                     <jlinkImageName>gistfx</jlinkImageName>
                     <jlinkZipName>gistfxzip</jlinkZipName>
-                    <mainClass>com.redmondsims.gistfx/com.redmondsims.gistfx.Main</mainClass>
+                    <mainClass>${mainClass}</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -138,7 +139,7 @@
                             <launcher>gistfx</launcher>
                             <jlinkImageName>gistfx</jlinkImageName>
                             <jlinkZipName>gistfxzip</jlinkZipName>
-                            <mainClass>com.redmondsims.gistfx/com.redmondsims.gistfx.Main</mainClass>
+                            <mainClass>${mainClass}</mainClass>
                         </configuration>
                     </execution>
                 </executions>
@@ -152,11 +153,63 @@
                         <manifestEntries>
                             <Main-Class>com.redmondsims.gistfx.Main</Main-Class>
                             <Automatic-Module-Name>com.redmondsims.gistfx</Automatic-Module-Name>
-                            <Program-Version>${version}</Program-Version>
-                            <Implementation-Version>${version}</Implementation-Version>
+                            <Program-Version>${project.version}</Program-Version>
+                            <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.fvarrui</groupId>
+                <artifactId>javapackager</artifactId>
+                <version>1.6.5</version>
+                <configuration>
+                    <mainClass>${mainClass}</mainClass>
+                    <bundleJre>true</bundleJre>
+                    <customizedJre>false</customizedJre>
+                    <generateInstaller>true</generateInstaller>
+                    <administratorRequired>false</administratorRequired>
+                    <createZipball>false</createZipball>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>package-for-windows</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <platform>windows</platform>
+                            <createTarball>false</createTarball>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>package-for-linux</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <platform>linux</platform>
+                            <createTarball>true</createTarball>
+                            <!-- to bundle a jre for linux when packaging from windows  -->
+                            <!-- <jdkPath>path/to/linux/jdk</jdkPath> -->
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>package-for-mac</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <platform>mac</platform>
+                            <createTarball>true</createTarball>
+                            <!-- to bundle a jre for mac when packaging from windows  -->
+                            <!-- <jdkPath>path/to/mac/jdk</jdkPath> -->
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
