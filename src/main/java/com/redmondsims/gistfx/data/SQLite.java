@@ -3,6 +3,7 @@ package com.redmondsims.gistfx.data;
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.cryptology.Crypto;
+import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.LiveSettings;
@@ -12,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
@@ -24,7 +26,6 @@ class SQLite {
 	private final DataSource LOCAL  = DataSource.LOCAL;
 	private       File       sqliteFile;
 	private       Connection conn;
-	private       String     corePath;
 
 
 	/**
@@ -37,10 +38,6 @@ class SQLite {
 		File    sqlScriptFile = new File(sqlScriptPath.replaceFirst("file:", ""));
 		boolean createSchema  = !sqliteFile.exists();
 		String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
-
-		corePath = sqlScriptFile.getParent();
-		corePath = new File(corePath).getParent();
-
 		try {
 			conn = DriverManager.getConnection(connString);
 			conn.setSchema("GistFX");
@@ -80,13 +77,19 @@ class SQLite {
 		}
 	}
 
-	public String getCorePath() {
-		return corePath;
-	}
-
 	private void setSQLFile() {
-		String sqlPath = Objects.requireNonNull(Main.class.getResource("SQLite")).toExternalForm().replaceFirst("file:", "");
-		sqliteFile = new File(sqlPath, "Database.sqlite");
+		File corePath;
+		if (LiveSettings.getOS().equals(OS.MAC)) {
+			corePath = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "GistFX").toFile();
+		}
+		else if(LiveSettings.getOS().equals(OS.WINDOWS)) {
+			corePath = Paths.get(System.getProperty("user.home"),"AppData","Local","GistFX").toFile();
+		}
+		else {
+			corePath = Paths.get(System.getProperty("user.home"),".gistfx").toFile();
+		}
+		if(!corePath.exists()) corePath.mkdir();
+		sqliteFile = new File(corePath, "Database.sqlite");
 	}
 
 	public void deleteDatabaseFile() {
