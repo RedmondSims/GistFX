@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.ui;
+package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.OS;

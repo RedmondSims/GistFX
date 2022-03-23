@@ -6,7 +6,6 @@ import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.sceneone.SceneOne;
-import com.redmondsims.gistfx.ui.CodeEditor;
 import eu.mihosoft.monacofx.Document;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;

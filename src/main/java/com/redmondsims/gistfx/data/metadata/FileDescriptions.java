@@ -5,22 +5,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class FileDescriptions {
 
-	ConcurrentHashMap<String,String> descriptionMap = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String,String> descriptionMap = new ConcurrentHashMap<>();
 
 	private String getID(String gistId, String filename) {
 		return gistId + "" + filename;
 	}
 
-	private String getGistId(String id) {
-		String[] parts = id.split("");
+	private String getGistId(String gistFileId) {
+		String[] parts = gistFileId.split("");
 		if(parts.length == 2) {
 			return parts[0];
 		}
 		return "";
 	}
 
-	private String getFilename(String id) {
-		String[] parts = id.split("");
+	private String getFilename(String gistFileId) {
+		String[] parts = gistFileId.split("");
 		if(parts.length == 2) {
 			return parts[1];
 		}
@@ -32,6 +32,12 @@ public class FileDescriptions {
 		String gistId = gistFile.getGistId();
 		String filename = gistFile.getFilename();
 		String gistFileId = getID(gistId,filename);
+		descriptionMap.put(gistFileId,description);
+	}
+
+	public void setDescription(String gistId, String filename, String description) {
+		String gistFileId = getID(gistId,filename);
+		deleteDescription(gistFileId);
 		descriptionMap.put(gistFileId,description);
 	}
 
@@ -52,10 +58,28 @@ public class FileDescriptions {
 		return "";
 	}
 
-	public void deleteDescription(GistFile gistFile) {
+	private void deleteDescription(GistFile gistFile) {
 		String gistId = gistFile.getGistId();
 		String filename = gistFile.getFilename();
 		descriptionMap.remove(getID(gistId,filename));
+	}
+
+	public void deleteDescription(String gistId, String filename) {
+		String gistFileId = getID(gistId,filename);
+		deleteDescription(gistFileId);
+	}
+
+	public void removeAllGistFiles(String gistId) {
+		for(String gistFileId : descriptionMap.keySet()) {
+			String fileGistId = getGistId(gistFileId);
+			if(fileGistId.equals(gistId)) {
+				descriptionMap.remove(gistFileId);
+			}
+		}
+	}
+
+	private void deleteDescription(String gistFileId) {
+		descriptionMap.remove(gistFileId);
 	}
 
 	public void setDescriptionMap(ConcurrentHashMap<String,String> descriptionMap) {

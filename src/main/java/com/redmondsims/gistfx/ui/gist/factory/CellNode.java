@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.ui.tree;
+package com.redmondsims.gistfx.ui.gist.factory;
 
 import com.redmondsims.gistfx.gist.WindowManager;
 import javafx.scene.control.*;
@@ -23,10 +23,15 @@ public class CellNode<T> extends TreeCell<DragNode> {
 		return newFile;
 	}
 
+	private MenuItem newShare() {
+		MenuItem emailItem = new MenuItem("Transport");
+		emailItem.setOnAction(e -> WindowManager.shareObject());
+		return emailItem;
+	}
+
 	private SeparatorMenuItem newSep() {
 		return new SeparatorMenuItem();
 	}
-
 
 	public CellNode() {
 		this.dragNode = new DragNode();
@@ -44,9 +49,9 @@ public class CellNode<T> extends TreeCell<DragNode> {
 		deleteCategory.setOnAction(e -> WindowManager.deleteCategory());
 		deleteFile.setOnAction(e -> WindowManager.deleteFile());
 		deleteGist.setOnAction(e -> WindowManager.deleteGist());
-		gistMenu     = new ContextMenu(newFile(), newSep(), renameGist, deleteGist, newSep(), newGist());
-		fileMenu     = new ContextMenu(renameFile, deleteFile, newSep(), newFile(), newGist());
-		categoryMenu = new ContextMenu(newGist(), newSep(), renameCategory, deleteCategory, newSep(), editCategories);
+		gistMenu     = new ContextMenu(newFile(), newSep(), renameGist, deleteGist, newGist(), newSep(), newShare());
+		fileMenu     = new ContextMenu(renameFile, deleteFile, newSep(), newFile(), newGist(),newSep(),newShare());
+		categoryMenu = new ContextMenu(newGist(), newSep(), renameCategory, deleteCategory, editCategories, newSep(), newShare());
 	}
 
 	@Override

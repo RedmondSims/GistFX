@@ -7,6 +7,8 @@ import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static com.redmondsims.gistfx.enums.OS.*;
 import static com.redmondsims.gistfx.preferences.UISettings.Theme.DARK;
@@ -19,27 +21,44 @@ public class LiveSettings {
 	private static       UISettings.LoginScreenColor loginScreenColor;
 	public static        Color                       progressBarColor      = AppSettings.get().progressBarColor();
 	public static        ProgressColorSource         progressBarColorSource;
-	public static        Boolean                     useJsonGist;
 	private static       boolean                     disableDirtyWarning;
 	private static       Color                       dirtyFileFlagColor;
-	private static       boolean                     wideMode;
 	public static        boolean                     doMasterReset         = false;
 	private static       Double                      lastPaneSplitValue    = 0.0;
 	private static final String                      OSystem               = System.getProperty("os.name").toLowerCase();
 	private static       String                      password              = "";
 	private static       boolean                     authenticatedToGitHub = false;
 	private static       Taskbar                     taskbar;
+	private final static Integer tcpPortNumber = 59383;
+
+	public static Path getFilePath() {
+		Path finalPath;
+		if(getOS().equals(OS.MAC)) {
+			finalPath = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "GistFX");
+		}
+		else if(getOS().equals(OS.WINDOWS)) {
+			finalPath = Paths.get(System.getProperty("user.home"),"AppData","Local","GistFX");
+		}
+		else {
+			finalPath = Paths.get(System.getProperty("user.home"),".gistfx");
+		}
+		if (!finalPath.toFile().exists()) {
+			finalPath.toFile().mkdir();
+		}
+		return finalPath;
+	}
+
+	public static Integer getTcpPortNumber() {
+		return tcpPortNumber;
+	}
 
 	public static void applyAppSettings() {
 		dataSource             = AppSettings.get().dataSource();
 		progressBarColorSource = AppSettings.get().progressColorSource();
-		useJsonGist            = AppSettings.get().saveToGist();
 		theme                  = AppSettings.get().theme();
 		dirtyFileFlagColor     = AppSettings.get().dirtyFileFlagColor();
 		disableDirtyWarning    = AppSettings.get().disableDirtyWarning();
 		loginScreenColor       = AppSettings.get().loginScreenColor();
-		wideMode               = AppSettings.get().wideMode();
-		AppSettings.get().dividerPositions();
 		setLoginScreen(AppSettings.get().loginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
 	}
@@ -95,10 +114,6 @@ public class LiveSettings {
 	public static void setDirtyFileFlagColor(Color color) {
 		AppSettings.set().dirtyFileFlagColor(color);
 		applyAppSettings();
-	}
-
-	public static boolean getWideMode() {
-		return wideMode;
 	}
 
 	public static void setLastPaneSplitValue(Double lastPaneSplitValue) {

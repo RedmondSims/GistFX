@@ -187,6 +187,10 @@ public final class SceneOne {
 		return sceneMap.get(sceneName).isShowing();
 	}
 
+	public static boolean sceneExists(String sceneName) {
+		return sceneMap.containsKey(sceneName);
+	}
+
 	public static void setOnKeyPressed(String sceneName, EventHandler<? super KeyEvent> event) {
 		checkScene(sceneName);
 		sceneMap.get(sceneName).setOnKeyPressed(event);
@@ -519,8 +523,11 @@ public final class SceneOne {
 		}
 		public void build() {
 			buildExecuted = true;
-			stageMap.putIfAbsent(sceneName,new StageObject(new Stage()));
-			stage = stageMap.get(sceneName).get();
+			stageMap.remove(sceneName);
+			stage = new Stage();
+			if(stageStyle != null) stage.initStyle(stageStyle);
+			if(modality != null) stage.initModality(modality);
+			stageMap.put(sceneName,new StageObject(stage));
 			boolean optionsHasStyle = showOptions.contains(STYLE_DECORATED) || showOptions.contains(STYLE_UTILITY) || showOptions.contains(STYLE_UNIFIED) || showOptions.contains(STYLE_UNDECORATED) || showOptions.contains(STYLE_TRANSPARENT);
 			boolean optionsHasModality =  showOptions.contains(MODALITY_WINDOW)  || showOptions.contains(MODALITY_APPLICATION);
 			boolean hasNoWindowHandle = showOptions.contains(STYLE_UNDECORATED) || showOptions.contains(STYLE_TRANSPARENT) || showOptions.contains(STYLE_UTILITY);

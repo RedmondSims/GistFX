@@ -91,6 +91,17 @@ class Categories {
 		return map;
 	}
 
+	public List<String> getGistIdsInCategory(String category) {
+		List<String> gistIdList = new ArrayList<>();
+		for(String gistId : categoryMap.keySet()) {
+			String gistCategory = categoryMap.get(gistId);
+			if(gistCategory.equals(category)) {
+				gistIdList.add(gistId);
+			}
+		}
+		return gistIdList;
+	}
+
 	public ConcurrentHashMap<String,String> getMap() {
 		return categoryMap;
 	}

@@ -1,13 +1,18 @@
 package com.redmondsims.gistfx.cryptology;
 
+import com.redmondsims.gistfx.enums.Type;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Random;
 
-public class Crypto {
+public class Crypto implements Serializable {
+
+	@Serial private static final long serialVersionUID = 4L;
 
 	//public static DateTimeFormatter fmtMS = DateTimeFormatter.("mm:ss");
 
@@ -16,16 +21,22 @@ public class Crypto {
 	private static final Base64       base64  = new Base64(true);
 	private static final String       token   = "3IHWMyZuW∂5is&7bUkj6";
 	private static final String       json    = "mQ8UaX&9UNSakIWugdH3";
+	private static final String       data    = "uRcRiA99n5ZR15fS9QWt";
 	private static final String       jsonKey = encryptCommon(json, KEY);
+	private static final String       dataKey = encryptCommon(data, KEY);
 	private static       String       sessionKey;
 
 	private static String encryptCommon(String msg, String userKey) {
 		String response = "";
 		try {
-			SecretKeySpec keySpec = new SecretKeySpec(userKey.getBytes(), "Blowfish");
-			Cipher        cipher  = Cipher.getInstance("Blowfish");
-			cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-			response = base64.encodeToString(cipher.doFinal(msg.getBytes()));
+			if (msg != null) {
+				if(!msg.isEmpty()) {
+					SecretKeySpec keySpec = new SecretKeySpec(userKey.getBytes(), "Blowfish");
+					Cipher        cipher  = Cipher.getInstance("Blowfish");
+					cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+					response = base64.encodeToString(cipher.doFinal(msg.getBytes()));
+				}
+			}
 		}
 		catch (Exception e) {
 			System.err.println("Crypto.encryptCommon: " + e.getMessage());
@@ -37,12 +48,16 @@ public class Crypto {
 	private static String decryptCommon(String encMsg, String userKey) {
 		String response = "";
 		try {
-			byte[]        encryptedData = Base64.decodeBase64(encMsg);
-			SecretKeySpec keySpec       = new SecretKeySpec(userKey.getBytes(), "Blowfish");
-			Cipher        cipher        = Cipher.getInstance("Blowfish");
-			cipher.init(Cipher.DECRYPT_MODE, keySpec);
-			byte[] decrypted = cipher.doFinal(encryptedData);
-			response = new String(decrypted);
+			if(encMsg != null) {
+				if (!encMsg.isEmpty()) {
+					byte[]        encryptedData = Base64.decodeBase64(encMsg);
+					SecretKeySpec keySpec       = new SecretKeySpec(userKey.getBytes(), "Blowfish");
+					Cipher        cipher        = Cipher.getInstance("Blowfish");
+					cipher.init(Cipher.DECRYPT_MODE, keySpec);
+					byte[] decrypted = cipher.doFinal(encryptedData);
+					response = new String(decrypted);
+				}
+			}
 		}
 		catch (Exception e) {
 			System.err.println("Crypto.decryptCommon: " + e.getMessage());
@@ -56,20 +71,39 @@ public class Crypto {
 		else {sessionKey = encryptCommon(userPassword, KEY);}
 	}
 
-	public static String jsonEncrypt(String message) {return encryptCommon(message, jsonKey);}
+	public static String encrypData(String data) {
+		return encryptCommon(data,dataKey);
+	}
 
-	public static String jsonDecrypt(String cipher)  {return decryptCommon(cipher, jsonKey);}
+	public static String decrypData(String encData) {
+		return decryptCommon(encData,dataKey);
+	}
+
+	public static String encryptJson(String message) {return encryptCommon(message, jsonKey);}
+
+	public static String decryptJson(String cipher) {return decryptCommon(cipher, jsonKey);}
 
 	public static String encryptWithSessionKey(String message) {
 		return encryptCommon(message, sessionKey);
+	}
+
+	public static String encryptWithPassword(String message, String password){
+		String key = encryptCommon(password,KEY);
+		return encryptCommon(message,key);
+	}
+
+	public static String decryptWithPassword(String encodedMessage, String password){
+		String key = encryptCommon(password,KEY);
+		return decryptCommon(encodedMessage,key);
 	}
 
 	public static String decryptWithSessionKey(String cipher) {
 		return decryptCommon(cipher, sessionKey);
 	}
 
-	public static String randomText(int size) {
-		String        soup      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1029384756!)@(#*$&%^<>?,./:;}{][=+-_©˙å∆˚∂˚∆";
+	public static String randomText(int size, Type type) {
+		String        soup      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		if (type.equals(Type.DIRTY)) soup += "!)@(#*$&%^<>?,./:;}{][=+-_";
 		int           max       = soup.length();
 		char[]        soupArray = soup.toCharArray();
 		StringBuilder sb        = new StringBuilder();

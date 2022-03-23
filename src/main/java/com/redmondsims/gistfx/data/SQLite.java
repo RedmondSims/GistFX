@@ -3,17 +3,19 @@ package com.redmondsims.gistfx.data;
 import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.cryptology.Crypto;
-import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings.DataSource;
+import com.redmondsims.gistfx.utils.Resources;
 import javafx.application.Platform;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
@@ -23,8 +25,8 @@ class SQLite {
 
 
 	private final DataSource GITHUB = DataSource.GITHUB;
-	private final DataSource LOCAL  = DataSource.LOCAL;
-	private       File       sqliteFile;
+	private final DataSource LOCAL      = DataSource.LOCAL;
+	private final File       sqliteFile = Resources.getSQLiteFile();
 	private       Connection conn;
 
 
@@ -33,9 +35,6 @@ class SQLite {
 	 */
 
 	public void setConnection() {
-		setSQLFile();
-		String  sqlScriptPath = Objects.requireNonNull(Main.class.getResource("SQLite/GistFXCreateSchema.sql")).toExternalForm();
-		File    sqlScriptFile = new File(sqlScriptPath.replaceFirst("file:", ""));
 		boolean createSchema  = !sqliteFile.exists();
 		String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
 		try {
@@ -54,8 +53,7 @@ class SQLite {
 			});
 		}
 		if (createSchema) {
-			String schemaStatements = Action.loadTextFile(sqlScriptFile);
-			if (!createSchema(schemaStatements)) {
+			if (!createSchema()) {
 				deleteFile(sqliteFile);
 				String error = "\n\nThe SQLite library failed to create the schema.\n\tMake sure your Access Control Lists are permissive for the folder that GistFX executes from.\n\nRun program from a command prompt to see the full stack trace.\n\nExiting...";
 				System.err.println(error);
@@ -77,50 +75,42 @@ class SQLite {
 		}
 	}
 
-	private void setSQLFile() {
-		File corePath;
-		if (LiveSettings.getOS().equals(OS.MAC)) {
-			corePath = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "GistFX").toFile();
-		}
-		else if(LiveSettings.getOS().equals(OS.WINDOWS)) {
-			corePath = Paths.get(System.getProperty("user.home"),"AppData","Local","GistFX").toFile();
-		}
-		else {
-			corePath = Paths.get(System.getProperty("user.home"),".gistfx").toFile();
-		}
-		if(!corePath.exists()) corePath.mkdir();
-		sqliteFile = new File(corePath, "Database.sqlite");
-	}
-
 	public void deleteDatabaseFile() {
-		setSQLFile();
 		deleteFile(sqliteFile);
 	}
 
 	private void deleteFile(File file) {
 		try {
-			FileUtils.forceDelete(file);
+			conn.close();
+			new Thread(() -> {
+				try {
+					Action.sleep(500);
+					FileUtils.forceDelete(file);
+				}
+				catch (IOException e) {
+					System.err.println("SQLite.delete(File): " + e.getMessage());
+					e.printStackTrace();
+				}
+			}).start();
 		}
-		catch (IOException e) {
+		catch (SQLException e) {
 			System.err.println("SQLite.delete(File): " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 *	ENCRYPTED database methods
-	 */
-
-	private boolean createSchema(String schemaStatements) {
+	private boolean createSchema() {
 		boolean result = true;
-		schemaStatements = schemaStatements.replaceAll("(.)(\\n)", "$1 ");
-		schemaStatements = schemaStatements.replaceAll("CREATE TABLE", "CREATE TABLE IF NOT EXISTS");
-		schemaStatements = schemaStatements.replaceAll("(\\()(\\s+)", "$1");
-		schemaStatements = schemaStatements.replaceAll("\\n\\n", "\n");
-		schemaStatements = schemaStatements.replaceAll(" {2,}", " ");
-		schemaStatements = schemaStatements.replaceAll(" \\)", ")");
-		String[] createStatements = schemaStatements.split("\n");
 		try {
+			InputStream sqlScriptResourceStream = Objects.requireNonNull(Main.class.getResourceAsStream("SQLite/GistFXCreateSchema.sql"));
+			String schemaStatements = IOUtils.toString(sqlScriptResourceStream, StandardCharsets.UTF_8);
+			schemaStatements = schemaStatements.replaceAll("(.)(\\n)", "$1 ");
+			schemaStatements = schemaStatements.replaceAll("CREATE TABLE", "CREATE TABLE IF NOT EXISTS");
+			schemaStatements = schemaStatements.replaceAll("(\\()(\\s+)", "$1");
+			schemaStatements = schemaStatements.replaceAll("\\n\\n", "\n");
+			schemaStatements = schemaStatements.replaceAll(" {2,}", " ");
+			schemaStatements = schemaStatements.replaceAll(" \\)", ")");
+			String[] createStatements = schemaStatements.split("\n");
 			Statement stmt = conn.createStatement();
 			for (String SQL : createStatements) {
 				stmt.executeUpdate(SQL);
@@ -131,11 +121,14 @@ class SQLite {
 			System.err.println("*** SQLite.createSchema ***\n" + sqe.getMessage());
 			sqe.printStackTrace();
 		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 		return result;
 	}
 
 	/**
-	 *  Gist only actions
+	 *	ENCRYPTED database methods
 	 */
 
 	public void addGist(Gist gist) {
@@ -157,13 +150,21 @@ class SQLite {
 	}
 
 	public void deleteGist(String gistId) {
-		String SQL    = "DELETE FROM Gists WHERE gistId = ?";
+		String sqlGistFiles     = "DELETE FROM GistFiles WHERE gistId = ?";
+		String sqlGists         = "DELETE FROM Gists WHERE gistId = ?";
+		String sqlGistUndoFiles = "DELETE FROM GistUndoFiles WHERE gistId = ?";
 		try {
-			PreparedStatement pst = conn.prepareStatement(SQL);
-			pst.setString(1, gistId);
+			PreparedStatement pst = conn.prepareStatement(sqlGistFiles);
+			pst.setString(1,gistId);
+			pst.executeUpdate();
+			pst = conn.prepareStatement(sqlGists);
+			pst.setString(1,gistId);
+			pst.executeUpdate();
+			pst = conn.prepareStatement(sqlGistUndoFiles);
+			pst.setString(1,gistId);
 			pst.executeUpdate();
 			pst.close();
-			Action.removeJsonName(gistId);
+			Action.deleteGistMetadata(gistId);
 		}
 		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
@@ -431,6 +432,15 @@ class SQLite {
 			conn.createStatement().executeUpdate(resetAutoIncrementFiles);
 		}
 		catch (SQLException throwables) {throwables.printStackTrace();}
+	}
+
+	public void deleteMetadata() {
+		String SQL = "DELETE FROM Metadata;";
+		try {
+			conn.createStatement().executeUpdate(SQL);
+		}
+		catch (SQLException sqe) {sqe.printStackTrace();}
+
 	}
 
 }

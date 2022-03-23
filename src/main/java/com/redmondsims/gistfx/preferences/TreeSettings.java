@@ -135,14 +135,11 @@ public class TreeSettings {
 			WindowManager.refreshTree();
 		});
 		btnChoseIcon.setOnAction(e -> {
-			File iconFile = AppSettings.get().userCategoryIcon();
-			String path = AppSettings.get().userIconFileFolder().getAbsolutePath();
-			if (iconFile != null) {
-				path = iconFile.getParent();
-			}
-			File file = getFile(label,path);
+			String iconFilePathString = AppSettings.get().userCategoryIconPath();
+			File path = (iconFilePathString.isEmpty()) ? AppSettings.get().userIconFileFolder() : new File(iconFilePathString).getParentFile();
+			File file = getFile(label,path.getAbsolutePath());
 			if (file != null) {
-				AppSettings.set().userTreeCategoryIconPath(file.getAbsolutePath());
+				AppSettings.set().userCategoryIconPath(file.getAbsolutePath());
 				AppSettings.set().userIconFileFolder(file.getParent());
 				Platform.runLater(() -> lblIconPath.setText(file.getAbsolutePath()));
 				WindowManager.refreshTree();
@@ -188,14 +185,11 @@ public class TreeSettings {
 			WindowManager.refreshTree();
 		});
 		btnChoseIcon.setOnAction(e -> {
-			File iconFile = AppSettings.get().userGistIcon();
-			String path = AppSettings.get().userIconFileFolder().getAbsolutePath();
-			if (iconFile != null) {
-				path = iconFile.getParent();
-			}
-			File file = getFile(label,path);
+			String iconFilePathString = AppSettings.get().userGistIconPath();
+			File path = (iconFilePathString.isEmpty()) ? AppSettings.get().userIconFileFolder() : new File(iconFilePathString).getParentFile();
+			File file = getFile(label,path.getAbsolutePath());
 			if (file != null) {
-				AppSettings.set().userTreeGistIconPath(file.getAbsolutePath());
+				AppSettings.set().userGistIconPath(file.getAbsolutePath());
 				AppSettings.set().userIconFileFolder(file.getParent());
 				Platform.runLater(() -> lblIconPath.setText(file.getAbsolutePath()));
 				WindowManager.refreshTree();
@@ -241,14 +235,11 @@ public class TreeSettings {
 			WindowManager.refreshFileIcons();
 		});
 		btnChoseIcon.setOnAction(e -> {
-			File iconFile = AppSettings.get().userFileIcon();
-			String path = AppSettings.get().userIconFileFolder().getAbsolutePath();
-			if (iconFile != null) {
-				path = iconFile.getParent();
-			}
-			File file = getFile(label,path);
+			String iconFilePathString = AppSettings.get().userFileIconPath();
+			File path = (iconFilePathString.isEmpty()) ? AppSettings.get().userIconFileFolder() : new File(iconFilePathString).getParentFile();
+			File file = getFile(label,path.getAbsolutePath());
 			if (file != null) {
-				AppSettings.set().userTreeFileIconPath(file.getAbsolutePath());
+				AppSettings.set().userFileIconPath(file.getAbsolutePath());
 				AppSettings.set().userIconFileFolder(file.getParent());
 				Platform.runLater(() -> lblIconPath.setText(file.getAbsolutePath()));
 				WindowManager.refreshFileIcons();
@@ -294,7 +285,7 @@ public class TreeSettings {
 									fileVBox());
 		formContent.setPadding(new Insets(10, 10, 10, 10));
 		formContent.setAlignment(Pos.CENTER_LEFT);
-		toolWindow = new ToolWindow.Builder(formContent, sceneWidth, sceneHeight, callingStage).title("GistFX Tree Settings").build();
+		toolWindow = new ToolWindow.Builder(formContent).attachToStage(callingStage).size(sceneWidth, sceneHeight).title("GistFX Tree SMTPServerSettingsa").build();
 		toolWindow.showAndWait();
 	}
 

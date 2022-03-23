@@ -5,6 +5,7 @@ import com.redmondsims.gistfx.help.html.*;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.utils.Resources;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -16,8 +17,8 @@ import java.util.*;
 
 public class Help {
 
-	private static final String root = Main.class.getResource("HelpFiles").toExternalForm().replaceFirst("file:","");
-	private static final File rootPath = new File(root.replaceFirst("file:",""));
+	private static final String root = Resources.getHelpRoot();
+	private static final File rootPath = new File(root);
 	private static final File logoFile = new File(rootPath,"Logo.png");
 	private static final String header = """
 			<html lang="English">
@@ -36,18 +37,20 @@ public class Help {
 			""".formatted(logoFile.getAbsolutePath());
 
 
+
+
 	private static String replace(String source, String regex, String replacement) {
 		return source.replaceFirst(regex, replacement);
 	}
 
 	public static void somethingWrong() {
 		String html = header + SomethingWrong.html;
-		showHelp(html);
+		contentViewer(html);
 	}
 
 	public static void showIntro() {
 		String html     = header + Intro.html;
-		showHelp(html);
+		contentViewer(html);
 		AppSettings.set().firstRun(false);
 	}
 
@@ -60,7 +63,7 @@ public class Help {
 			String search = String.format("~~File%s~~",x);
 			html = replace(html,search, "file:" + images.get(x-1).getAbsolutePath());
 		}
-		showHelp(html);
+		contentViewer(html);
 	}
 
 	public static void mainOverview() {
@@ -73,15 +76,15 @@ public class Help {
 			String replace = "file:" + imageFile.getAbsolutePath();
 			html = replace(html, search, replace);
 		}
-		showHelp(html);
+		contentViewer(html);
 	}
 
 	public static void generalHelp() {
 		String html     = header + GeneralHelp.html;
-		showHelp(html);
+		contentViewer(html);
 	}
 
-	private static void showHelp(String html) {
+	private static void contentViewer(String html) {
 		String background = "~background~";
 		String color      = "~color~";
 		if (LiveSettings.getTheme().equals(Theme.DARK)) {
