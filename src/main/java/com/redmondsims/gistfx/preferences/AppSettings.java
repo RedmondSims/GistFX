@@ -8,8 +8,8 @@ import com.redmondsims.gistfx.preferences.settings.Set;
 public class AppSettings {
 
 	private static final Get   getter  = new Get();
-	private static final Set   setter  = new Set();
-	private static final Clear clearer = new Clear();
+	private static final Set   setter = new Set();
+	private static final Clear clear  = new Clear();
 
 	public static Get get() {
 		return getter;
@@ -20,17 +20,17 @@ public class AppSettings {
 	}
 
 	public static Clear clear() {
-		return clearer;
+		return clear;
 	}
 
 	public static void resetPreferences() {
-		clearer.clearAll();
+		clear.clearAll();
 		setter.setDefaults();
 	}
 
 	public static void resetCredentials() {
-		clearer.passwordHash();
-		clearer.tokenHash();
+		clear.passwordHash();
+		clear.tokenHash();
 	}
 
 

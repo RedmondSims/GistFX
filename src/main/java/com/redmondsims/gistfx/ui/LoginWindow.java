@@ -32,6 +32,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.StageStyle;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -64,7 +66,7 @@ public class LoginWindow {
 	private final        StringProperty  userToken            = new SimpleStringProperty("");
 	private final        BooleanProperty saved                = new SimpleBooleanProperty();
 	private              LoginStates     preCheckState;
-	private final        String          questionMarkIconPath = Objects.requireNonNull(Main.class.getResource("HelpFiles/QuestionMarkIcon.png")).toExternalForm();
+	private final        URL             questionMarkIconPath = Objects.requireNonNull(Main.class.getResource("HelpFiles/QuestionMarkIcon.png"));
 	private final        TextField       tfToken;
 	private final        PasswordField   tfPassword;
 	private final        CheckBox        cbSave;
@@ -155,7 +157,7 @@ public class LoginWindow {
 		tf.setPromptText("GitHub Token");
 		tf.getStylesheets().add(Theme.TEXT_FIELD.getStyleSheet());
 		tf.getStyleClass().add(styleClass);
-		Tooltip.install(tf, new Tooltip("Enter required information then press Enter"));
+		Tooltip.install(tf, Action.newTooltip("Enter required information then press Enter"));
 		return tf;
 	}
 
@@ -226,7 +228,7 @@ public class LoginWindow {
 		blank1.setPrefWidth(145);
 		blank2.setPrefWidth(150);
 		blank2.setMinHeight(26);
-		Image     imageQMark = new Image(questionMarkIconPath);
+		Image     imageQMark = new Image(questionMarkIconPath.toExternalForm());
 		ImageView ivQMark    = new ImageView(imageQMark);
 		ivQMark.setPreserveRatio(true);
 		ivQMark.setFitWidth(40);
@@ -318,14 +320,14 @@ public class LoginWindow {
 		String    questionBase     = "Artwork/%s/LoginForm/QuestionMark.png";
 		String    chkMarkBase      = "Artwork/%s/LoginForm/chkMark.png";
 		String    kittyKittyBase   = "Artwork/%s/LoginForm/KittyKitty.png";
-		String    colorOption      = LiveSettings.getLoginScreenColor().folderName(LiveSettings.getLoginScreenColor());
-		String    pathBoth         = Objects.requireNonNull(Main.class.getResource(String.format(backBothBase, colorOption))).toExternalForm();
-		String    pathPassword     = Objects.requireNonNull(Main.class.getResource(String.format(backPasswordBase, colorOption))).toExternalForm();
-		String    pathToken        = Objects.requireNonNull(Main.class.getResource(String.format(backTokenBase, colorOption))).toExternalForm();
-		String    chkBoxPath       = Objects.requireNonNull(Main.class.getResource(String.format(checkBoxBase, colorOption))).toExternalForm();
-		String    qmPath           = Objects.requireNonNull(Main.class.getResource(String.format(questionBase, colorOption))).toExternalForm();
-		String    chkMarkPath      = Objects.requireNonNull(Main.class.getResource(String.format(chkMarkBase, colorOption))).toExternalForm();
-		String    kittyKittyPath   = Objects.requireNonNull(Main.class.getResource(String.format(kittyKittyBase, colorOption))).toExternalForm();
+		String      colorOption  = LiveSettings.getLoginScreenColor().folderName(LiveSettings.getLoginScreenColor());
+		InputStream pathBoth       = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backBothBase, colorOption)));
+		InputStream pathPassword   = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backPasswordBase, colorOption)));
+		InputStream pathToken      = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backTokenBase, colorOption)));
+		InputStream chkBoxPath     = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(checkBoxBase, colorOption)));
+		InputStream qmPath         = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(questionBase, colorOption)));
+		InputStream chkMarkPath    = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(chkMarkBase, colorOption)));
+		InputStream kittyKittyPath = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(kittyKittyBase, colorOption)));
 		Image     imgCheckBox      = new Image(chkBoxPath);
 		Image     imageBoth        = new Image(pathBoth);
 		Image     imagePassword    = new Image(pathPassword);
@@ -637,6 +639,15 @@ public class LoginWindow {
 				tokenValid = Action.tokenValid(userToken.getValue());
 				Platform.runLater(() -> lblLoggedIn.setText(tokenValid ? "Token Valid" : "Token NOT Valid"));
 				updateProcess(tokenValid ? "Token Valid" : "Token NOT Valid");
+				if(LiveSettings.getDataSource().equals(UISettings.DataSource.LOCAL)) {
+					new Thread(() -> {
+						Action.sleep(1500);
+						Platform.runLater(() -> {
+							lblLoggedIn.setText("Loading local Gist data and creating window");
+							updateProcess("Loading local Gist data and creating window");
+						});
+					}).start();
+				}
 				if (tokenValid && tokenOnly) {
 					newSecurityMode = TOKEN_LOGIN;
 					Crypto.setSessionKey("");
@@ -739,11 +750,15 @@ public class LoginWindow {
 
 				case NEED_TOKEN -> Platform.runLater(() -> {
 					CustomAlert.showInfo("Need Token", "You did not provide an access token.", SceneOne.getOwner(sceneId));
+					tfToken.setDisable(false);
+					tfPassword.setDisable(false);
 					tfToken.requestFocus();
 				});
 
 				case NEED_PASSWORD -> Platform.runLater(() -> {
 					CustomAlert.showInfo("Need Password", "You did not provide a password.", SceneOne.getOwner(sceneId));
+					tfToken.setDisable(false);
+					tfPassword.setDisable(false);
 					tfPassword.requestFocus();
 				});
 

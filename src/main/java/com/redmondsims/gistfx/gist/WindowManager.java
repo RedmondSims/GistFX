@@ -2,10 +2,13 @@ package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.enums.Source;
+import com.redmondsims.gistfx.enums.State;
 import com.redmondsims.gistfx.enums.Type;
+import com.redmondsims.gistfx.networking.Payload;
 import com.redmondsims.gistfx.sceneone.SceneOne;
-import com.redmondsims.gistfx.ui.GistWindow;
-import com.redmondsims.gistfx.ui.tree.DragNode;
+import com.redmondsims.gistfx.ui.gist.GistWindow;
+import com.redmondsims.gistfx.ui.gist.factory.DragNode;
+import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 
@@ -23,6 +26,7 @@ public class WindowManager {
 				gistWindow.showMainWindow(launchSource);
 			}
 			if (launchSource.equals(Source.RELOAD)) {
+				Status.setState(State.NORMAL);
 				gistWindow.fillTree();
 				CustomAlert.showInfo("All data re-downloaded successfully.", SceneOne.getOwner("GistWindow"));
 			}
@@ -35,10 +39,10 @@ public class WindowManager {
 		//Use of Timer prevents multiple rapid calls from executing the method more than once
 		if (buttonTimer != null) buttonTimer.cancel();
 		buttonTimer = new Timer();
-		buttonTimer.schedule(buttonTesk(),500);
+		buttonTimer.schedule(buttonTask(), 500);
 	}
 
-	private static TimerTask buttonTesk() {
+	private static TimerTask buttonTask() {
 		return new TimerTask() {
 			@Override public void run() {
 				if (gistWindow != null) {
@@ -49,43 +53,51 @@ public class WindowManager {
 	}
 
 	public static void deleteGist() {
-		gistWindow.deleteGist();
+		gistWindow.getPop().deleteGist(gistWindow.getGist());
 	}
 
 	public static void newGist() {
-		gistWindow.newGist();
+		gistWindow.getPop().newGist(gistWindow.getSelectedNode());
 	}
 
 	public static void deleteFile() {
-		gistWindow.deleteFile();
+		gistWindow.getPop().deleteFile(gistWindow.getFile());
 	}
 
 	public static void renameFile() {
-		gistWindow.renameFile();
+		gistWindow.getPop().renameFile(gistWindow.getFile());
 	}
 
 	public static void newFile() {
-		gistWindow.newFile();
+		gistWindow.getPop().newFile(gistWindow.getGist());
+	}
+
+	public static void shareObject() {
+		gistWindow.shareObject(gistWindow.getSelectedNode());
+	}
+
+	public static void receiveData(Payload payload) {
+		gistWindow.getPop().receiveData(payload);
 	}
 
 	public static void deleteCategory() {
-		gistWindow.deleteCategory();
+		gistWindow.getPop().deleteCategory(gistWindow.getSelectedNode());
 	}
 
 	public static void editCategories() {
-		gistWindow.editCategories();
+		gistWindow.getPop().editCategories();
 	}
 
 	public static void renameGist() {
-		gistWindow.renameGist();
+		gistWindow.getPop().renameGist(gistWindow.getGist());
 	}
 
 	public static void renameCategory() {
-		gistWindow.renameCategory();
+		gistWindow.getPop().renameCategory();
 	}
 
 	public static void setConflict(GistFile file, Type conflict, boolean selected) {
-		gistWindow.setFileDirtyState(file,conflict,selected);
+		gistWindow.getTree().setFileDirtyState(file,conflict,selected);
 		gistWindow.handleButtonBar();
 	}
 
@@ -98,15 +110,19 @@ public class WindowManager {
 	}
 
 	public static void handleTreeEvent(TreeItem<DragNode> treeItem) {
-		gistWindow.handleTreeEvent(treeItem);
+		gistWindow.getTree().handleTreeEvent(treeItem);
 	}
 
 	public static void refreshBranch(GistFile gistFile) {
-		gistWindow.refreshGistBranch(gistFile);
+		gistWindow.getTree().refreshGistBranch(gistFile);
 	}
 
 	public static void refreshTree() {
-		gistWindow.refreshTree();
+		gistWindow.getTree().refreshTree();
+	}
+
+	public static void fillTree() {
+		gistWindow.fillTree();
 	}
 
 	private static Timer iconTimer;
@@ -121,7 +137,7 @@ public class WindowManager {
 	private static TimerTask refreshIcons() {
 		return new TimerTask() {
 			@Override public void run() {
-				gistWindow.refreshIcons();
+				gistWindow.getTree().refreshIcons();
 			}
 		};
 	}

@@ -8,19 +8,30 @@ projects. GistFX provides a desktop Gist client, to make editing, creating, and
 managing Gists a breeze.
 
 ### Features
-  - Built-in syntax highlighting for most  languages, using MonacoFX  - the same code editor used in Microsofts open source Visual Studio.
-  - Easily manage existing Gists, edit, or create new ones.
-  - Easily create new files within your Gists.
-  - Group Gists under catetgories.
-  - Drag and drop Gists between categories.
-  - Assign descriptions to Gist Files.
-  - Navigate Gists and files from a TreeView.
-  - Context-sensitive menus in the tree.
-  - Assign names to your Gists in addition to the descriptions that GitHub requires.
-  - GitHub access token encrypted and saved locally, protected by password.
-  - Wide Mode: Maximize screen space for code editing.
-  - Distraction Free Mode - Just the code editor in full screen.
-
+  - Built-in syntax highlighting for most  languages, using MonacoFX  - the same code editor used in Microsofts open source Visual Studio
+  - Gists
+    - Assign names to gists
+    - Add / Delete Gists
+  - Gist Files
+    - Add / Delete
+    - Edit using feature rich MonacoFX Code Editor
+    - Add / Edit descriptions
+    - Move between Gists using drag and drop
+  - Share Gists
+    - Send Gists to other users of GistFX via TCP/IP
+    - Send Gists in groups when they are assigned to a category
+    - Gist data is encrypted before being sent over the network
+  - Group Gists under categories
+  - Drag and drop Gists between categories
+  - Drag and drop files between Gists
+  - Navigate Gists and files from a TreeView
+  - Context-sensitive tree menus
+  - GitHub access token encrypted and saved locally, protected by password
+  - Screen layout options
+    - Wide mode for better visibility
+    - Full screen mode with Menus
+    - Distraction Free Mode - Just the code editor in full screen 
+  
 ### Coming soon
   - Keyboard shortcuts for mouse free navigation
   - Still working on Help content.

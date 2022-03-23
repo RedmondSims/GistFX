@@ -3,13 +3,13 @@
  * Copyright (C) 29/03/2021 David Thaler.
  * All rights reserved
  */
-package com.redmondsims.gistfx.ui.tree;
+package com.redmondsims.gistfx.ui.gist.factory;
 
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
-import com.redmondsims.gistfx.ui.icons.Icons;
+import com.redmondsims.gistfx.ui.gist.Icons;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 

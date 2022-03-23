@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.ui.tree;
+package com.redmondsims.gistfx.ui.gist.factory;
 
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.gist.Gist;

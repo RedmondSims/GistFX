@@ -74,9 +74,9 @@ public class MasterResetWindow {
 			SceneOne.set(vbox).centered().modality(Modality.APPLICATION_MODAL).show();
 			new Thread(() -> {
 				if (database) Action.deleteDatabaseFile();
-				if (appSettings) AppSettings.resetPreferences();
+				if (localMetadata) Action.deleteLocalMetaData(!database);
+				if (appSettings) AppSettings.clear().clearAll();
 				if (credentials) AppSettings.resetCredentials();
-				if (localMetadata) Action.deleteJsonLocalFile();
 				if (gitHubNames) Action.deleteJsonGistFile();
 				Platform.runLater(() -> {
 					CustomAlert.showInfo("It is done!",SceneOne.getOwner());

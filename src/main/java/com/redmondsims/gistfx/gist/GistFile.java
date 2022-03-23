@@ -5,8 +5,8 @@ import com.redmondsims.gistfx.enums.State;
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.javafx.CStringProperty;
-import com.redmondsims.gistfx.ui.CodeEditor;
-import com.redmondsims.gistfx.ui.icons.Icons;
+import com.redmondsims.gistfx.ui.gist.CodeEditor;
+import com.redmondsims.gistfx.ui.gist.Icons;
 import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -65,7 +65,7 @@ public class GistFile {
 			if(dirty.isFalse()) {
 				Status.register(fileId);
 				while(Status.getState().equals(State.LOADING)) Action.sleep(100);
-				gitHubVersion = Action.getGitHubFileContent(gistId, fileName.name());
+				gitHubVersion = Action.getLocalGitHubFileContent(gistId, fileName.name());
 				conflict.setValue(this.content.notEqualTo(gitHubVersion));
 				Status.unRegister(fileId);
 			}
@@ -199,6 +199,12 @@ public class GistFile {
 
 	public void addedToTree() {
 		refreshGraphicNode();
+	}
+
+	public void reCheckWithGitHub() {
+		gitHubVersion = Action.getGitHubFileContent(gistId, fileName.name());
+		conflict.setValue(this.content.notEqualTo(gitHubVersion));
+		if(conflict.isTrue()) resolveConflict(Type.LOCAL);
 	}
 
 	/**

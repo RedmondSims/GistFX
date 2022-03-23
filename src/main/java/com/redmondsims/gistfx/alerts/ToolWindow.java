@@ -2,15 +2,16 @@ package com.redmondsims.gistfx.alerts;
 
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,40 +20,44 @@ import static javafx.scene.layout.AnchorPane.*;
 
 public class ToolWindow {
 
-	private final String       sceneId;
-	private       AnchorPane   ap;
-	private final double       width;
-	private final double       height;
-	private final Node         content;
-	private final Button       closeButton;
-	private final String       title;
-	private final List<Button> buttonList;
-	private final Stage        callingStage;
+	private final String                    sceneId;
+	private       AnchorPane                ap;
+	private final double                    width;
+	private final double                    height;
+	private final Node                      content;
+	private       Button                    closeButton;
+	private final String                    title;
+	private final List<Button>              buttonList;
+	private final Stage                     callingStage;
+	private final EventHandler<WindowEvent> onCloseHandler;
 
 	public static class Builder {
 
-		public Builder(Node content, double width, double height) {
-			this.width   = width;
-			this.height  = height;
+		public Builder(Node content) {
 			this.content = content;
 		}
 
-		public Builder(Node content, double width, double height, Stage callingStage) {
-			this.width   = width;
-			this.height  = height;
-			this.content = content;
-			this.callingStage = callingStage;
-		}
-
-		private       String       sceneId = "Tool Window";
+		private       String       sceneId    = "Tool Window";
 		private       AnchorPane   ap;
-		private final double       width;
-		private final double       height;
+		private       double       width;
+		private       double       height;
 		private final Node         content;
 		private       String       title      = "";
 		private       String       closeName  = "Close";
 		private final List<Button> buttonList = new ArrayList<>();
-		private       Stage        callingStage;
+		private       Stage        stage;
+		private EventHandler<WindowEvent> onCloseHandler;
+
+        public Builder attachToStage(Stage stage){
+			this.stage = stage;
+			return this;
+		}
+
+		public Builder size(double width, double height) {
+			this.height = height;
+			this.width = width;
+			return this;
+		}
 
 		public Builder title(String title) {
 			this.title = title;
@@ -67,14 +72,19 @@ public class ToolWindow {
 		public Builder addButton(String name, double width, EventHandler<ActionEvent> action) {
 			Button button = new Button(name);
 			button.setOnAction(action);
-			button.setPrefWidth(width);
-			button.setPrefHeight(35);
+			button.setMinWidth(width);
+			button.setMinHeight(30);
 			buttonList.add(button);
 			return this;
 		}
 
 		public Builder addButton(Button button) {
 			buttonList.add(button);
+			return this;
+		}
+
+		public Builder onCloseEvent (EventHandler<WindowEvent> onCloseHandler) {
+			this.onCloseHandler = onCloseHandler;
 			return this;
 		}
 
@@ -89,18 +99,21 @@ public class ToolWindow {
 	}
 
 	private ToolWindow (Builder build) {
-		this.sceneId      = build.sceneId;
-		this.width        = build.width;
-		this.height       = build.height;
-		this.content      = build.content;
-		this.title        = build.title;
-		this.buttonList   = build.buttonList;
-		this.callingStage = build.callingStage;
-		this.closeButton  = new Button(build.closeName);
-		this.closeButton.setPrefHeight(35);
-		this.closeButton.setPrefWidth(55);
-		this.closeButton.setOnAction(e -> SceneOne.close(sceneId));
-		if (buttonList.size() == 0) buttonList.add(closeButton);
+		this.sceneId        = build.sceneId;
+		this.width          = build.width;
+		this.height         = build.height;
+		this.content        = build.content;
+		this.title          = build.title;
+		this.buttonList     = build.buttonList;
+		this.callingStage   = build.stage;
+		this.onCloseHandler = build.onCloseHandler;
+		if(buttonList.size() == 0) {
+			this.closeButton = new Button(build.closeName);
+			this.closeButton.setMinHeight(35);
+			this.closeButton.setMinWidth(55);
+			this.closeButton.setOnAction(e -> SceneOne.close(sceneId));
+			buttonList.add(closeButton);
+		}
 	}
 
 	public void resizeHeight(Double height) {
@@ -108,29 +121,25 @@ public class ToolWindow {
 	}
 
 	public void showAndWait() {
-		ap = new AnchorPane();
-		ap.setPrefWidth(width);
-		ap.setPrefHeight(height);
 		HBox bbox = new HBox();
-		for(Button button : buttonList) {
-			bbox.getChildren().add(button);
-		}
+		bbox.getChildren().setAll(FXCollections.observableArrayList(buttonList));
 		bbox.setPrefHeight(35);
 		bbox.setPrefWidth(width);
 		bbox.setSpacing(10);
 		bbox.setAlignment(Pos.CENTER);
-		bbox.setPadding(new Insets(0,0,0,0));
-		bbox.setCenterShape(true);
-		addNode(content,0,0,0,50);
-		addNode(bbox,0,0,-1,10);
+		ap = new AnchorPane(content,bbox);
+		ap.setPrefSize(width,height);
+		setNodePosition(content,0,0,0,50);
+		setNodePosition(bbox,0,0,-1,10);
 		if (callingStage != null) {
 			SceneOne.set(ap,sceneId,callingStage)
 					.size(width,height)
 					.title(title)
 					.styleSheets(LiveSettings.getTheme().getStyleSheet())
+					.size(width,height)
 					.centered()
-					.newStage()
-					.showAndWait();
+					.onCloseEvent(onCloseHandler)
+ 					.showAndWait();
 		}
 		else {
 			SceneOne.set(ap,sceneId)
@@ -138,14 +147,15 @@ public class ToolWindow {
 					.title(title)
 					.styleSheets(LiveSettings.getTheme().getStyleSheet())
 					.centered()
-					.newStage()
+					.size(width,height)
+					.onCloseEvent(onCloseHandler)
 					.showAndWait();
 		}
 	}
 
-	private void addNode(Node node, double left, double right, double top, double bottom) {
-		ap.getChildren().add(node);
-		setNodePosition(node, left, right, top, bottom);
+	public void close(){
+		if(SceneOne.sceneExists(sceneId))
+			SceneOne.close(sceneId);
 	}
 
 	private void setNodePosition(Node node, double left, double right, double top, double bottom) {

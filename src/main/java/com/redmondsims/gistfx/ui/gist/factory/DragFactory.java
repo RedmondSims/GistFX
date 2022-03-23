@@ -3,7 +3,7 @@
  * Copyright (C) 29/03/2021 David Thaler.
  * All rights reserved
  */
-package com.redmondsims.gistfx.ui.tree;
+package com.redmondsims.gistfx.ui.gist.factory;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.ToolWindow;
@@ -274,7 +274,7 @@ public class DragFactory implements Callback<TreeView<DragNode>, TreeCell<DragNo
         VBox vbox = new VBox(box1,box2,box3,box4);
         vbox.setSpacing(5);
         vbox.setAlignment(Pos.CENTER);
-        ToolWindow toolWindow = new ToolWindow.Builder(vbox,550,375).setSceneId(name).addButton(btnYes).addButton(btnNo).build();
+        ToolWindow toolWindow = new ToolWindow.Builder(vbox).size(550,375).setSceneId(name).addButton(btnYes).addButton(btnNo).build();
         toolWindow.showAndWait();
         return yesNo;
     }

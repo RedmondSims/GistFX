@@ -1,12 +1,14 @@
 package com.redmondsims.gistfx;
 
+import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
-import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.LoginWindow;
+import com.redmondsims.gistfx.utils.Resources;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -16,9 +18,16 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import static com.redmondsims.gistfx.enums.OS.MAC;
@@ -26,7 +35,7 @@ import static com.redmondsims.gistfx.enums.OS.MAC;
 public class Main extends Application {
 
     public static final  String APP_TITLE    = "GistFX";
-    private static final String dockIconBase = "ArtWork/%s/Icons/AppleDock.png";
+    private static final String dockIconBase = "Artwork/%s/Icons/AppleDock.png";
     private static final JFrame jFrame       = new JFrame();
 
     private static void setAnchors(Node node, double left, double right, double top, double bottom) {
@@ -36,8 +45,12 @@ public class Main extends Application {
         if (right != -1) AnchorPane.setRightAnchor(node, right);
     }
 
+    private static void oneOff() {
+        Resources.copyHelpFiles();
+    }
 
     public static void editCategories() {
+
         String    name                = "Categories";
         double    width               = 400;
         double                         height              = 500;
@@ -47,9 +60,9 @@ public class Main extends Application {
         javafx.scene.control.TextField tfNewCategory       = new javafx.scene.control.TextField();
         javafx.scene.control.TextField tfSelectedCategory  = new javafx.scene.control.TextField();
         javafx.scene.control.TextField tfNewName           = new javafx.scene.control.TextField();
-        Tooltip.install(tfNewCategory, new Tooltip("Type in the category name and hit ENTER to save it."));
-        Tooltip.install(tfSelectedCategory, new Tooltip("Click on a category from the list, then rename it."));
-        Tooltip.install(tfNewName, new Tooltip("Click on a category from the list, then Type in a new name here then press ENTER."));
+        Tooltip.install(tfNewCategory, Action.newTooltip("Type in the category name and hit ENTER to save it."));
+        Tooltip.install(tfSelectedCategory, Action.newTooltip("Click on a category from the list, then rename it."));
+        Tooltip.install(tfNewName, Action.newTooltip("Click on a category from the list, then Type in a new name here then press ENTER."));
         tfSelectedCategory.setEditable(false);
         ListView<String> lvCategories = new ListView<>();
         //lvCategories.getItems().setAll(Action.getCategoryList());
@@ -88,18 +101,15 @@ public class Main extends Application {
                                     .show());
     }
 
-
-
     public static void main(String[] args) {
         AppSettings.clear().fileMoveWarning();
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
         LiveSettings.applyAppSettings();
-        String color = LiveSettings.getLoginColor();
-        String urlPath = String.format(dockIconBase,color);
-        URL imagePath = Main.class.getResource(urlPath);
-        Image image = toolkit.getImage(imagePath);
-        LiveSettings.setTaskbar(Taskbar.getTaskbar());
+        String      color       = LiveSettings.getLoginColor();
+        String      urlPath     = String.format(dockIconBase, color);
+        InputStream imageStream = Main.class.getResourceAsStream(urlPath);
         try {
+            Image       image     = ImageIO.read(imageStream);
+            LiveSettings.setTaskbar(Taskbar.getTaskbar());
             if (LiveSettings.getOS().equals(MAC)) LiveSettings.getTaskbar().setIconImage(image);
             else {
                 jFrame.setUndecorated(true);
@@ -115,6 +125,9 @@ public class Main extends Application {
         }
         catch (final SecurityException e) {
             System.out.println("There was a security exception for: 'taskbar.setIconImage'");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
 
         boolean stopFlag = false;
@@ -148,7 +161,6 @@ public class Main extends Application {
     }
 
     @Override public void start(Stage primaryStage) {
-        Theme.init();
         LiveSettings.applyAppSettings();
         Action.setDatabaseConnection();
         setUserAgentStylesheet(STYLESHEET_MODENA);
