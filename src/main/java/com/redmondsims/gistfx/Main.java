@@ -164,8 +164,6 @@ public class Main extends Application {
         LiveSettings.applyAppSettings();
         Action.setDatabaseConnection();
         setUserAgentStylesheet(STYLESHEET_MODENA);
-        //TreeSettings.showWindow();
-        //System.exit(0);
         new LoginWindow();
     }
 }

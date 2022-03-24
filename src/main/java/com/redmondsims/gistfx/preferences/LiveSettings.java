@@ -37,7 +37,7 @@ public class LiveSettings {
 			finalPath = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "GistFX");
 		}
 		else if(getOS().equals(OS.WINDOWS)) {
-			finalPath = Paths.get(System.getProperty("user.home"),"AppData","Local","GistFX");
+			finalPath = Paths.get(System.getenv("APPDATA"),"GistFX");
 		}
 		else {
 			finalPath = Paths.get(System.getProperty("user.home"),".gistfx");
