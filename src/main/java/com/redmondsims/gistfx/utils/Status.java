@@ -10,6 +10,7 @@ import static com.redmondsims.gistfx.enums.State.*;
 public class Status {
 
 	private static       State                          state              = NORMAL;
+	private static       State                          gistWindowState    = NORMAL;
 	private static final ConcurrentLinkedDeque<Integer> fileList           = new ConcurrentLinkedDeque<>();
 	private static final AtomicInteger                  maxFilesRegistered = new AtomicInteger(0);
 
@@ -21,12 +22,12 @@ public class Status {
 		return state;
 	}
 
-	public static boolean stateIs(State state) {
-		return Status.state.equals(state);
+	public static void setGistWindowState(State state) {
+		gistWindowState = state;
 	}
 
-	public static boolean isComparing() {
-		return state.equals(COMPARING) || state.equals(LOADING);
+	public static boolean comparingLocalDataWithGitHub() {
+		return gistWindowState.equals(COMPARING);
 	}
 
 	public static void register(Integer fileId) {

@@ -162,7 +162,7 @@ public class DragFactory implements Callback<TreeView<DragNode>, TreeCell<DragNo
         if (draggedType == null) return;
         if (draggedType.equals(FILE) && dropType.equals(GIST)) {
             boolean doMove = true;
-            if (Status.isComparing()) {
+            if (Status.comparingLocalDataWithGitHub()) {
                 showComparingWarning();
             }
             else {

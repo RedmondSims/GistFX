@@ -221,18 +221,19 @@ public class GistWindow {
 						tree.addBranch(gistId);
 					}
 					for (String filename : ghGist.getFiles().keySet()) {
-						GHGistFile ghGistFile = Action.getLocalGitHubFile(gistId, filename);
 						if (!GistManager.gistHasFile(gistId, filename)) {
-							GistManager.addFileToList(GistManager.getFileList(gistId), gistId, ghGistFile);
+							GHGistFile ghGistFile = Action.getLocalGitHubFile(gistId, filename);
+							GistManager.addFileToGist(gistId, ghGistFile);
 							tree.addFileToBranch(gistId, filename);
 						}
 					}
 				}
 			}
-			Status.setState(State.COMPARING);
+			Status.setGistWindowState(State.COMPARING);
 			while (Status.filesComparing()) {
 				Action.setProgress(Status.getRegisteredFileRatio());
 			}
+			Status.setGistWindowState(State.NORMAL);
 			Action.setProgress(0.0);
 			if (filesAreDirty()) {
 				Platform.runLater(() -> {
@@ -246,7 +247,6 @@ public class GistWindow {
 				Platform.runLater(() -> CustomAlert.showWarning("Files In Conflict!", "You have one or more files in conflict with the GitHub version. Click on the file with the red X next to it, then click on the Resolve Conflict button and chose which version of the file should be kept."));
 			}
 			showComparingWithGitHub("", false);
-			Status.setState(State.NORMAL);
 		}).start();
 	}
 
@@ -765,7 +765,7 @@ public class GistWindow {
 	}
 
 	private void reDownloadAllGists() {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}

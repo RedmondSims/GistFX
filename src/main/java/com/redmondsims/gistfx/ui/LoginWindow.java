@@ -313,13 +313,13 @@ public class LoginWindow {
 	private void graphicLogin() {
 		pBar = Action.getProgressNode(13);
 		ap.setStyle("-fx-background-color: black");
-		String    backBothBase     = "Artwork/%s/LoginForm/Background/BackBoth.png";
-		String    backPasswordBase = "Artwork/%s/LoginForm/Background/BackPassword.png";
-		String    backTokenBase    = "Artwork/%s/LoginForm/Background/BackToken.png";
-		String    checkBoxBase     = "Artwork/%s/LoginForm/Checkbox.png";
-		String    questionBase     = "Artwork/%s/LoginForm/QuestionMark.png";
-		String    chkMarkBase      = "Artwork/%s/LoginForm/chkMark.png";
-		String    kittyKittyBase   = "Artwork/%s/LoginForm/KittyKitty.png";
+		String    backBothBase     = "ArtWork/%s/LoginForm/Background/BackBoth.png";
+		String    backPasswordBase = "ArtWork/%s/LoginForm/Background/BackPassword.png";
+		String    backTokenBase    = "ArtWork/%s/LoginForm/Background/BackToken.png";
+		String    checkBoxBase     = "ArtWork/%s/LoginForm/Checkbox.png";
+		String    questionBase     = "ArtWork/%s/LoginForm/QuestionMark.png";
+		String    chkMarkBase      = "ArtWork/%s/LoginForm/chkMark.png";
+		String    kittyKittyBase   = "ArtWork/%s/LoginForm/KittyKitty.png";
 		String      colorOption  = LiveSettings.getLoginScreenColor().folderName(LiveSettings.getLoginScreenColor());
 		InputStream pathBoth       = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backBothBase, colorOption)));
 		InputStream pathPassword   = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backPasswordBase, colorOption)));

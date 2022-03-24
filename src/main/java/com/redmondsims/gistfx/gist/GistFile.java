@@ -115,7 +115,7 @@ public class GistFile {
 	ChangeListener<String> contentChangeListener = (observable, oldValue, newValue) -> {
 		if (conflict.isTrue()) CodeEditor.get().getEditor().getDocument().setText(lastLocalSave);
 		else if(!newValue.equals(oldValue)) {
-			if (Status.isComparing()) {
+			if (Status.comparingLocalDataWithGitHub()) {
 				if (preCheckTimer != null) preCheckTimer.cancel();
 				preCheckTimer = new Timer();
 				preCheckTimer.schedule(commitLater(newValue),2000);
@@ -147,7 +147,7 @@ public class GistFile {
 	private TimerTask commitLater(String newContent) {
 		return new TimerTask() {
 			@Override public void run() {
-				while(Status.isComparing()) Action.sleep(100);
+				while(Status.comparingLocalDataWithGitHub()) Action.sleep(100);
 				if (conflict.isTrue()) {
 					CodeEditor.get().getEditor().getDocument().setText(lastLocalSave);
 					content.setValue(lastLocalSave);
@@ -170,7 +170,7 @@ public class GistFile {
 			@Override public void run() {
 				long now = System.currentTimeMillis();
 				if (dataNotCommitted) {
-					if (!Status.isComparing() && conflict.isFalse()) {
+					if (!Status.comparingLocalDataWithGitHub() && conflict.isFalse()) {
 						dirty.setValue(content.notEqualTo(gitHubVersion));
 						lastLocalSave = content.get();
 						Action.localFileSave(getThis());

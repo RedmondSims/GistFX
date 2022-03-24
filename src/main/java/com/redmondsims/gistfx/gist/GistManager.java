@@ -77,14 +77,15 @@ public class GistManager {
 		Action.addGistToSQL(gist);
 		List<GistFile> fileList = new ArrayList<>();
 		for (GHGistFile file : ghGist.getFiles().values()) {
-			addFileToList(fileList,gistId,file);
+			addFileToGist(gistId, file);
 		}
 		gist.addFiles(fileList);
 		gistMap.put(gistId, gist);
 	}
 
-	public static void addFileToList(List<GistFile> fileList, String gistId, GHGistFile ghGistFile) {
-		fileList.add(newSQLFile(gistId, ghGistFile));
+	public static void addFileToGist(String gistId, GHGistFile ghGistFile) {
+		Gist gist = gistMap.get(gistId);
+		gist.getFiles().add(newSQLFile(gistId, ghGistFile));
 	}
 
 	public static List<GistFile> getFileList (String gistId) {

@@ -275,7 +275,7 @@ public class activities {
 	}
 
 	public void newGist(DragNode selectedNode) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
@@ -311,7 +311,7 @@ public class activities {
 	}
 
 	public void newFile(Gist gist) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
@@ -348,7 +348,7 @@ public class activities {
 	}
 
 	public void deleteFile(GistFile file) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
@@ -363,7 +363,7 @@ public class activities {
 	}
 
 	public void undoFile(GistFile file) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
@@ -376,7 +376,7 @@ public class activities {
 	}
 
 	public void deleteGist(Gist gist) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
@@ -422,7 +422,7 @@ public class activities {
 	}
 
 	public void renameFile(GistFile file) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
@@ -443,7 +443,7 @@ public class activities {
 	}
 
 	public void changeGistDescription(Gist gist) {
-		if (Status.isComparing()) {
+		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
