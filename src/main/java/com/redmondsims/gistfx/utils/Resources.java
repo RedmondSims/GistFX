@@ -63,8 +63,8 @@ public class Resources {
 		return new File(getSQLitePath(),"Database.sqlite");
 	}
 
-	public static void deleteAllResources() {
-
+	public static void checkResources() {
+		if(!Paths.get(LiveSettings.getFilePath().toString(),helpFiles).toFile().exists()) copyHelpFiles();
 	}
 
 }

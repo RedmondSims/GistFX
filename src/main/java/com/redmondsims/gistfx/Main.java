@@ -102,6 +102,7 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        Resources.checkResources();
         AppSettings.clear().fileMoveWarning();
         LiveSettings.applyAppSettings();
         String      color       = LiveSettings.getLoginColor();
