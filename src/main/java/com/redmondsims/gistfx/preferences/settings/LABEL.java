@@ -14,7 +14,7 @@ enum LABEL {
 	LOGIN_SCREEN_COLOR,
 	DATA_SOURCE,
 	FIRST_RUN,
-	BUTTON_BAR,
+	TOOL_BAR,
 	SECURITY_OPTION,
 	FLAG_DIRTY_FILES,
 	DIRTY_FILE_FLAG_COLOR,
@@ -34,7 +34,9 @@ enum LABEL {
 	USER_GIST_ICON_PATH,
 	USER_FILE_ICON_PATH,
 	USER_ICON_FILE_FOLDER,
-	MAIL_SERVER
+	MAIL_SERVER,
+	LAST_TOKEN_HASH,
+	LAST_GITHUB_USER_ID
 	;
 
 	public String Name(LABEL this) {
@@ -49,7 +51,7 @@ enum LABEL {
 			case LOGIN_SCREEN_COLOR -> "GFX_Login_Screen_Color";
 			case DATA_SOURCE -> "GFX_Data_Source";
 			case FIRST_RUN -> "GFX_First_Run";
-			case BUTTON_BAR -> "GFX_Button_Bar";
+			case TOOL_BAR -> "GFX_Tool_Bar";
 			case SECURITY_OPTION -> "GFX_Security_Option";
 			case FLAG_DIRTY_FILES -> "GFX_Flag_Dirty_Files";
 			case DIRTY_FILE_FLAG_COLOR -> "GFX_Dirty_File_Flag_Color";
@@ -70,6 +72,8 @@ enum LABEL {
 			case USER_FILE_ICON_PATH -> "GFX_User_Tree_File_Icon_Path";
 			case USER_ICON_FILE_FOLDER -> "GFX_User_Icon_File_Folder";
 			case MAIL_SERVER -> "GFX_Mail_Server";
+			case LAST_TOKEN_HASH -> "GFX_Last_Token_Hash";
+			case LAST_GITHUB_USER_ID -> "GFX_Last_GitHub_User_Id";
 		};
 	}
 

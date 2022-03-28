@@ -51,4 +51,12 @@ class Names {
 		return nameMap.size() > 0;
 	}
 
+	public void changeGistId(String oldGistId, String newGistId) {
+		String name = nameMap.getOrDefault(oldGistId,"");
+		if(!name.isEmpty()) {
+			nameMap.remove(oldGistId);
+			nameMap.put(newGistId,name);
+		}
+	}
+
 }

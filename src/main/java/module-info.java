@@ -15,6 +15,8 @@ module com.redmondsims.gistfx {
 	requires java.desktop;
 	requires eu.mihosoft.monacofx;
 	requires com.simtechdata.waifupnp;
+	requires annotations;
+	requires org.joda.time;
 
 	exports com.redmondsims.gistfx.preferences to javafx.graphics, com.google.gson;
 	exports com.redmondsims.gistfx.enums to javafx.graphics;

@@ -41,4 +41,26 @@ public enum Type {
 		case OK -> "OK";
 		};
 	}
+
+	public String nameCased(Type this) {
+		return switch(this) {
+			case GIST -> "Gist";
+			case FILE -> "File";
+			case CATEGORY -> "Category";
+			case LOCAL -> "Local";
+			case GITHUB -> "Github";
+			case NEW -> "New";
+			case UPDATE -> "Update";
+			case FILENAME_CHANGE -> "Filename_change";
+			case DELETE -> "Delete";
+			case INTEGER -> "Integer";
+			case DOUBLE -> "Double";
+			case RANDOM -> "Random";
+			case STANDARD -> "Standard";
+			case STRING -> "String";
+			case CONFLICT -> "Conflict";
+			case DIRTY -> "Dirty";
+			case OK -> "Ok";
+		};
+	}
 }

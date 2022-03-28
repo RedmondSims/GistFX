@@ -89,4 +89,17 @@ public class FileDescriptions {
 	public ConcurrentHashMap<String,String> getMap() {
 		return this.descriptionMap;
 	}
+
+	public void changeGistId(String oldGistId, String newGistId) {
+		for(String gistFileId : descriptionMap.keySet()) {
+			String gistId = getGistId(gistFileId);
+			String filename = getFilename(gistFileId);
+			String description = descriptionMap.get(gistFileId);
+			if (gistId.equals(oldGistId)) {
+				descriptionMap.remove(gistFileId);
+				String newGistFileId = getID(newGistId,filename);
+				descriptionMap.put(newGistFileId,description);
+			}
+		}
+	}
 }

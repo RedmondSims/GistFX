@@ -1,6 +1,8 @@
 package com.redmondsims.gistfx.cryptology;
 
+import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Type;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
@@ -59,23 +61,44 @@ public class Crypto implements Serializable {
 				}
 			}
 		}
-		catch (Exception e) {
-			System.err.println("Crypto.decryptCommon: " + e.getMessage());
-			e.printStackTrace();
-		}
+		catch (Exception e) {Action.error(e);}
 		return response;
 	}
 
-	public static void setSessionKey(String userPassword) {
-		if (userPassword.isEmpty()) {sessionKey = encryptCommon(token, KEY);}
-		else {sessionKey = encryptCommon(userPassword, KEY);}
+	public static void setTempSessionKey(String password) {
+		sessionKey = encryptCommon(password, KEY);
 	}
 
-	public static String encrypData(String data) {
+	public static void setSessionKey(String userPassword, String gistToken) {
+		if (userPassword.isEmpty())
+			setSessionKeyByToken(gistToken);
+		else
+			sessionKey = encryptCommon(userPassword, KEY);
+	}
+
+	private static void setSessionKeyByToken(String gistToken) {
+		String lastTokenHash = AppSettings.get().lastTokenHash();
+		String tokenHash = encryptData(gistToken);
+		if(lastTokenHash.isEmpty()) {
+			AppSettings.set().lastTokenHash(tokenHash);
+		}
+		else {
+			if(!lastTokenHash.equals(tokenHash)) {
+				String oldToken = decryptData(lastTokenHash);
+				if(Action.hasData()) {
+					Action.reEncryptData(oldToken, gistToken);
+				}
+				AppSettings.set().lastTokenHash(tokenHash);
+			}
+		}
+		sessionKey = encryptCommon(gistToken, KEY);
+	}
+
+	public static String encryptData(String data) {
 		return encryptCommon(data,dataKey);
 	}
 
-	public static String decrypData(String encData) {
+	public static String decryptData(String encData) {
 		return decryptCommon(encData,dataKey);
 	}
 

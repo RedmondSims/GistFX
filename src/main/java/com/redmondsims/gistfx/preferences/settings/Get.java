@@ -40,7 +40,7 @@ public class Get {
 	}
 
 	public UISettings.LoginScreenColor loginScreenColor() {
-		String option = prefs.get(LABEL.LOGIN_SCREEN_COLOR.Name(), UISettings.LoginScreenColor.GREEN.Name());
+		String option = prefs.get(LABEL.LOGIN_SCREEN_COLOR.Name(), UISettings.LoginScreenColor.BLUE.Name());
 		return UISettings.LoginScreenColor.get(option);
 	}
 
@@ -54,8 +54,8 @@ public class Get {
 		return setting.equals("true");
 	}
 
-	public boolean showButtonBar() {
-		String setting = prefs.get(LABEL.BUTTON_BAR.Name(), "true");
+	public boolean showToolBar() {
+		String setting = prefs.get(LABEL.TOOL_BAR.Name(), "true");
 		return setting.equals("true");
 	}
 
@@ -151,15 +151,21 @@ public class Get {
 	}
 
 	public String userCategoryIconPath() {
-		return prefs.get(LABEL.USER_CATEGORY_ICON_PATH.Name(), "");
+		String path = prefs.get(LABEL.USER_CATEGORY_ICON_PATH.Name(), "");
+		if(!path.isEmpty()) return "file:" + path;
+		return "";
 	}
 
 	public String userGistIconPath() {
-		return prefs.get(LABEL.USER_GIST_ICON_PATH.Name(), "");
+		String path = prefs.get(LABEL.USER_GIST_ICON_PATH.Name(), "");
+		if(!path.isEmpty()) return "file:" + path;
+		return "";
 	}
 
 	public String userFileIconPath() {
-		return prefs.get(LABEL.USER_FILE_ICON_PATH.Name(), "");
+		String path = prefs.get(LABEL.USER_FILE_ICON_PATH.Name(), "");
+		if(!path.isEmpty()) return "file:" + path;
+		return "";
 	}
 
 	public String userCategoryIconName() {
@@ -181,4 +187,11 @@ public class Get {
 		return prefs.get(LABEL.MAIL_SERVER.Name(), "");
 	}
 
+	public String lastTokenHash() {
+		return prefs.get(LABEL.LAST_TOKEN_HASH.Name(), "");
+	}
+
+	public String lastGitHubUserId() {
+		return prefs.get(LABEL.LAST_GITHUB_USER_ID.Name(), "");
+	}
 }

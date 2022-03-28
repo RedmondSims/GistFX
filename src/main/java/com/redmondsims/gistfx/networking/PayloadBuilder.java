@@ -2,12 +2,14 @@ package com.redmondsims.gistfx.networking;
 
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.enums.Type;
+import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.redmondsims.gistfx.enums.TreeType.*;
 
 public class PayloadBuilder {
 
@@ -21,13 +23,13 @@ public class PayloadBuilder {
 				this.usePassword = true;
 			}
 		}
-		this.senderName   = Crypto.encrypData(senderName);
+		this.senderName   = Crypto.encryptData(senderName);
 		this.categoryName = encrypt(categoryName);
-		this.title        = Crypto.encrypData(categoryName);
+		this.title        = Crypto.encryptData(categoryName);
 		for(Gist gist : gistList) {
 			addGist(gist);
 		}
-		payload = new Payload(this.title, this.senderName, this.gistRecordList, null, this.categoryName, this.usePassword, passwordHash, Type.CATEGORY);
+		payload = new Payload(this.title, this.senderName, this.gistRecordList, null, this.categoryName, this.usePassword, passwordHash, CATEGORY);
 	}
 
 	public PayloadBuilder(String senderName, Gist gist, String password) {
@@ -39,10 +41,10 @@ public class PayloadBuilder {
 				this.usePassword = true;
 			}
 		}
-		this.senderName = Crypto.encrypData(senderName);
-		this.title = Crypto.encrypData(gist.getName());
+		this.senderName = Crypto.encryptData(senderName);
+		this.title = Crypto.encryptData(gist.getName());
 		addGist(gist);
-		payload = new Payload(this.title, this.senderName, this.gistRecordList, null, this.categoryName, this.usePassword, passwordHash, Type.GIST);
+		payload = new Payload(this.title, this.senderName, this.gistRecordList, null, this.categoryName, this.usePassword, passwordHash, GIST);
 	}
 
 	public PayloadBuilder(String senderName, GistFile gistFile, String password) {
@@ -54,13 +56,13 @@ public class PayloadBuilder {
 				this.usePassword = true;
 			}
 		}
-		this.senderName = Crypto.encrypData(senderName);
+		this.senderName = Crypto.encryptData(senderName);
 		String filename    = encrypt(gistFile.getFilename());
 		String content     = encrypt(gistFile.getContent());
 		String     description = encrypt(gistFile.getDescription());
 		FileRecord fileRecord  = new FileRecord(filename, content, description);
-		this.title = Crypto.encrypData(gistFile.getFilename());
-		payload = new Payload(this.title, this.senderName, null, fileRecord, null, this.usePassword, passwordHash, Type.FILE);
+		this.title = Crypto.encryptData(gistFile.getFilename());
+		payload = new Payload(this.title, this.senderName, null, fileRecord, null, this.usePassword, passwordHash, FILE);
 	}
 
 	public PayloadBuilder(Payload payload) {
@@ -81,29 +83,29 @@ public class PayloadBuilder {
 	private       String            password;
 	private       String            passwordHash;
 	private       boolean           usePassword     = false;
-	private       Type              type;
+	private       TreeType          type;
 
 	public String getSenderName() {
-		return Crypto.decrypData(senderName);
+		return Crypto.decryptData(senderName);
 	}
 
 	public String getTitle() {
-		return Crypto.decrypData(title);
+		return Crypto.decryptData(title);
 	}
 
 	public boolean passwordValid(String password) {
-		boolean valid = Crypto.validatePassword(password, passwordHash);
-		if(valid) {
+		if(Crypto.validatePassword(password, passwordHash)) {
 			this.password = password;
+			return true;
 		}
-		return valid;
+		return false;
 	}
 
 	public boolean usePassword() {
 		return usePassword;
 	}
 
-	public Type getType() {
+	public TreeType getType() {
 		return type;
 	}
 
@@ -174,7 +176,7 @@ public class PayloadBuilder {
 			return Crypto.encryptWithPassword(data,password);
 		}
 		else {
-			return Crypto.encrypData(data);
+			return Crypto.encryptData(data);
 		}
 	}
 
@@ -183,7 +185,7 @@ public class PayloadBuilder {
 			return Crypto.decryptWithPassword(data,password);
 		}
 		else {
-			return Crypto.decrypData(data);
+			return Crypto.decryptData(data);
 		}
 	}
 

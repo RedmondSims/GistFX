@@ -4,6 +4,7 @@ import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -24,12 +25,14 @@ public class ToolWindow {
 	private       AnchorPane                ap;
 	private final double                    width;
 	private final double                    height;
+	private final boolean                   noButtons;
 	private final Node                      content;
 	private       Button                    closeButton;
 	private final String                    title;
 	private final List<Button>              buttonList;
 	private final Stage                     callingStage;
 	private final EventHandler<WindowEvent> onCloseHandler;
+	private final EventHandler<Event>        afterCloseEvent;
 
 	public static class Builder {
 
@@ -37,16 +40,18 @@ public class ToolWindow {
 			this.content = content;
 		}
 
-		private       String       sceneId    = "Tool Window";
-		private       AnchorPane   ap;
-		private       double       width;
-		private       double       height;
-		private final Node         content;
-		private       String       title      = "";
-		private       String       closeName  = "Close";
-		private final List<Button> buttonList = new ArrayList<>();
-		private       Stage        stage;
-		private EventHandler<WindowEvent> onCloseHandler;
+		private       String                    sceneId    = "Tool Window";
+		private       AnchorPane                ap;
+		private       double                    width;
+		private       double                    height;
+		private       boolean                   noButtons  = false;
+		private final Node                      content;
+		private       String                    title      = "";
+		private       String                    closeName  = "Close";
+		private final List<Button>              buttonList = new ArrayList<>();
+		private       Stage                     stage;
+		private       EventHandler<WindowEvent> onCloseHandler;
+		private       EventHandler<Event>        afterCloseEvent;
 
         public Builder attachToStage(Stage stage){
 			this.stage = stage;
@@ -61,6 +66,11 @@ public class ToolWindow {
 
 		public Builder title(String title) {
 			this.title = title;
+			return this;
+		}
+
+		public Builder noButtons() {
+			this.noButtons = true;
 			return this;
 		}
 
@@ -88,6 +98,11 @@ public class ToolWindow {
 			return this;
 		}
 
+		public Builder afterCloseEvent (EventHandler<Event> event) {
+			this.afterCloseEvent = event;
+			return this;
+		}
+
 		public Builder nameCloseButton(String name) {
 			this.closeName = name;
 			return this;
@@ -102,17 +117,21 @@ public class ToolWindow {
 		this.sceneId        = build.sceneId;
 		this.width          = build.width;
 		this.height         = build.height;
+		this.noButtons      = build.noButtons;
 		this.content        = build.content;
 		this.title          = build.title;
 		this.buttonList     = build.buttonList;
 		this.callingStage   = build.stage;
 		this.onCloseHandler = build.onCloseHandler;
-		if(buttonList.size() == 0) {
-			this.closeButton = new Button(build.closeName);
-			this.closeButton.setMinHeight(35);
-			this.closeButton.setMinWidth(55);
-			this.closeButton.setOnAction(e -> SceneOne.close(sceneId));
-			buttonList.add(closeButton);
+		this.afterCloseEvent= build.afterCloseEvent;
+		if (!this.noButtons) {
+			if(buttonList.size() == 0) {
+				this.closeButton = new Button(build.closeName);
+				this.closeButton.setMinHeight(35);
+				this.closeButton.setMinWidth(55);
+				this.closeButton.setOnAction(e -> SceneOne.close(sceneId));
+				buttonList.add(closeButton);
+			}
 		}
 	}
 
@@ -122,15 +141,21 @@ public class ToolWindow {
 
 	public void showAndWait() {
 		HBox bbox = new HBox();
-		bbox.getChildren().setAll(FXCollections.observableArrayList(buttonList));
-		bbox.setPrefHeight(35);
-		bbox.setPrefWidth(width);
-		bbox.setSpacing(10);
-		bbox.setAlignment(Pos.CENTER);
-		ap = new AnchorPane(content,bbox);
+		if (!noButtons) {
+			bbox.getChildren().setAll(FXCollections.observableArrayList(buttonList));
+			bbox.setPrefHeight(35);
+			bbox.setPrefWidth(width);
+			bbox.setSpacing(10);
+			bbox.setAlignment(Pos.CENTER);
+			ap = new AnchorPane(content,bbox);
+			setNodePosition(content,0,0,0,50);
+			setNodePosition(bbox,0,0,-1,10);
+		}
+		else {
+			ap = new AnchorPane(content);
+			setNodePosition(content,0,0,0,0);
+		}
 		ap.setPrefSize(width,height);
-		setNodePosition(content,0,0,0,50);
-		setNodePosition(bbox,0,0,-1,10);
 		if (callingStage != null) {
 			SceneOne.set(ap,sceneId,callingStage)
 					.size(width,height)
@@ -140,6 +165,7 @@ public class ToolWindow {
 					.centered()
 					.onCloseEvent(onCloseHandler)
  					.showAndWait();
+			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
 		}
 		else {
 			SceneOne.set(ap,sceneId)
@@ -150,6 +176,7 @@ public class ToolWindow {
 					.size(width,height)
 					.onCloseEvent(onCloseHandler)
 					.showAndWait();
+			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
 		}
 	}
 

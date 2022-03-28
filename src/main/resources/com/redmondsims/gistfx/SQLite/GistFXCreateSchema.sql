@@ -11,20 +11,11 @@ CREATE TABLE "GistFiles" (
 
 CREATE TABLE "Gists" (
   "gistId" TEXT NOT NULL ON CONFLICT ABORT,
-  "name" TEXT,
   "description" TEXT,
   "isPublic" INT,
   "url" TEXT,
   PRIMARY KEY ("gistId"),
   CONSTRAINT "gistId" UNIQUE ("gistId") ON CONFLICT IGNORE
-);
-
-CREATE TABLE "GistUndoFiles" (
-  "IDName" TEXT NOT NULL,
-  "gistId" text,
-  "content" TEXT,
-  PRIMARY KEY ("IDName"),
-  CONSTRAINT "fk_GistUndoFiles_Gists_1" FOREIGN KEY ("gistId") REFERENCES "Gists" ("gistId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE "Metadata" (

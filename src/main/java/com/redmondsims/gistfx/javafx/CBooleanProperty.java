@@ -3,7 +3,9 @@ package com.redmondsims.gistfx.javafx;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 
-public class CBooleanProperty extends SimpleBooleanProperty {
+import java.io.Serializable;
+
+public class CBooleanProperty extends SimpleBooleanProperty implements Serializable {
 
 	public CBooleanProperty() {
 		super();

@@ -13,7 +13,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
@@ -38,9 +37,11 @@ class SQLite {
 		boolean createSchema  = !sqliteFile.exists();
 		String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();
 		try {
-			conn = DriverManager.getConnection(connString);
-			conn.setSchema("GistFX");
-			conn.setAutoCommit(true);
+			if (conn == null) {
+				conn = DriverManager.getConnection(connString);
+				conn.setSchema("GistFX");
+				conn.setAutoCommit(true);
+			}
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -64,15 +65,7 @@ class SQLite {
 			}
 			LiveSettings.setDataSource(GITHUB);
 		}
-		else {
-			boolean tablesHaveData = gistsHasData() && gistFilesHasData();
-			if (!tablesHaveData) {
-				LiveSettings.setDataSource(GITHUB);
-			}
-			else {
-				LiveSettings.setDataSource(LOCAL);
-			}
-		}
+		LiveSettings.setDataSource(hasData() ? LOCAL : GITHUB);
 	}
 
 	public void deleteDatabaseFile() {
@@ -81,21 +74,13 @@ class SQLite {
 
 	private void deleteFile(File file) {
 		try {
-			conn.close();
-			new Thread(() -> {
-				try {
-					Action.sleep(500);
-					FileUtils.forceDelete(file);
-				}
-				catch (IOException e) {
-					System.err.println("SQLite.delete(File): " + e.getMessage());
-					e.printStackTrace();
-				}
-			}).start();
+			if(conn != null)
+				conn.close();
+			if(file.exists())
+				FileUtils.forceDelete(file);
 		}
-		catch (SQLException e) {
-			System.err.println("SQLite.delete(File): " + e.getMessage());
-			e.printStackTrace();
+		catch (Exception e) {
+			Action.error(e);
 		}
 	}
 
@@ -116,14 +101,7 @@ class SQLite {
 				stmt.executeUpdate(SQL);
 			}
 		}
-		catch (SQLException sqe) {
-			result = false;
-			System.err.println("*** SQLite.createSchema ***\n" + sqe.getMessage());
-			sqe.printStackTrace();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		catch (Exception e) {Action.error(e);}
 		return result;
 	}
 
@@ -146,13 +124,12 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
 	}
 
 	public void deleteGist(String gistId) {
 		String sqlGistFiles     = "DELETE FROM GistFiles WHERE gistId = ?";
 		String sqlGists         = "DELETE FROM Gists WHERE gistId = ?";
-		String sqlGistUndoFiles = "DELETE FROM GistUndoFiles WHERE gistId = ?";
 		try {
 			PreparedStatement pst = conn.prepareStatement(sqlGistFiles);
 			pst.setString(1,gistId);
@@ -160,13 +137,11 @@ class SQLite {
 			pst = conn.prepareStatement(sqlGists);
 			pst.setString(1,gistId);
 			pst.executeUpdate();
-			pst = conn.prepareStatement(sqlGistUndoFiles);
-			pst.setString(1,gistId);
-			pst.executeUpdate();
 			pst.close();
 			Action.deleteGistMetadata(gistId);
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public void updateGistDescription(Gist gist) {
@@ -180,7 +155,8 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public Map<String, Gist> getGistMap() {
@@ -203,7 +179,7 @@ class SQLite {
 				gist.addFiles(getFileMap(gist.getGistId()));
 			}
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
 		return map;
 	}
 
@@ -216,7 +192,8 @@ class SQLite {
 				response = rs.getString(1);
 			}
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 		return response;
 	}
 
@@ -230,7 +207,8 @@ class SQLite {
 			}
 			rs.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 		return response;
 	}
 
@@ -250,7 +228,8 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 
 	}
 
@@ -275,7 +254,8 @@ class SQLite {
 			}
 			rs.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 		return fileList;
 	}
 
@@ -294,7 +274,8 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public void renameFile(Integer fileId, String newFilename) {
@@ -307,7 +288,8 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public int newSQLFile(String gistId, String filename, String content, Date uploadDate) {
@@ -328,7 +310,8 @@ class SQLite {
 			fileId = rs.getInt(1);
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 		return fileId;
 	}
 
@@ -341,7 +324,8 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public void changeGistId(GistFile file, String gistId) {
@@ -354,12 +338,17 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	/**
 	 *	NON-encrypted database methods
 	 */
+
+	public boolean hasData() {
+		return gistsHasData() && gistFilesHasData();
+	}
 
 	private boolean gistsHasData() {
 		String  SQL     = "SELECT count(*) FROM Gists;";
@@ -380,7 +369,8 @@ class SQLite {
 			}
 			rs.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 		return hasData;
 	}
 
@@ -388,9 +378,8 @@ class SQLite {
 		try {
 			return conn.prepareStatement("select last_insert_rowid();").executeQuery();
 		}
-		catch (SQLException throwables) {
-			throwables.printStackTrace();
-		}
+		catch (Exception e) {Action.error(e);}
+
 		return null;
 	}
 
@@ -403,7 +392,8 @@ class SQLite {
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public boolean fileIsDirty (Integer fileId) {
@@ -420,7 +410,8 @@ class SQLite {
 			pst.close();
 			return isDirty;
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 		return false;
 	}
 
@@ -431,7 +422,8 @@ class SQLite {
 			conn.createStatement().executeUpdate(cleanGists);
 			conn.createStatement().executeUpdate(resetAutoIncrementFiles);
 		}
-		catch (SQLException throwables) {throwables.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
+
 	}
 
 	public void deleteMetadata() {
@@ -439,8 +431,98 @@ class SQLite {
 		try {
 			conn.createStatement().executeUpdate(SQL);
 		}
-		catch (SQLException sqe) {sqe.printStackTrace();}
+		catch (Exception e) {Action.error(e);}
 
+
+	}
+	
+	public String getMD2() {
+		String SQL = "SELECT jsonString FROM Metadata WHERE id = 2;";
+		String response = "";
+		try {
+			ResultSet rs = conn.createStatement().executeQuery(SQL);
+			if (rs.next()) {
+				response = rs.getString(1);
+			}
+			rs.close();
+		}
+		catch (Exception e) {Action.error(e);}
+
+		return response;
+	}
+
+	public boolean reEncryptData(String oldPassword, String newPassword) {
+		List<GistRecord>     gistRecordList = new ArrayList<>();
+		List<GistFileRecord> fileList       = new ArrayList<>();
+		String               SQLGist        = "SELECT * FROM Gists;";
+		String               SQLFile        = "SELECT * FROM GistFiles;";
+		Crypto.setTempSessionKey(oldPassword);
+		boolean response = true;
+		try {
+			ResultSet rs = conn.createStatement().executeQuery(SQLGist);
+			while (rs.next()) {
+				String  gistId      = Crypto.decryptWithSessionKey(rs.getString("gistId"));
+				String  description = Crypto.decryptWithSessionKey(rs.getString("description"));
+				boolean isPublic    = rs.getBoolean("isPublic");
+				String  url         = Crypto.decryptWithSessionKey(rs.getString("url"));
+				gistRecordList.add(new GistRecord(gistId, description, isPublic, url));
+			}
+			rs = conn.createStatement().executeQuery(SQLFile);
+			while (rs.next()) {
+				int     fileId     = rs.getInt("fileId");
+				String  gistId     = Crypto.decryptWithSessionKey(rs.getString("gistId"));
+				String  filename   = Crypto.decryptWithSessionKey(rs.getString("filename"));
+				String  content    = Crypto.decryptWithSessionKey(rs.getString("content"));
+				boolean dirty      = rs.getBoolean("dirty");
+				Date    uploadDate = rs.getDate("uploadDate");
+				fileList.add(new GistFileRecord(fileId, gistId, filename, content, dirty, uploadDate));
+			}
+			rs.close();
+			conn.createStatement().executeQuery("DELETE FROM Gists");
+			conn.createStatement().executeQuery("DELETE FROM GistFiles");
+		}
+		catch (Exception e) {Action.error(e);}
+
+
+
+		String SQLAddGist = "INSERT INTO Gists (gistId, description, isPublic, url) VALUES (?,?,?,?)";
+		String SQLAddGistFile = "INSERT INTO GistFiles (fileId, gistId, filename, content, dirty, uploadDate) VALUES (?,?,?,?,?,?)";
+		Crypto.setTempSessionKey(newPassword);
+		try {
+			PreparedStatement pst = conn.prepareStatement(SQLAddGist);
+			for(GistRecord gistRecord : gistRecordList) {
+				pst.setString(1, Crypto.encryptWithSessionKey(gistRecord.gistId()));
+				pst.setString(2, Crypto.encryptWithSessionKey(gistRecord.description()));
+				pst.setBoolean(3,gistRecord.isPublic());
+				pst.setString(4, Crypto.encryptWithSessionKey(gistRecord.url()));
+				pst.executeUpdate();
+			}
+			pst = conn.prepareStatement(SQLAddGistFile);
+			for(GistFileRecord fileRecord : fileList) {
+				pst.setInt(1,fileRecord.fileId());
+				pst.setString(2, Crypto.encryptWithSessionKey(fileRecord.gistId()));
+				pst.setString(3, Crypto.encryptWithSessionKey(fileRecord.filename()));
+				pst.setString(4, Crypto.encryptWithSessionKey(fileRecord.content()));
+				pst.setBoolean(5,fileRecord.dirty());
+				pst.setDate(6,fileRecord.uploadDate());
+				pst.executeUpdate();
+			}
+			pst.close();
+		}
+		catch (Exception e) {Action.error(e);}
+
+		return response;
+	}
+
+	public void deleteAllLocalData() {
+		try {
+			conn.createStatement().executeUpdate("DELETE FROM Gists WHERE gistId <> 'a';");
+			conn.createStatement().executeUpdate("DELETE FROM GistFiles WHERE fileId <> 0;");
+			conn.createStatement().executeUpdate("DELETE FROM Metadata WHERE id <> 0;");
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

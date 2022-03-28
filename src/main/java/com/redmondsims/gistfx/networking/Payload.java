@@ -1,6 +1,6 @@
 package com.redmondsims.gistfx.networking;
 
-import com.redmondsims.gistfx.enums.Type;
+import com.redmondsims.gistfx.enums.TreeType;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -13,7 +13,7 @@ public record Payload(String title,
 					  String categoryName,
 					  boolean usePassword,
 					  String passwordHash,
-					  Type type) implements Serializable {
+					  TreeType type) implements Serializable {
 
 	@Serial private static final long serialVersionUID = 4L;
 

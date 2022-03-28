@@ -1,9 +1,8 @@
 package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.enums.State;
+import com.redmondsims.gistfx.enums.FileState;
 import com.redmondsims.gistfx.enums.Type;
-import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.javafx.CStringProperty;
 import com.redmondsims.gistfx.ui.gist.CodeEditor;
 import com.redmondsims.gistfx.ui.gist.Icons;
@@ -21,27 +20,25 @@ import java.sql.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.redmondsims.gistfx.enums.FileState.*;
+
 public class GistFile {
 
-	private final CStringProperty      fileName           = new CStringProperty();
-	private final CStringProperty      content            = new CStringProperty();
-	private final CStringProperty      description        = new CStringProperty();
-	private final CBooleanProperty     dirty              = new CBooleanProperty(false);
-	private final CBooleanProperty     conflict           = new CBooleanProperty(false);
-	private final ObjectProperty<Node> graphicNode        = new SimpleObjectProperty<>();
-	private final ImageView            conflictFlag       = Icons.getConflictFlag();
-	private final ImageView            dirtyFlag       	  = Icons.getDirtyFlagIcon();
-	private       ImageView            fileIcon       	  = Icons.getFileIcon();
+	private final CStringProperty      fileName         = new CStringProperty();
+	private final CStringProperty      content          = new CStringProperty();
+	private final CStringProperty      description      = new CStringProperty();
+	private final ObjectProperty<Node> graphicNode   = new SimpleObjectProperty<>();
+	private       FileState            lastFileState = NORMAL;
+	private       FileState            fileState     = NORMAL;
 	private       StringProperty       monacoStringProperty;
 	private final Integer              fileId;
 	private       String               gistId;
 	private       String               lastLocalSave;
 	private       String               gitHubVersion;
-	private       Timer                sqlSaveTimer       = new Timer();
+	private       Timer                sqlSaveTimer     = new Timer();
 	private       Timer                descriptionSaveTimer;
 	private       Date                 uploadDate;
-	private       boolean              dataNotCommitted   = false;
-	private       long                 lastSaveTime       = System.currentTimeMillis();
+	private       boolean              dataNotCommitted = false;
 
 	public GistFile(Integer fileId, String gistId, String filename, String content, Date uploadDate, boolean isDirty) { //used for new files being added to Gist
 		this.gistId = gistId;
@@ -49,49 +46,30 @@ public class GistFile {
 		this.content.setValue(content);
 		this.fileId = fileId;
 		this.uploadDate = uploadDate;
-		this.dirty.setValue(isDirty);
+		if(isDirty) fileState = DIRTY;
 		this.description.setValue(Action.getFileDescription(this));
 		this.description.addListener(descriptionChangeListener);
 		lastLocalSave = content;
-		dirty.setChangeListener((observable, oldValue, newValue) -> {
-			if (newValue != null && oldValue != null) {
-				if (!newValue.equals(oldValue)) {
-					Action.setDirtyFile(fileId, newValue);
-					refreshGraphicNode();
-				}
-			}
-		});
-		new Thread(() -> {
-			if(dirty.isFalse()) {
-				Status.register(fileId);
-				while(Status.getState().equals(State.LOADING)) Action.sleep(100);
-				gitHubVersion = Action.getLocalGitHubFileContent(gistId, fileName.name());
-				conflict.setValue(this.content.notEqualTo(gitHubVersion));
-				Status.unRegister(fileId);
-			}
-			refreshGraphicNode();
-		}).start();
+		refreshGraphicNode();
 	}
 
 	public void refreshGraphicNode() {
 		Platform.runLater(() -> {
-			if (dirty.isFalse()) dirty.setValue(Action.fileIsDirty(fileId));
-			int     option    = 0;
-			boolean dirty     = this.dirty.isTrue();
-			boolean conflict  = this.conflict.isTrue();
-			if(conflict) option = 2;
-			else if (dirty) option = 1;
-			switch (option) {
-				case 0 -> fileIcon = Icons.getFileIcon();
-				case 1 -> fileIcon = dirtyFlag;
-				case 2 -> fileIcon = conflictFlag;
-			}
-			graphicNode.set(fileIcon);
-			if(option > 0 || this.dirty.changed() || this.conflict.changed()) {
+			WindowManager.handleButtons();
+			graphicNode.set(getIcon());
+			if (!fileState.equals(lastFileState)) {
+				lastFileState = fileState;
 				WindowManager.refreshFileIcons();
-				WindowManager.handleButtons();
 			}
 		});
+	}
+
+	private ImageView getIcon() {
+		return switch(fileState) {
+			case DIRTY -> Icons.getDirtyIcon();
+			case CONFLICT -> Icons.getConflictIcon();
+			case NORMAL -> Icons.getFileIcon();
+		};
 	}
 
 	/**
@@ -113,8 +91,7 @@ public class GistFile {
 	private Timer preCheckTimer;
 
 	ChangeListener<String> contentChangeListener = (observable, oldValue, newValue) -> {
-		if (conflict.isTrue()) CodeEditor.get().getEditor().getDocument().setText(lastLocalSave);
-		else if(!newValue.equals(oldValue)) {
+		if(!newValue.equals(oldValue)) {
 			if (Status.comparingLocalDataWithGitHub()) {
 				if (preCheckTimer != null) preCheckTimer.cancel();
 				preCheckTimer = new Timer();
@@ -122,7 +99,6 @@ public class GistFile {
 			}
 			else {
 				content.setValue(newValue);
-				lastSaveTime = System.currentTimeMillis();
 				dataNotCommitted = true;
 			}
 		}
@@ -148,14 +124,13 @@ public class GistFile {
 		return new TimerTask() {
 			@Override public void run() {
 				while(Status.comparingLocalDataWithGitHub()) Action.sleep(100);
-				if (conflict.isTrue()) {
+				if (fileState.equals(CONFLICT)) {
 					CodeEditor.get().getEditor().getDocument().setText(lastLocalSave);
 					content.setValue(lastLocalSave);
 					dataNotCommitted = false;
 				}
 				else {
 					content.setValue(newContent);
-					lastSaveTime = System.currentTimeMillis();
 					dataNotCommitted = true;
 				}
 				refreshGraphicNode();
@@ -168,10 +143,9 @@ public class GistFile {
 	private TimerTask localFileSave() {
 		return new TimerTask() {
 			@Override public void run() {
-				long now = System.currentTimeMillis();
 				if (dataNotCommitted) {
-					if (!Status.comparingLocalDataWithGitHub() && conflict.isFalse()) {
-						dirty.setValue(content.notEqualTo(gitHubVersion));
+					if (!Status.comparingLocalDataWithGitHub() && !fileState.equals(CONFLICT)) {
+						if(content.notEqualTo(gitHubVersion)) fileState = DIRTY;
 						lastLocalSave = content.get();
 						Action.localFileSave(getThis());
 						dataNotCommitted = false;
@@ -203,9 +177,21 @@ public class GistFile {
 
 	public void reCheckWithGitHub() {
 		gitHubVersion = Action.getGitHubFileContent(gistId, fileName.name());
-		conflict.setValue(this.content.notEqualTo(gitHubVersion));
-		if(conflict.isTrue()) resolveConflict(Type.LOCAL);
+		if(fileState.equals(NORMAL)) {
+			if (!gitHubVersion.equals(content.get())) {
+				fileState = CONFLICT;
+			}
+		}
 	}
+
+	public void compareWithGitHub(String gitHubVersion) {
+		this.gitHubVersion = gitHubVersion;
+		if(content.notEqualTo(gitHubVersion) && fileState.equals(NORMAL)) {
+			fileState = CONFLICT;
+			refreshGraphicNode();
+		}
+	}
+
 
 	/**
 		Public setters
@@ -230,6 +216,7 @@ public class GistFile {
 		GistManager.unBindFileObjects();
 		CodeEditor.bindDocumentTo(this);
 		CodeEditor.setLanguage(getFileExtension());
+		CodeEditor.get().setDisable(fileState.equals(CONFLICT));
 	}
 
 	public void setGistId(String gistId) {
@@ -242,11 +229,6 @@ public class GistFile {
 
 	public String getDescription() {
 		return this.description.getValue();
-	}
-
-	public ImageView getGraphic() {
-		refreshGraphicNode();
-		return fileIcon;
 	}
 
 	public String getContent() {
@@ -262,10 +244,10 @@ public class GistFile {
 	}
 
 	public boolean isDirty() {
-		return dirty.getValue();
+		return fileState.equals(DIRTY);
 	}
 
-	public boolean isInConflict() {return conflict.isTrue() && dirty.isFalse();}
+	public boolean isInConflict() {return fileState.equals(CONFLICT);}
 
 	public String getFilename() {
 		return fileName.name();
@@ -279,31 +261,18 @@ public class GistFile {
 
 	public Integer getFileId()     {return fileId;}
 
-	public String getNewFilename() {return fileName.name();}
-
 	public String getLanguage() {
 		return getFileExtension();
 	}
 
 	public ObjectProperty<Node> getGraphicNode() {return graphicNode;}
 
-	private Type gitHubVersionConflict() {
-		Type result = Type.OK;
-		if(dirty.isTrue()) result = Type.DIRTY;
-		else {
-			conflict.setValue(content.notEqualTo(gitHubVersion));
-			if (conflict.isTrue()) result = Type.CONFLICT;
-		}
-		refreshGraphicNode();
-		return result;
-	}
-
 	/**
 		SQL Actions
 	 */
 
 	public void resolveConflict(Type choice) {
-		conflict.setFalse();
+		fileState = NORMAL;
 		if (choice.equals(Type.GITHUB)) {
 			CodeEditor.get().getEditor().getDocument().setText(gitHubVersion);
 		}
@@ -314,18 +283,16 @@ public class GistFile {
 	}
 
 	public boolean flushDirtyData() {
-		boolean response = false;
-		if (conflict.isFalse()) {
+		if (!fileState.equals(CONFLICT)) {
 			uploadDate = new Date(System.currentTimeMillis());
 			Action.updateGistFile(this);
 			lastLocalSave = content.get();
 			gitHubVersion = content.get();
-			dirty.setFalse();
-			conflict.setFalse();
+			fileState = NORMAL;
 			refreshGraphicNode();
-			response = true;
+			return true;
 		}
-		return response;
+		return false;
 	}
 
 	@Override

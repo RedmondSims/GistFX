@@ -38,6 +38,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.redmondsims.gistfx.enums.LoginStates.*;
+import static com.redmondsims.gistfx.preferences.UISettings.DataSource.GITHUB;
 import static javafx.scene.layout.AnchorPane.*;
 
 /**
@@ -115,10 +116,6 @@ public class LoginWindow {
 	private boolean hasTypedPassword;
 	private boolean noTypedToken;
 
-
-	public static String getSceneId() {
-		return sceneId;
-	}
 
 	public LoginWindow() {
 		String styleClass = LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD) ? "standard" : "graphic";
@@ -313,13 +310,13 @@ public class LoginWindow {
 	private void graphicLogin() {
 		pBar = Action.getProgressNode(13);
 		ap.setStyle("-fx-background-color: black");
-		String    backBothBase     = "ArtWork/%s/LoginForm/Background/BackBoth.png";
-		String    backPasswordBase = "ArtWork/%s/LoginForm/Background/BackPassword.png";
-		String    backTokenBase    = "ArtWork/%s/LoginForm/Background/BackToken.png";
-		String    checkBoxBase     = "ArtWork/%s/LoginForm/Checkbox.png";
-		String    questionBase     = "ArtWork/%s/LoginForm/QuestionMark.png";
-		String    chkMarkBase      = "ArtWork/%s/LoginForm/chkMark.png";
-		String    kittyKittyBase   = "ArtWork/%s/LoginForm/KittyKitty.png";
+		String    backBothBase     = "Artwork/%s/LoginForm/Background/BackBoth.png";
+		String    backPasswordBase = "Artwork/%s/LoginForm/Background/BackPassword.png";
+		String    backTokenBase    = "Artwork/%s/LoginForm/Background/BackToken.png";
+		String    checkBoxBase     = "Artwork/%s/LoginForm/Checkbox.png";
+		String    questionBase     = "Artwork/%s/LoginForm/QuestionMark.png";
+		String    chkMarkBase      = "Artwork/%s/LoginForm/chkMark.png";
+		String    kittyKittyBase   = "Artwork/%s/LoginForm/KittyKitty.png";
 		String      colorOption  = LiveSettings.getLoginScreenColor().folderName(LiveSettings.getLoginScreenColor());
 		InputStream pathBoth       = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backBothBase, colorOption)));
 		InputStream pathPassword   = Objects.requireNonNull(Main.class.getResourceAsStream(String.format(backPasswordBase, colorOption)));
@@ -545,18 +542,17 @@ public class LoginWindow {
 				//Handle the creation of a new local password with an access token.
 				checkToken(false);
 				if (tokenValid) {
-					Response response = new PasswordDialog().ConfirmPasswordYesNoCancel(loginPassword.getValue(), SceneOne.getOwner(sceneId));
-					if (response == Response.YES) {
+					boolean passwordsMatch = Password.verify(loginPassword.getValue(),SceneOne.getStage(sceneId));
+					if (passwordsMatch) {
 						new Thread(() -> {
 							updateProcess("Hashing Password");
 							String passwordHash = Crypto.hashPassword(loginPassword.getValue());
 							AppSettings.set().hashedPassword(passwordHash);
-							AppSettings.set().hashedToken(Crypto.encryptWithSessionKey(userToken.getValue()));
+							AppSettings.set().hashedToken(Crypto.encryptWithPassword(userToken.getValue(),loginPassword.get()));
 						}).start();
 						return HASHING_NEW_PASSWORD;
 					}
-					else if (response == Response.NO) {return PASSWORD_MISMATCH;}
-					else {return USER_CANCELED_CONFIRM_PASSWORD;}
+					else {return PASSWORD_MISMATCH;}
 				}
 				else {return TOKEN_FAILURE;}
 			}
@@ -564,7 +560,7 @@ public class LoginWindow {
 				if (passwordValid) {
 					checkToken(false);
 					if(tokenValid) {
-						AppSettings.set().hashedToken(Crypto.encryptWithSessionKey(tfToken.getText()));
+						AppSettings.set().hashedToken(Crypto.encryptWithPassword(userToken.getValue(),loginPassword.get()));
 						return ALL_CREDS_VALID;
 					}
 					else {
@@ -637,24 +633,25 @@ public class LoginWindow {
 		if (!tokenChecked) {
 			if (userToken.getValue().length() > 20) {
 				tokenValid = Action.tokenValid(userToken.getValue());
-				Platform.runLater(() -> lblLoggedIn.setText(tokenValid ? "Token Valid" : "Token NOT Valid"));
-				updateProcess(tokenValid ? "Token Valid" : "Token NOT Valid");
-				if(LiveSettings.getDataSource().equals(UISettings.DataSource.LOCAL)) {
-					new Thread(() -> {
-						Action.sleep(1500);
+				Platform.runLater(() -> {
+					lblLoggedIn.setText(tokenValid ? "Token Valid" : "Token NOT Valid");
+					updateProcess(tokenValid ? "Token Valid" : "Token NOT Valid");
+				});
+				if(tokenValid) {
+					if(LiveSettings.getDataSource().equals(UISettings.DataSource.LOCAL)) {
 						Platform.runLater(() -> {
 							lblLoggedIn.setText("Loading local Gist data and creating window");
 							updateProcess("Loading local Gist data and creating window");
 						});
-					}).start();
-				}
-				if (tokenValid && tokenOnly) {
-					newSecurityMode = TOKEN_LOGIN;
-					Crypto.setSessionKey("");
+					}
+					if(tokenOnly) {
+						Crypto.setSessionKey("", userToken.getValue().substring(10));
+						newSecurityMode = TOKEN_LOGIN;
+					}
 				}
 				else {
-					tfToken.setDisable(false);
 					tfPassword.setDisable(false);
+					tfToken.setDisable(false);
 				}
 				tokenChecked = true;
 			}
@@ -666,8 +663,8 @@ public class LoginWindow {
 		if (passwordValid) {
 			updateProcess("Password Valid");
 			newSecurityMode = PASSWORD_LOGIN;
-			Crypto.setSessionKey(tfPassword.getText());
-			userToken.setValue(Crypto.decryptWithSessionKey(hashedAccessToken));
+			userToken.setValue(Crypto.decryptWithPassword(hashedAccessToken,loginPassword.getValue()));
+			Crypto.setSessionKey(loginPassword.getValue(),userToken.getValue().substring(10));
 		}
 		else {
 			tfToken.setDisable(false);
@@ -696,8 +693,9 @@ public class LoginWindow {
 					});
 
 				case PASSWORD_MISMATCH -> Platform.runLater(() -> {
-						CustomAlert.showWarning("Password Mismatch", "Your passwords did not match, please try again.");
-						tfPassword.selectAll();
+						tfPassword.setDisable(false);
+						tfPassword.setText("");
+						tfPassword.requestFocus();
 						buttonLogin.setDisable(false);
 					});
 
@@ -725,11 +723,12 @@ public class LoginWindow {
 
 				case HASHING_NEW_PASSWORD -> {
 					newSecurityMode = PASSWORD_LOGIN;
-					Crypto.setSessionKey(tfPassword.getText());
+					Crypto.setSessionKey(loginPassword.getValue(),userToken.getValue().substring(10));
 					new Thread(this::postLoginTasks).start();
 				}
 
 				case TOKEN_FAILURE -> Platform.runLater(() -> {
+					LiveSettings.setDataSource(GITHUB);
 					CustomAlert.showWarning("Token Failure", "Your token could not authenticate, it might be expired.\n\nPlease click on the question mark for more information.");
 					if(LiveSettings.getLoginScreen() == LoginScreen.GRAPHIC) {
 						ivBackBoth.setVisible(true);
@@ -770,18 +769,20 @@ public class LoginWindow {
 
 	private void postLoginTasks() {
 		LiveSettings.applyAppSettings();
-		if (!currentSecurityMode.equals(newSecurityMode) || passwordChanged) {
+		if (LiveSettings.doMasterReset) {
+			Platform.runLater(MasterResetWindow::new);
+		}
+		else if (!currentSecurityMode.equals(newSecurityMode) || passwordChanged) {
 			/*
 			 * This ensures that if the user switches between password login and
 			 * token login, the encryption key will be changed and the data needs
 			 * to be re-encrypted.
 			 */
 			Action.cleanDatabase();
-			LiveSettings.setDataSource(UISettings.DataSource.GITHUB);
+			LiveSettings.setDataSource(GITHUB);
 			AppSettings.set().securityOption(newSecurityMode);
-		}
-		if (LiveSettings.doMasterReset) {
-			Platform.runLater(MasterResetWindow::new);
+			Action.loadWindow();
+			Platform.runLater(() -> pBar.progressProperty().unbind());
 		}
 		else {
 			Action.loadWindow();

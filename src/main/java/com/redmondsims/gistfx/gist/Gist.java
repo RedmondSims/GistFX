@@ -1,8 +1,14 @@
 package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.javafx.CBooleanProperty;
+import com.redmondsims.gistfx.ui.gist.GistCategory;
+import com.redmondsims.gistfx.ui.gist.Icons;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,11 +19,12 @@ public class Gist {
 
 	private final StringProperty name        = new SimpleStringProperty();
 	private final StringProperty description = new SimpleStringProperty();
+	private final CBooleanProperty expandedProperty = new CBooleanProperty(false);
 	private final String         gistURL;
 	private final String         gistId;
 	private       boolean        isPublic;
-	private       boolean        isExpanded = false;
-	private       List<GistFile> fileList    = new ArrayList<>();
+	private List<GistFile> fileList    = new ArrayList<>();
+	private GistCategory   gistCategory;
 
 	public Gist(String gistId, String name, String description, boolean isPublic, String gistURL) {
 		this.gistId = gistId;
@@ -25,6 +32,14 @@ public class Gist {
 		this.description.setValue(description);
 		this.isPublic = isPublic;
 		this.gistURL  = gistURL;
+		this.gistCategory = Action.getGistCategory(gistId);
+		expandedProperty.addListener((observable, oldValue, newValue) -> {
+			if(gistCategory != null) {
+				if (newValue) {
+					gistCategory.setExpanded(true);
+				}
+			}
+		});
 	}
 
 	private String truncate(String string, int numChars, boolean ellipses) {
@@ -38,6 +53,10 @@ public class Gist {
 	 * Public Setters
 	 */
 
+	public void setGistCategory(GistCategory gistCategory) {
+		this.gistCategory = gistCategory;
+	}
+
 	public void addFiles(List<GistFile> fileList) {
 		this.fileList = fileList;
 	}
@@ -47,18 +66,18 @@ public class Gist {
 	}
 
 	public void setExpanded(boolean expanded) {
-		isExpanded = expanded;
+		expandedProperty.setValue(expanded);
 	}
 
 	/**
 	 * Public Getters
 	 */
 
-	public boolean isExpanded() {
-		return isExpanded;
+	public CBooleanProperty expandedProperty() {
+		return expandedProperty;
 	}
 
-	public String getGistId() {return gistId;}
+	public String getGistId()      {return gistId;}
 
 	public String getDescription() {return description.get();}
 
@@ -112,11 +131,6 @@ public class Gist {
 
 	public void deleteFile(String filename) {
 		fileList.removeIf(file -> file.getFilename().equals(filename));
-	}
-
-	public void setLocalDescription(String description) {
-		this.description.setValue(description);
-		Action.updateLocalGistDescription(this);
 	}
 
 	public void setDescription(String description) {

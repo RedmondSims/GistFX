@@ -2,6 +2,7 @@ package com.redmondsims.gistfx.alerts;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Response;
+import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
@@ -44,6 +45,15 @@ public class CustomAlert {
 	private static TextField newTextField(String text, String prompt) {
 		TextField tf = new TextField(text);
 		tf.setPromptText(prompt);
+		tf.getStylesheets().add(Theme.TEXT_FIELD.getStyleSheet());
+		return tf;
+	}
+
+	private static TextField newTextField(String text, double width) {
+		TextField tf = new TextField(text);
+		tf.setMinWidth(width);
+		tf.setPrefWidth(width);
+		tf.setMaxWidth(width);
 		tf.getStylesheets().add(Theme.TEXT_FIELD.getStyleSheet());
 		return tf;
 	}
@@ -199,15 +209,14 @@ public class CustomAlert {
 		return Response.CANCELED;
 	}
 
-	public static String showChangeNameAlert(String currentName, String type) {
-		double width = 275;
+	public static String showChangeNameAlert(String currentName, Type type, Stage stage) {
+		double width = 320;
 		double height = 175;
 		Text txtName = newText(currentName);
-		String name = "Change"+type+"Name";
-		Label  lblMessage = newLabel("Renaming "+type+": ",85,35,false);
-		Label  lblNewGistName = newLabel("New Name:",65,35,false);
-		TextField tfGistName = newTextField(currentName, "");
-		tfGistName.setPrefWidth(165);
+		String sceneId = "change"+type.nameCased()+"Name";
+		Label  lblMessage = newLabel("Renaming "+type.nameCased()+": ", 130);
+		Label  lblNewGistName = newLabel("New Name:", 65);
+		TextField tfGistName = newTextField(currentName,165);
 		tfGistName.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue.trim().isEmpty()) {
 				response = "";
@@ -216,27 +225,32 @@ public class CustomAlert {
 				response = newValue.trim();
 			}
 		});
-		tfGistName.setOnAction(e -> SceneOne.close(name));
+		tfGistName.setOnAction(e -> SceneOne.close(sceneId));
 		Button btnProceed = new Button("Proceed");
 		Button btnCancel = new Button("Cancel");
 		btnProceed.setOnAction(e->{
-			response = tfGistName.getText().trim();
-			SceneOne.close(name);
+			SceneOne.close(sceneId);
 		});
 		btnCancel.setOnAction(e->{
 			response = "";
-			SceneOne.close(name);
+			SceneOne.close(sceneId);
 		});
-		HBox hbMessage = newHBox(width,35,Pos.CENTER_LEFT,lblMessage,txtName);
-		HBox hbLabels = newHBox(width,35,Pos.CENTER_LEFT,lblNewGistName, tfGistName);
-		HBox hbButtons = newHBox(width,55,Pos.CENTER,btnProceed,btnCancel);
-		VBox vbox = new VBox(hbMessage, hbLabels, hbButtons);
-		vbox.setSpacing(0);
+		HBox boxMessageName = newHBox(width, Pos.CENTER_LEFT, lblMessage, txtName);
+		HBox boxNewName = newHBox(width, Pos.CENTER_LEFT, lblNewGistName, tfGistName);
+		VBox vbox = new VBox(boxMessageName, boxNewName);
+		vbox.setSpacing(1);
 		vbox.setPadding(new Insets(10,10, 10, 10));
 		vbox.setAlignment(Pos.CENTER);
-		AnchorPane ap = new AnchorPane(vbox);
-		SceneOne.set(ap,name).centered().size(width,height).newStage().showAndWait();
-		return response;
+		ToolWindow toolWindow = new ToolWindow.Builder(vbox)
+				.addButton(btnCancel)
+				.addButton(btnProceed)
+				.setSceneId(sceneId)
+				.attachToStage(stage)
+				.title("Rename " + type.nameCased())
+				.size(width,height)
+				.build();
+		toolWindow.showAndWait();
+		return response.replaceAll("\\n", " ").trim();
 	}
 
 	private static Text newText(String string) {
@@ -252,24 +266,25 @@ public class CustomAlert {
 		return text;
 	}
 
-	private static HBox newHBox(double width, double height, Pos alignment, Node...nodes) {
+	private static HBox newHBox(double width, Pos alignment, Node... nodes) {
 		HBox hbox = new HBox();
 		for(Node node : nodes) {
 			hbox.getChildren().add(node);
 		}
-		hbox.setSpacing(5);
+		hbox.setSpacing(1);
 		hbox.setPadding(new Insets(5, 5, 5, 5));
 		hbox.setAlignment(alignment);
 		hbox.setPrefWidth(width);
-		hbox.setPrefHeight(height);
+		hbox.setPrefHeight(30);
 		return hbox;
 	}
 
-	private static Label newLabel(String text, double width, double height, boolean wrapText) {
+	private static Label newLabel(String text, double width) {
 		Label label = new Label(text);
 		label.setPrefWidth(width);
-		label.setPrefHeight(height);
-		label.setWrapText(wrapText);
+		label.setMinWidth(width);
+		label.setMaxWidth(width);
+		label.setPrefHeight(30);
 		return label;
 	}
 
@@ -331,7 +346,7 @@ public class CustomAlert {
 			SceneOne.close(name);
 		});
 		HBox hbNewName = new HBox(lblNewFilename, tfFilename);
-		HBox hbButtons = newHBox(width,35,Pos.CENTER,btnProceed,btnCancel);
+		HBox hbButtons = newHBox(width, Pos.CENTER, btnProceed, btnCancel);
 		hbNewName.setSpacing(10);
 		hbNewName.setPadding(new Insets(10, 10, 10, 10));
 		VBox vbox = new VBox(hbNewName,hbButtons);

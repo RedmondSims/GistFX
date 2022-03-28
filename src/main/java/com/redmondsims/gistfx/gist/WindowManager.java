@@ -1,13 +1,14 @@
 package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.enums.FileState;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.enums.State;
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.networking.Payload;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.gist.GistWindow;
-import com.redmondsims.gistfx.ui.gist.factory.DragNode;
+import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
 import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
@@ -53,23 +54,23 @@ public class WindowManager {
 	}
 
 	public static void deleteGist() {
-		gistWindow.getPop().deleteGist(gistWindow.getGist());
+		gistWindow.getActions().deleteGist(gistWindow.getGist());
 	}
 
 	public static void newGist() {
-		gistWindow.getPop().newGist(gistWindow.getSelectedNode());
+		gistWindow.getActions().newGist(gistWindow.getSelectedNode());
 	}
 
 	public static void deleteFile() {
-		gistWindow.getPop().deleteFile(gistWindow.getFile());
+		gistWindow.getActions().deleteFile(gistWindow.getFile());
 	}
 
 	public static void renameFile() {
-		gistWindow.getPop().renameFile(gistWindow.getFile());
+		gistWindow.getActions().renameFile(gistWindow.getFile());
 	}
 
 	public static void newFile() {
-		gistWindow.getPop().newFile(gistWindow.getGist());
+		gistWindow.getActions().newFile(gistWindow.getGist());
 	}
 
 	public static void shareObject() {
@@ -77,27 +78,27 @@ public class WindowManager {
 	}
 
 	public static void receiveData(Payload payload) {
-		gistWindow.getPop().receiveData(payload);
+		gistWindow.getActions().receiveData(payload);
 	}
 
 	public static void deleteCategory() {
-		gistWindow.getPop().deleteCategory(gistWindow.getSelectedNode());
+		gistWindow.getActions().deleteCategory(gistWindow.getSelectedNode());
 	}
 
 	public static void editCategories() {
-		gistWindow.getPop().editCategories();
+		gistWindow.getActions().editCategories();
 	}
 
 	public static void renameGist() {
-		gistWindow.getPop().renameGist(gistWindow.getGist());
+		gistWindow.getActions().renameGist(gistWindow.getGist());
 	}
 
 	public static void renameCategory() {
-		gistWindow.getPop().renameCategory();
+		gistWindow.getActions().renameCategory();
 	}
 
-	public static void setConflict(GistFile file, Type conflict, boolean selected) {
-		gistWindow.getTree().setFileDirtyState(file,conflict,selected);
+	public static void setConflict(GistFile file, FileState conflict, boolean selected) {
+		gistWindow.getTreeActions().setFileDirtyState(file, conflict, selected);
 		gistWindow.handleButtonBar();
 	}
 
@@ -109,16 +110,16 @@ public class WindowManager {
 		gistWindow.updateFileContent(content);
 	}
 
-	public static void handleTreeEvent(TreeItem<DragNode> treeItem) {
-		gistWindow.getTree().handleTreeEvent(treeItem);
+	public static void handleTreeEvent(TreeItem<TreeNode> treeItem) {
+		gistWindow.getTreeActions().handleTreeEvent(treeItem);
 	}
 
 	public static void refreshBranch(GistFile gistFile) {
-		gistWindow.getTree().refreshGistBranch(gistFile);
+		gistWindow.getTreeActions().refreshGistBranch(gistFile);
 	}
 
 	public static void refreshTree() {
-		gistWindow.getTree().refreshTree();
+		gistWindow.getTreeActions().refreshTree();
 	}
 
 	public static void fillTree() {
@@ -134,10 +135,15 @@ public class WindowManager {
 		iconTimer.schedule(refreshIcons(), 500);
 	}
 
+	public static void updateGitHubLabel(String text, boolean show) {
+		if(gistWindow != null)
+			gistWindow.updateGitLabel(text,show);
+	}
+
 	private static TimerTask refreshIcons() {
 		return new TimerTask() {
 			@Override public void run() {
-				gistWindow.getTree().refreshIcons();
+				gistWindow.getTreeActions().refreshIcons();
 			}
 		};
 	}

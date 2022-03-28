@@ -56,9 +56,9 @@ public class Set {
 		prefs.put(LABEL.FIRST_RUN.Name(), String.valueOf(setting));
 	}
 
-	public void showButtonBar(boolean setting) {
-		AppSettings.clear().buttonBar();
-		prefs.put(LABEL.BUTTON_BAR.Name(), String.valueOf(setting));
+	public void showToolBar(boolean setting) {
+		AppSettings.clear().showToolBar();
+		prefs.put(LABEL.TOOL_BAR.Name(), String.valueOf(setting));
 	}
 
 	public void securityOption(UISettings.LoginScreen option) {
@@ -159,5 +159,15 @@ public class Set {
 	public void mailServer(String setting) {
 		AppSettings.clear().mailServer();
 		prefs.put(LABEL.MAIL_SERVER.Name(), setting);
+	}
+
+	public void lastTokenHash(String setting) {
+		AppSettings.clear().lastTokenHash();
+		prefs.put(LABEL.LAST_TOKEN_HASH.name(), setting);
+	}
+
+	public void lastGitHubUserId(String setting) {
+		AppSettings.clear().lastGitHubUserId();
+		prefs.put((LABEL.LAST_GITHUB_USER_ID.Name()), setting);
 	}
 }

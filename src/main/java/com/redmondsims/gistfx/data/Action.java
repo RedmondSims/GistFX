@@ -10,6 +10,7 @@ import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
+import com.redmondsims.gistfx.ui.gist.GistCategory;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -103,6 +104,22 @@ public class Action {
 		SQLITE.saveMetadata(jsonString);
 	}
 
+	public static String getMD2() {
+		return SQLITE.getMD2();
+	}
+
+	public static boolean hasData() {
+		return SQLITE.hasData();
+	}
+
+	public static boolean reEncryptData(String oldPassword, String newPassword) {
+		return SQLITE.reEncryptData(oldPassword,newPassword);
+	}
+
+	public static void deleteAllLocalData() {
+		SQLITE.deleteAllLocalData();
+	}
+
 	/**
 	 * GitHub ONLY Methods
 	 */
@@ -140,13 +157,15 @@ public class Action {
 		else if (dataSource.equals(UISettings.DataSource.GITHUB)) {
 			LoginWindow.updateProcess("Downloading Gist Objects");
 			Map<String,GHGist> ghGistMap = GITHUB.getNewGHGistMap();
-			JSON.getData();
 			GistManager.startFromGit(ghGistMap, Source.GITHUB);
 		}
 		else if (dataSource.equals(UISettings.DataSource.LOCAL)) {
-			JSON.getData();
 			GistManager.startFromDatabase();
 		}
+	}
+
+	public static void updateProgress(String text) {
+		LoginWindow.updateProcess(text);
 	}
 
 	public static void refreshAllData() {
@@ -209,7 +228,7 @@ public class Action {
 	 * Json Methods
 	 */
 
-	public static void deleteJsonGistFile() {JSON.deleteGitHubCustomData();}
+	public static void deleteGitHubMetadata() {JSON.deleteGitHubMetadata();}
 
 	public static void loadJsonData() {
 		JSON.loadJsonData();
@@ -232,6 +251,10 @@ public class Action {
 	 */
 
 	public static ObservableList<String> getCategoryList() {
+		return JSON.getCategoryList();
+	}
+
+	public static List<GistCategory> getGistCategoryList() {
 		return JSON.getGistCategoryList();
 	}
 
@@ -245,6 +268,16 @@ public class Action {
 
 	public static void deleteCategoryName(String categoryName) {
 		JSON.deleteCategoryName(categoryName);
+	}
+
+	public static GistCategory getGistCategory(String gistId) {
+		String categoryName = JSON.getGistCategoryName(gistId);
+		if(categoryName.isEmpty()) return null;
+		return getGistCategoryByName(categoryName);
+	}
+
+	public static GistCategory getGistCategoryByName(String categoryName) {
+		return JSON.getGistCategory(categoryName);
 	}
 
 	public static void addCategoryName(String categoryName) {
@@ -421,11 +454,6 @@ public class Action {
 		return toolTip;
 	}
 
-	public static void deleteAllMetadata() {
-		AppSettings.clear().metadata();
-		SQLITE.deleteMetadata();
-	}
-
 	public static void setGitHubUserId(Long gitHubUserId) {
 		JSON.setGitHubUserId(gitHubUserId);
 	}
@@ -438,6 +466,48 @@ public class Action {
 		Platform.runLater(() -> {
 			gitHubActivityProperty.setValue(active);
 		});
+	}
+
+	public static boolean accessingGitHub() {
+		return gitHubActivityProperty.getValue();
+	}
+
+	public static void deleteLocalGist(String gistId) {
+		SQLITE.deleteGist(gistId);
+		JSON.deleteGistMetadata(gistId);
+	}
+
+	public static void uploadGistToGitHub(String gistId) {
+		Gist gist = GistManager.getGist(gistId);
+		String description = gist.getDescription();
+		boolean createGhGist = true;
+		String newGistId = "";
+		for(GistFile gistFile : gist.getFiles()) {
+			String content = gistFile.getContent();
+			String filename = gistFile.getFilename();
+			if(createGhGist) {
+				createGhGist = false;
+				GHGist ghGist = GITHUB.newGist(description,filename,content,gist.isPublic());
+				newGistId = ghGist.getGistId();
+				continue;
+			}
+			if (!newGistId.isEmpty())
+				GITHUB.addFileToGist(newGistId,filename,content);
+		}
+		if(!newGistId.isEmpty()) {
+			JSON.changeGistId(gistId,newGistId);
+		}
+	}
+
+	public static void error(Exception e) {
+		System.err.println(e.getMessage());
+		StackTraceElement[] elements = e.getStackTrace();
+		for(StackTraceElement element : elements) {
+			if(element.toString().contains("gistfx")) {
+				System.out.println("\t" + element.toString().replaceFirst("com.redmondsims.gistfx/com.redmondsims.gistfx.",""));
+			}
+		}
+		System.exit(0);
 	}
 
 }

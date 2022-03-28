@@ -547,10 +547,10 @@ public class UISettings {
 		VBox vboxButtonReset = newVBox(10,hboxButtonReset);
 		vboxButtonReset.setPadding(new Insets(10,0,0,0));
 		hboxButtonReset.setAlignment(Pos.CENTER);
-		Label lblButtonBar = newLabelTypeOne("Show button bar when form loads");
-		CheckBox chkButtonBar = new CheckBox();
-		chkButtonBar.selectedProperty().addListener((observable, oldValue, newValue) -> AppSettings.set().showButtonBar(newValue));
-		chkButtonBar.setSelected(AppSettings.get().showButtonBar());
+		Label lblToolBar = newLabelTypeOne("Show tool bar when form loads");
+		CheckBox chkToolBar = new CheckBox();
+		chkToolBar.selectedProperty().addListener((observable, oldValue, newValue) -> AppSettings.set().showToolBar(newValue));
+		chkToolBar.setSelected(AppSettings.get().showToolBar());
 		Tooltip.install(btnReset, Action.newTooltip("""
 								Click this button to have GistFX
 								go into master reset mode the next
@@ -570,18 +570,18 @@ public class UISettings {
 								however, you cannot remove the GitHub
 								stored version of your metadata without
 								first authenticating."""));
-		Tooltip.install(chkButtonBar, Action.newTooltip("""
-								Show the dynamic button bar by default.
-								Otherwise, you will need to toggle it on
-								each time GistFX loads.
+		Tooltip.install(chkToolBar, Action.newTooltip("""
+								Show the tool bar by default. Otherwise,
+								you will need to toggle it on each time 
+								GistFX loads.
 								
-								The button bar changes depending on whats
+								The tool bar changes depending on whats
 								being shown on the screen or what you
 								currently have selected in the window.
 								
 								The functionality of each button is also
 								in the programs menu structure."""));
-		HBox hboxBBChk   = newHBox(hboxLeft(lblButtonBar), getSpacedHBoxRight(chkButtonBar, 61));
+		HBox hboxBBChk   = newHBox(hboxLeft(lblToolBar), getSpacedHBoxRight(chkToolBar, 61));
 		VBox formContent = new VBox(hboxBBChk,
 									getWarningResetNode(),
 									progressBarChoiceNode(),

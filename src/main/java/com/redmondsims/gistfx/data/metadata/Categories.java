@@ -107,7 +107,15 @@ class Categories {
 	}
 
 	public CopyOnWriteArrayList<String> getList() {
-		categoryList.sort(Comparator.comparing(String::toString));
+		Collections.sort(categoryList);
 		return categoryList;
+	}
+
+	public void changeGistId(String oldGistId, String newGistId) {
+		String category = categoryMap.getOrDefault(oldGistId,"");
+		if (!category.isEmpty()) {
+			categoryMap.remove(oldGistId);
+			categoryMap.put(newGistId,category);
+		}
 	}
 }

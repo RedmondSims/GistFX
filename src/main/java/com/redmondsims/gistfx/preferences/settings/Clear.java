@@ -27,7 +27,7 @@ public class Clear {
 
 	public void firstRun()                {prefs.remove(LABEL.FIRST_RUN.Name());}
 
-	public void buttonBar()               {prefs.remove(LABEL.BUTTON_BAR.Name());}
+	public void showToolBar() {prefs.remove(LABEL.TOOL_BAR.Name());}
 
 	public void securityOption()          {prefs.remove(LABEL.SECURITY_OPTION.Name());}
 
@@ -72,4 +72,12 @@ public class Clear {
 	public void userIconFileFolder()   {prefs.remove(LABEL.USER_ICON_FILE_FOLDER.name());}
 
 	public void mailServer()           {prefs.remove(LABEL.MAIL_SERVER.Name());}
+
+	public void lastTokenHash() {
+		prefs.remove(LABEL.LAST_TOKEN_HASH.Name());
+	}
+
+	public void lastGitHubUserId() {
+		prefs.remove(LABEL.LAST_GITHUB_USER_ID.Name());
+	}
 }

@@ -12,26 +12,34 @@ class MetadataFile {
 						CopyOnWriteArrayList<String> categoryList,
 						ConcurrentHashMap<String, String> categoryMap,
 						ConcurrentHashMap<String, String> descriptionMap,
-						List<String> hostList,
-						Long gitHubUserId) {
+						List<String> hostList) {
 		this.nameMap        = nameMap;
 		this.categoryList   = categoryList;
 		this.categoryMap    = categoryMap;
 		this.descriptionMap = descriptionMap;
 		this.hostList       = hostList;
-		this.gitHubUserId   = gitHubUserId;
 		date = new Date();
 	}
 
-	private       Long                              gitHubUserId;
 	private final Map<String, String>               nameMap;
 	private final CopyOnWriteArrayList<String>      categoryList;
 	private final ConcurrentHashMap<String, String> categoryMap;
 	private final ConcurrentHashMap<String, String> descriptionMap;
 	private final List<String>                      hostList;
 	private final Date                              date;
+	private       Date                              lastReWrite;
 
 	public static final String FileName = "GistFXMetadata.json";
+
+	public static String GistDescription = com.redmondsims.gistfx.enums.Names.GITHUB_METADATA.Name();
+
+	public void setLastReWrite() {
+		lastReWrite = new Date();
+	}
+
+	public Date getLastReWrite() {
+		return lastReWrite;
+	}
 
 	public Categories getCategories() {
 		Categories categories = new Categories();
@@ -60,13 +68,5 @@ class MetadataFile {
 
 	public Date getDate() {
 		return date;
-	}
-
-	public Long getGitHubUserId() {
-		return gitHubUserId;
-	}
-
-	public void setGitHubUserId(Long gitHubUserId) {
-		this.gitHubUserId = gitHubUserId;
 	}
 }
