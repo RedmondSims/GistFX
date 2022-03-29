@@ -11,8 +11,7 @@ import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.ColorInput;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.image.*;
 import javafx.scene.paint.Color;
 
 import java.io.InputStream;
@@ -25,12 +24,14 @@ public class Icons {
 	private static String conflictFlag;
 	private static String fileIcon;
 	private static String folderIcon;
+	private static String base;
 
 	private final static String dirtyFlagName = "DirtyFlag.png";
 	private final static String conflictName  = "ConflictFlag.png";
 	private final static String file2Name     = "File2.png";
 	private final static String folderName    = "Folder.png";
 	private final static String file1Name     = "File1.png";
+	private final static String baseName      = "Base.png";
 	private static       String iconPath;
 	private static final String toolBar       = "Icons/ToolBar/";
 
@@ -52,6 +53,9 @@ public class Icons {
 				}
 				case folderName -> {
 					folderIcon = "file:" + treeIconPath;
+				}
+				case baseName -> {
+					base = "file:" + treeIconPath;
 				}
 			}
 		}
@@ -96,7 +100,10 @@ public class Icons {
 	}
 
 	private static ImageView getFormattedImageView(Color color, double brightness, boolean useDefault) {
-		ImageView imageView = new ImageView(new Image(iconPath));
+		Image image;
+		image = useDefault ? reColor(new Image(iconPath),Color.WHITE,color) : new Image(iconPath);
+		ImageView imageView = new ImageView(image);
+/*
 		if(useDefault) {
 			ImageView ivClip = new ImageView(new Image(iconPath));
 			ivClip.setPreserveRatio(true);
@@ -115,8 +122,41 @@ public class Icons {
 			imageView.setCache(true);
 			imageView.setCacheHint(CacheHint.SPEED);
 		}
+*/
 		imageView.setPreserveRatio(true);
 		imageView.setFitWidth(15);
 		return imageView;
+	}
+
+	public static Image reColor(Image inputImage, Color oldColor, Color newColor) {
+		int W = (int) inputImage.getWidth();
+		int H = (int) inputImage.getHeight();
+		WritableImage outputImage = new WritableImage(W, H);
+		PixelReader   reader      = inputImage.getPixelReader();
+		PixelWriter   writer      = outputImage.getPixelWriter();
+		int         ob     =(int) oldColor.getBlue()*255;
+		int or=(int) oldColor.getRed()*255;
+		int og=(int) oldColor.getGreen()*255;
+		int nb=(int) newColor.getBlue()*255;
+		int nr=(int) newColor.getRed()*255;
+		int ng=(int) newColor.getGreen()*255;
+		for (int y = 0; y < H; y++) {
+			for (int x = 0; x < W; x++) {
+				int argb = reader.getArgb(x, y);
+				int a = (argb >> 24) & 0xFF;
+				int r = (argb >> 16) & 0xFF;
+				int g = (argb >>  8) & 0xFF;
+				int b =  argb        & 0xFF;
+				if (g==og && r==or && b==ob) {
+					r=nr;
+					g=ng;
+					b=nb;
+				}
+
+				argb = (a << 24) | (r << 16) | (g << 8) | b;
+				writer.setArgb(x, y, argb);
+			}
+		}
+		return outputImage;
 	}
 }

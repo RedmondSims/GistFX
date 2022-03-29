@@ -26,7 +26,8 @@ public class Resources {
 	private final static String file1Name = "File1.png";
 	private final static String file2Name = "File2.png";
 	private final static String folderName  = "Folder.png";
-	private final static List<String> sourceFiles = new ArrayList<>(Arrays.asList(conflictName, dirtyFlagName, file1Name, file2Name, folderName));
+	private final static String baseName  = "Base.png";
+	private final static List<String> sourceFiles = new ArrayList<>(Arrays.asList(conflictName, dirtyFlagName, file1Name, file2Name, folderName, baseName));
 
 
 	public static List<Path> treeIconPaths () {
