@@ -6,7 +6,7 @@
 
     <groupId>com.redmondsims</groupId>
     <artifactId>GistFX</artifactId>
-    <version>3.3.6</version>
+    <version>3.4.0</version>
     <name>GistFX</name>
     <url>https://github.com/redmondsims/gistfx</url>
 
@@ -188,7 +188,7 @@
             <plugin>
                 <groupId>io.github.fvarrui</groupId>
                 <artifactId>javapackager</artifactId>
-                <version>1.6.5</version>
+                <version>1.6.2</version>
                 <configuration>
                     <mainClass>${exec.mainClass}</mainClass>
                     <bundleJre>true</bundleJre>

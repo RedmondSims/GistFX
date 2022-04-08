@@ -103,7 +103,7 @@ public class MasterResetWindow {
 	}
 
 	private void performReset(boolean deleteLocalFiles, boolean database, boolean appSettings, boolean credentials, boolean localMetadata, boolean gitHubMetadata) {
-		if (!database && !appSettings && !credentials && !localMetadata && !gitHubMetadata) {
+		if (!deleteLocalFiles && !database && !appSettings && !credentials && !localMetadata && !gitHubMetadata) {
 			CustomAlert.showInfo("No changes will be made.", SceneOne.getOwner(sceneId));
 			SceneOne.close(sceneId);
 			System.exit(11);

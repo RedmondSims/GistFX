@@ -188,13 +188,13 @@ public class ToolBar {
 
 	public HBox gistSelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
-		iconList.setAll(ivWide, ivFull, ivDistractionFree, ivDeleteGist, ivNewGist);
+		iconList.setAll(ivWide, ivFull, ivDeleteGist, ivNewGist);
 		return getIconBox(iconList);
 	}
 
 	public HBox categorySelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
-		iconList.setAll(ivWide, ivFull, ivDistractionFree, ivEditCategories);
+		iconList.setAll(ivWide, ivFull, ivEditCategories);
 		return getIconBox(iconList);
 	}
 
@@ -206,7 +206,7 @@ public class ToolBar {
 
 	public HBox nothingSelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
-		iconList.setAll(ivWide, ivFull,ivDistractionFree, ivNewGist, ivEditCategories);
+		iconList.setAll(ivWide, ivFull, ivNewGist, ivEditCategories);
 		return getIconBox(iconList);
 	}
 }

@@ -25,12 +25,14 @@ managing Gists a breeze.
   - Drag and drop Gists between categories
   - Drag and drop files between Gists
   - Navigate Gists and files from a TreeView
+  - Context-sensitive - detachable toolbar
   - Context-sensitive tree menus
   - GitHub access token encrypted and saved locally, protected by password
   - Screen layout options
     - Wide mode for better visibility
     - Full screen mode with Menus
-    - Distraction Free Mode - Just the code editor in full screen 
+    - Distraction Free Mode - Just the code editor in full screen
+  - Run GistFX from the System Tray
   
 ### Coming soon
   - Keyboard shortcuts for mouse free navigation

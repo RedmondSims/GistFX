@@ -15,17 +15,17 @@ import java.nio.file.Paths;
 public class TreeIcons {
 
 	private final static Path   treeIconPath = Resources.getExternalTreeIconPath();
-	private static       Path   dirtyFlag;
-	private static       Path   conflictFlag;
-	private static       Path   folderIcon;
-	private static       Path   fileIcon;
+	private static       String   dirtyFlag;
+	private static       String   conflictFlag;
+	private static       String   folderIcon;
+	private static       String   fileIcon;
 	private final static String ToolBar      = "Icons/ToolBar/";
 
 	public static void init() {
-		dirtyFlag    = Paths.get("file:" + treeIconPath,"DirtyFlag.png");
-		conflictFlag = Paths.get("file:" + treeIconPath,"Conflict.png");
-		folderIcon   = Paths.get("file:" + treeIconPath,"Folder.png");
-		fileIcon     = Paths.get("file:" + treeIconPath,"file.png");
+		dirtyFlag    = "file:" + Paths.get(treeIconPath.toString(),"DirtyFlag.png").toString();
+		conflictFlag = "file:" + Paths.get(treeIconPath.toString(),"Conflict.png").toString();
+		folderIcon   = "file:" + Paths.get(treeIconPath.toString(),"Folder.png").toString();
+		fileIcon     = "file:" + Paths.get(treeIconPath.toString(),"file.png").toString();
 	}
 
 	public static InputStream getToolBarIcon(String iconName) {
@@ -48,7 +48,7 @@ public class TreeIcons {
 		boolean useDefault   = AppSettings.get().useDefaultCategoryIcon();
 		Path    userIconPath = Paths.get(AppSettings.get().userCategoryIconPath());
 		if (!userIconPath.toFile().exists()) useDefault = true;
-		return (useDefault) ? newImageView(folderIcon,AppSettings.get().categoryFolderIconColor()) : newImageView(userIconPath);
+		return (useDefault) ? newImageView(folderIcon,AppSettings.get().categoryFolderIconColor()) : newImageView(userIconPath.toString());
 	}
 
 	public static ImageView getGistIcon() {
@@ -56,7 +56,7 @@ public class TreeIcons {
 		boolean useDefault   = AppSettings.get().useDefaultGistIcon();
 		Path    userIconPath = Paths.get(AppSettings.get().userGistIconPath());
 		if (!userIconPath.toFile().exists()) useDefault = true;
-		return (useDefault) ? newImageView(folderIcon,AppSettings.get().gistFolderIconColor()) : newImageView(userIconPath);
+		return (useDefault) ? newImageView(folderIcon,AppSettings.get().gistFolderIconColor()) : newImageView(userIconPath.toString());
 	}
 
 	public static ImageView getFileIcon() {
@@ -64,7 +64,7 @@ public class TreeIcons {
 		boolean useDefault   = AppSettings.get().useDefaultFileIcon();
 		Path    userIconPath = Paths.get(AppSettings.get().userFileIconPath());
 		if (!userIconPath.toFile().exists()) useDefault = true;
-		return (useDefault) ? newImageView(fileIcon,AppSettings.get().fileIconColor()) : newImageView(userIconPath);
+		return (useDefault) ? newImageView(fileIcon,AppSettings.get().fileIconColor()) : newImageView(userIconPath.toString());
 	}
 
 	private static ImageView reColor(Image inputImage, Color finalColor) {
@@ -98,11 +98,11 @@ public class TreeIcons {
 		return ivOut;
 	}
 
-	private static ImageView newImageView(Path imagePath, Color newColor) {
-		return reColor(new Image(imagePath.toString()), newColor);
+	private static ImageView newImageView(String imagePath, Color newColor) {
+		return reColor(new Image(imagePath), newColor);
 	}
 
-	private static ImageView newImageView(Path imagePath) {
-		return new ImageView(new Image(imagePath.toString()));
+	private static ImageView newImageView(String imagePath) {
+		return new ImageView(new Image(imagePath));
 	}
 }

@@ -95,10 +95,14 @@ public class GistFile {
 			if (Status.comparingLocalDataWithGitHub()) {
 				if (preCheckTimer != null) preCheckTimer.cancel();
 				preCheckTimer = new Timer();
-				preCheckTimer.schedule(commitLater(newValue),2000);
+				preCheckTimer.schedule(commitLater(newValue), 2000);
 			}
 			else {
 				liveVersion.setValue(newValue);
+			}
+			if (liveVersion.isEqualTo(gitHubVersion)) {
+				fileState = NORMAL;
+				refreshGraphicNode();
 			}
 		}
 	};

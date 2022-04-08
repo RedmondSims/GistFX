@@ -246,9 +246,8 @@ public class gistWindowActions {
 	}
 	public void compareLocalWithGitHub() {
 		Status.setGistWindowState(State.COMPARING);
-		gistWindow.updateGitLabel("Downloading GitHub Data", true);
+		gistWindow.updateGitLabel("Comparing GitHub Data With Local", true);
 		Map<String, GHGist> ghGistMap = Action.getNewGhGistMap();
-		gistWindow.updateGitLabel("Comparing GitHub Versions With Local", true);
 		double totalActions = ghGistMap.size() * 4;
 		double actionSum = 0;
 		Map<String,Gist> gistMap = GistManager.getGistMap();

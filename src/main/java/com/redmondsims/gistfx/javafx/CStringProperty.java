@@ -18,6 +18,10 @@ public class CStringProperty extends SimpleStringProperty {
 		return super.getValue();
 	}
 
+	public boolean isEqualTo(CStringProperty stringProperty) {
+		return getValue().equals(stringProperty.getValue());
+	}
+
 	public CStringProperty getProperty() {
 		return this;
 	}

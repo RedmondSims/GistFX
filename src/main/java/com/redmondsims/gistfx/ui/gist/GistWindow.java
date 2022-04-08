@@ -811,7 +811,6 @@ public class GistWindow {
 				if (!file.flushDirtyData()) {
 					Platform.runLater(() -> CustomAlert.showWarning("There was a problem committing the data."));
 				}
-				treeActions.refreshGistBranch(file.getGistId());
 				Platform.runLater(() -> {
 					TreeItem<TreeNode> leaf = treeActions.getLeaf(gistId, filename);
 					treeView.getSelectionModel().select(leaf);
