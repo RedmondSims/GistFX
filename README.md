@@ -62,7 +62,7 @@ Next, you will be presented with a login screen, click on the question mark for 
 
 Enter the GitHub personal access token that you created, along with a password that will be used to encrypt then locally store your personal access token.
 
-If you uncheck the Save Token checkbox, you will be able to authenticate by simply entering your personal access token. However, each time you run GistFX, you will need to enter your token again.
+Click on Reset Token if you need to re-enter a new token for any reason. If your token expires, GistFX will present you with an option to enter a new one.
 
 ---
 
@@ -72,4 +72,4 @@ GistFX makes it very clear when you have data that needs to be committed to your
 
 GistFX always compares the local copy of your Gists with your GitHub version each time you log into GistFX and will notify you of any discrepencies, should they exist.
 
-See the Help menu for further discussion concerning the use and utility of GistFX. We think you will find this program to be very handy in the preservation of those code snippets that matter the most in your development endeavours. We not only develop this program, we use it regularly, so we do everything we can to make it a tool that is both easy to use as a relevant addition to our arsenal of development tools.
+See the Help menu for further discussion concerning the use and utility of GistFX. We think you will find this program to be very handy in the preservation of those code snippets that matter the most in your development endeavours. We not only develop this program, we use it regularly, so we do everything we can to make it a tool that is easy to use as a relevant addition to our arsenal of development tools.
