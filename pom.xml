@@ -207,16 +207,10 @@
                             <platform>auto</platform>
                             <createZipball>false</createZipball>
                             <createTarball>true</createTarball>
-<!--
-                            <vmArgs>
-                                <vmArg>&#45;&#45;module-path=Java/libs</vmArg>
-                                <vmArg>&#45;&#45;add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
-                            </vmArgs>
--->
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
-                                <icoFile>C:\IdeaProjects\GistFX\src\main\resources\com\redmondsims\gistfx\Assets\windows\GistFXIcon.ico</icoFile>
+                                <icoFile>src\main\resources\com\redmondsims\gistfx\Assets\windows\GistFXIcon.ico</icoFile>
                                 <generateSetup>true</generateSetup>
                                 <generateMsi>false</generateMsi>
                                 <generateMsm>false</generateMsm>
@@ -225,11 +219,12 @@
                                 <removeOldLibs>true</removeOldLibs>
                             </winConfig>
                             <macConfig>
-                                <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
+                                <icnsFile>src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
                                 <generateDmg>true</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>GistFX</volumeName>
-                                <volumeIcon>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                                <volumeIcon>src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                                <entitlements>entitlements.plist</entitlements>
                             </macConfig>
                         </configuration>
                     </execution>
