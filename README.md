@@ -39,25 +39,17 @@ managing Gists a breeze.
   - Still working on Help content.
 ### Getting started
 
-  1. Create a GitHub Personal Access Token for this application
+
+  1. [Download](https://github.com/RedmondSims/GistFX/releases/tag/3.4.0) the latest installer (Currently Mac or Windows)
+
+  2. Create a GitHub Personal Access Token for this application
      - This is far superior to user/pass authentication and is the only way GitHub allows access to your data.
      - Only gives GistFX the ability to access your Gists through the GitHub API.
        - The full instructions with screenshots are available when you run GistFX by clicking on the question mark at the login screen. OR
-       - Create by [clicking here](https://github.com/settings/tokens/new)
+       - Create an access token by [clicking here](https://github.com/settings/tokens/new)
          - Check ONE box - **Gist**
     
-  2. Running GistFX
-     - Currently, GistFX only runs within the IDE or by using Maven. This will be resolved soon as I am working on creating OS based installers.
-     - Here is how I set up the environment so that it will run within IntelliJ, but I'm sure these steps can be used to make it work in any IDE.
-        - Install Java JDK 17.0.1 or higher.
-        - Download the matching version of JavaFX 17 **SDK** and **jmods** for your operating system [using this link](https://gluonhq.com/products/javafx/)
-        - Unzip those files.
-        - Follow the folder structure and merge those files into the folders where your core JDK is installed, overwriting any files with the same name.
-        - Set your IDE to use the Java 17 JDK that you installed.
-          - Run Main.java from inside your IDE OR
-          - From the command line, go into the root of the project folder
-            - Make sure your environment paths are set for the right JDK. I use [jenv](https://www.jenv.be/) for this because it's SIMPLE and POWERFUL
-            - Execute: **mvn clean javafx:run**
+  3. Run GistFX, paste in your access token and type in your preferred password.
 ---
 
 ### On first run

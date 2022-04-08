@@ -5,10 +5,9 @@ import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
+import com.redmondsims.gistfx.sceneone.SceneOne;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -22,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import static javafx.scene.layout.AnchorPane.*;
+import static javafx.scene.layout.AnchorPane.setRightAnchor;
 
 
 public class DistractionFree {
@@ -59,8 +59,8 @@ public class DistractionFree {
 		stage.initStyle(StageStyle.TRANSPARENT);
 		stage.initModality(Modality.APPLICATION_MODAL);
 		stage.setFullScreenExitKeyCombination(new KeyCodeCombination(KeyCode.W, KeyCombination.META_DOWN));
-		//String hint = LiveSettings.getOS().equals(OS.MAC) ? "CMD + W to Exit Fullscreen" : "ALT + Q to Exit Fullscreen";
-		//stage.setFullScreenExitHint(hint);
+		String hint = LiveSettings.getOS().equals(OS.MAC) ? "CMD + W to Exit Fullscreen" : "ALT + Q to Exit Fullscreen";
+		stage.setFullScreenExitHint(hint);
 		stage.setFullScreen(true);
 		stage.fullScreenProperty().addListener((observable, oldValue, newValue) -> {
 			if(!oldValue.equals(newValue)) {
@@ -77,6 +77,7 @@ public class DistractionFree {
 			}
 		});
 		Scene scene = new Scene(ap);
+		scene.setOnKeyPressed(keyEvent);
 		stage.setScene(scene);
 		stage.show();
 	}

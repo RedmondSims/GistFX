@@ -207,12 +207,11 @@
                             <platform>auto</platform>
                             <createZipball>false</createZipball>
                             <createTarball>true</createTarball>
-<!--
                             <vmArgs>
-                                <vmArg>&#45;&#45;module-path=Java/libs</vmArg>
-                                <vmArg>&#45;&#45;add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
+                                <vmArg>--module-path=Java/libs</vmArg>
+                                <vmArg>--add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
                             </vmArgs>
--->
+<!--
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
@@ -224,6 +223,7 @@
                                 <createDesktopIconTask>true</createDesktopIconTask>
                                 <removeOldLibs>true</removeOldLibs>
                             </winConfig>
+-->
                             <macConfig>
                                 <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
                                 <generateDmg>true</generateDmg>
