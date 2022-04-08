@@ -216,13 +216,20 @@
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
+                                <icoFile>C:\IdeaProjects\GistFX\src\main\resources\com\redmondsims\gistfx\Assets\windows\GistFXIcon.ico</icoFile>
+                                <generateSetup>true</generateSetup>
+                                <generateMsi>false</generateMsi>
+                                <generateMsm>false</generateMsm>
+                                <setupMode>askTheUser</setupMode>
+                                <createDesktopIconTask>true</createDesktopIconTask>
+                                <removeOldLibs>true</removeOldLibs>
                             </winConfig>
                             <macConfig>
-                                <icnsFile>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
+                                <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
                                 <generateDmg>true</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>GistFX</volumeName>
-                                <volumeIcon>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                                <volumeIcon>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
                             </macConfig>
                         </configuration>
                     </execution>
