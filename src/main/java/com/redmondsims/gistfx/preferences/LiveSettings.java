@@ -4,6 +4,9 @@ import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.preferences.UISettings.DataSource;
 import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
+import com.redmondsims.gistfx.ui.Editors;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
@@ -19,9 +22,11 @@ public class LiveSettings {
 	private static       UISettings.Theme            theme                 = DARK;
 	private static       UISettings.LoginScreen      loginScreen;
 	private static       UISettings.LoginScreenColor loginScreenColor;
+	private static       StringProperty              monacoThemeProperty   = new SimpleStringProperty();
 	public static        Color                       progressBarColor      = AppSettings.get().progressBarColor();
 	public static        ProgressColorSource         progressBarColorSource;
 	private static       boolean                     disableDirtyWarning;
+	private static       boolean                     offlineMode           = false;
 	private static       Color                       dirtyFileFlagColor;
 	public static        boolean                     doMasterReset         = false;
 	private static       Double                      lastPaneSplitValue    = 0.0;
@@ -29,18 +34,43 @@ public class LiveSettings {
 	private static       String                      password              = "";
 	private static       boolean                     authenticatedToGitHub = false;
 	private static       Taskbar                     taskbar;
-	private final static Integer tcpPortNumber = 59383;
+	private final static Integer                     tcpPortNumber         = 59383;
+	private static       boolean                     devMode               = false;
+
+	public static void setDevMode(boolean mode) {
+		devMode = mode;
+	}
+
+	public static boolean getDevMode() {
+		return devMode;
+	}
+
+	public static void setOfflineMode(boolean mode) {
+		offlineMode = mode;
+	}
+
+	public static boolean isOffline() {
+		return offlineMode;
+	}
+
+	public static String getMonacoTheme() {
+		return (theme.equals(DARK)) ? "vs-dark" : "vs-light";
+	}
+
+	public static StringProperty monacoThemeProperty() {
+		return monacoThemeProperty;
+	}
 
 	public static Path getFilePath() {
 		Path finalPath;
-		if(getOS().equals(OS.MAC)) {
+		if (getOS().equals(OS.MAC)) {
 			finalPath = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "GistFX");
 		}
-		else if(getOS().equals(OS.WINDOWS)) {
-			finalPath = Paths.get(System.getenv("APPDATA"),"GistFX");
+		else if (getOS().equals(OS.WINDOWS)) {
+			finalPath = Paths.get(System.getenv("APPDATA"), "GistFX");
 		}
 		else {
-			finalPath = Paths.get(System.getProperty("user.home"),".gistfx");
+			finalPath = Paths.get(System.getProperty("user.home"), ".gistfx");
 		}
 		if (!finalPath.toFile().exists()) {
 			finalPath.toFile().mkdir();
@@ -61,6 +91,8 @@ public class LiveSettings {
 		loginScreenColor       = AppSettings.get().loginScreenColor();
 		setLoginScreen(AppSettings.get().loginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
+		monacoThemeProperty.setValue(theme.equals(DARK) ? "vs-dark" : "vs-light");
+		Editors.init();
 	}
 
 	public static void setTaskbar(Taskbar taskbar) {
@@ -116,18 +148,10 @@ public class LiveSettings {
 		applyAppSettings();
 	}
 
-	public static void setLastPaneSplitValue(Double lastPaneSplitValue) {
-		LiveSettings.lastPaneSplitValue = lastPaneSplitValue;
-	}
-
-	public static Double getLastPaneSplitValue() {
-		return lastPaneSplitValue;
-	}
-
 	public static OS getOS() {
-		if (OSystem.toLowerCase().contains("win")) return WINDOWS;
-		else if (OSystem.toLowerCase().contains("mac")) return MAC;
-		else return LINUX;
+		if (OSystem.toLowerCase().contains("win")) {return WINDOWS;}
+		else if (OSystem.toLowerCase().contains("mac")) {return MAC;}
+		else {return LINUX;}
 	}
 
 	public static void setGitHubAuthenticated(boolean authenticated) {

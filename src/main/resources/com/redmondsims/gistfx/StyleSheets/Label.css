@@ -1,0 +1,19 @@
+#hotpink  {
+    -fx-fill: black;
+}
+
+#blue  {
+    -fx-fill: ghostWhite;
+}
+
+#red  {
+    -fx-fill: black;
+}
+
+#green .text {
+    -fx-fill: black;
+}
+
+#yellow {
+    -fx-fill: black;
+}

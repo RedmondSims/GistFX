@@ -58,7 +58,7 @@ public class PayloadBuilder {
 		}
 		this.senderName = Crypto.encryptData(senderName);
 		String filename    = encrypt(gistFile.getFilename());
-		String content     = encrypt(gistFile.getContent());
+		String content     = encrypt(gistFile.getLiveVersion());
 		String     description = encrypt(gistFile.getDescription());
 		FileRecord fileRecord  = new FileRecord(filename, content, description);
 		this.title = Crypto.encryptData(gistFile.getFilename());
@@ -115,7 +115,7 @@ public class PayloadBuilder {
 		List<FileRecord> fileRecordList = new ArrayList<>();
 		for(GistFile file : gist.getFiles()) {
 			String filename        = encrypt(file.getFilename());
-			String content         = encrypt(file.getContent());
+			String content         = encrypt(file.getLiveVersion());
 			String fileDescription = encrypt(file.getDescription());
 			fileRecordList.add(new FileRecord(filename, content, fileDescription));
 		}

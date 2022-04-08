@@ -1,11 +1,15 @@
 package com.redmondsims.gistfx.utils;
 
+import com.redmondsims.gistfx.Launcher;
 import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.ui.gist.Icons;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,40 +18,109 @@ import java.util.List;
 
 public class Resources {
 
-	private final static String helpFiles = "HelpFiles";
-	private final static String icons = "Icons";
-	private final static String tree = "Tree";
-	private final static String root = LiveSettings.getFilePath().toString();
-	private final static File rootFile = new File(root);
-	private final static File iconRootFile = new File(rootFile,icons);
-	private final static File treeIconRootFile = new File(iconRootFile,"Tree");
-	private final static String conflictName = "ConflictFlag.png";
-	private final static String dirtyFlagName = "DirtyFlag.png";
-	private final static String file1Name = "File1.png";
-	private final static String file2Name = "File2.png";
-	private final static String folderName  = "Folder.png";
-	private final static String baseName  = "Base.png";
-	private final static List<String> sourceFiles = new ArrayList<>(Arrays.asList(conflictName, dirtyFlagName, file1Name, file2Name, folderName, baseName));
+	private final static String       helpFiles            = "HelpFiles";
+	private final static String       icons                = "Icons";
+	private final static String       tree                 = "Tree";
+	private final static String       sqlIte               = "SQLite";
+	private final static String       root                 = LiveSettings.getFilePath().toString();
+	private final static Path         externalRootPath     = Paths.get(root);
+	private final static Path         externalIconPath     = Paths.get(root, icons);
+	private final static Path         externalTreeIconPath = Paths.get(root, icons, tree);
+	private final static Path         externalSQLPath      = Paths.get(root, sqlIte);
+	private final static Path         externalHelpFilePath = Paths.get(root, helpFiles);
+	private final static String       conflictName         = "Conflict.png";
+	private final static String       dirtyFlagName        = "DirtyFlag.png";
+	private final static String       fileName             = "File.png";
+	private final static String       folderName           = "Folder.png";
+	private final static List<String> sourceFiles          = new ArrayList<>(Arrays.asList(conflictName, dirtyFlagName, folderName, fileName));
+	private final static URL          trayIconWhite        = Main.class.getResource("Icons/Tray/White.png");
+	private final static URL          trayIconBlack        = Main.class.getResource("Icons/Tray/White.png");
+	private final static String       sceneIdGistWindow    = "GistWindow";
 
+	public static void init() {
+		checkResources();
+	}
 
-	public static List<Path> treeIconPaths () {
+	public static Path getExternalRootPath() {
+		return externalRootPath;
+	}
+
+	public static Path getExternalTreeIconPath() {
+		return externalTreeIconPath;
+	}
+
+	public static URL getTrayIconURL() {
+		return switch (AppSettings.get().systrayColor()) {
+			case "White" -> trayIconWhite;
+			case "Black" -> trayIconBlack;
+			default -> null;
+		};
+	}
+
+	public static List<Path> treeIconPaths() {
 		List<Path> list = new ArrayList<>();
-		for(String filename : sourceFiles) {
-			list.add(Paths.get(root,icons,tree,filename));
+		for (String filename : sourceFiles) {
+			list.add(Paths.get("file:" + Paths.get(root, icons, tree, filename)));
 		}
 		return list;
 	}
 
-	public static void init() {
-		checkResources();
-		Icons.init();
+	public static String getHelpRoot() {
+		return externalHelpFilePath.toString();
 	}
 
-	private static void copyIcons() {
+	public static File getSQLiteFile() {
+		String databaseFilename;
+		if (LiveSettings.getDevMode()) {
+			databaseFilename = "DatabaseDev.sqlite";
+		}
+		else {
+			databaseFilename = "Database.sqlite";
+		}
+		if (!externalSQLPath.toFile().exists()) externalSQLPath.toFile().mkdir();
+		return new File(externalSQLPath.toFile(), databaseFilename);
+	}
+
+	private static void checkResources() {
+		if (!externalRootPath.toFile().exists()) externalRootPath.toFile().mkdir();
+		if (!externalIconPath.toFile().exists()) externalIconPath.toFile().mkdir();
+		if (!externalTreeIconPath.toFile().exists()) externalTreeIconPath.toFile().mkdir();
+		if (!externalSQLPath.toFile().exists()) externalSQLPath.toFile().mkdir();
+		if (!externalHelpFilePath.toFile().exists()) externalHelpFilePath.toFile().mkdir();
+		copyHelpFiles();
+		copyIcons();
+	}
+
+	private static void copyHelpFiles() {
+		Path helpRoot        = Paths.get(root, helpFiles);
+		Path helpToken       = Paths.get(root, helpFiles, "HowToToken");
+		Path helpGeneral     = Paths.get(root, helpFiles, "General");
+		File helpFileRoot    = helpRoot.toFile();
+		File helpFileToken   = helpToken.toFile();
+		File helpFileGeneral = helpGeneral.toFile();
+		if (!helpFileRoot.exists()) helpFileRoot.mkdir();
+		if (!helpFileToken.exists()) helpFileToken.mkdir();
+		if (!helpFileGeneral.exists()) helpFileGeneral.mkdir();
 		try {
-			for(String sourceFile : sourceFiles) {
-				InputStream is = Main.class.getResourceAsStream(icons + "/" + tree + "/" + sourceFile);
-				File outFile = new File(treeIconRootFile,sourceFile);
+			String      filename = "Logo.png";
+			File        outFile  = new File(helpRoot.toFile(), filename);
+			InputStream is       = Launcher.class.getResourceAsStream(helpFiles + "/" + filename);
+			if (is != null && !outFile.exists()) {
+				FileUtils.copyInputStreamToFile(is, outFile);
+			}
+			for (int x = 1; x <= 7; x++) {
+				filename = x + ".png";
+				is       = Launcher.class.getResourceAsStream(helpFiles + "/HowToToken/" + filename);
+				outFile  = new File(helpToken.toFile(), filename);
+				if (is != null && !outFile.exists()) {
+					FileUtils.copyInputStreamToFile(is, outFile);
+				}
+			}
+
+			for (int x = 1; x <= 2; x++) {
+				filename = x + ".png";
+				is       = Launcher.class.getResourceAsStream(helpFiles + "/General/" + filename);
+				outFile  = new File(helpGeneral.toFile(), filename);
 				if (is != null && !outFile.exists()) {
 					FileUtils.copyInputStreamToFile(is, outFile);
 				}
@@ -58,65 +131,26 @@ public class Resources {
 		}
 	}
 
-	private static void copyHelpFiles() {
-		Path   helpRoot        = Paths.get(root, helpFiles);
-		Path   helpToken       = Paths.get(root, helpFiles, "HowToToken");
-		Path   helpGeneral     = Paths.get(root, helpFiles, "General");
-		File   helpFileRoot    = helpRoot.toFile();
-		File   helpFileToken   = helpToken.toFile();
-		File   helpFileGeneral = helpGeneral.toFile();
-		if (!helpFileRoot.exists()) helpFileRoot.mkdir();
-		if (!helpFileToken.exists()) helpFileToken.mkdir();
-		if (!helpFileGeneral.exists()) helpFileGeneral.mkdir();
+	private static void copyIcons() {
 		try {
-			String      filename = "Logo.png";
-			File        outFile  = new File(helpRoot.toFile(), filename);
-			InputStream is       = Main.class.getResourceAsStream(helpFiles + "/" + filename);
-			if (is != null && !outFile.exists()) {
-				FileUtils.copyInputStreamToFile(is, outFile);
-			}
-			for (int x = 1; x <= 7; x++) {
-				filename = x + ".png";
-				is       = Main.class.getResourceAsStream(helpFiles + "/HowToToken/" + filename);
-				outFile  = new File(helpToken.toFile(), filename);
+			for (String sourceFile : sourceFiles) {
+				InputStream is      = Main.class.getResourceAsStream(icons + "/" + tree + "/" + sourceFile);
+				File        outFile = new File(externalTreeIconPath.toFile(), sourceFile);
 				if (is != null && !outFile.exists()) {
 					FileUtils.copyInputStreamToFile(is, outFile);
 				}
-			}
-
-			for (int x = 1; x <= 2; x++) {
-				filename = x + ".png";
-				is       = Main.class.getResourceAsStream(helpFiles + "/General/" + filename);
-				outFile  = new File(helpGeneral.toFile(), filename);
-				if (is != null && !outFile.exists()) {
-					FileUtils.copyInputStreamToFile(is, outFile);
+				else if (!outFile.exists()){
+					System.err.println("Something is wrong with the internal resource (Resouorces class, copyIcons(): " + sourceFile);
+					System.exit(0);
 				}
 			}
 		}
-		catch (IOException e) {e.printStackTrace();
+		catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	public static String getHelpRoot() {
-		return Paths.get(LiveSettings.getFilePath().toString(),helpFiles).toString();
+	public static String getSceneIdGistWindow() {
+		return sceneIdGistWindow;
 	}
-
-	private static String getSQLitePath() {
-		Path sqlitePath = Paths.get(LiveSettings.getFilePath().toString(),"SQLite");
-		if (!sqlitePath.toFile().exists()) sqlitePath.toFile().mkdir();
-		return Paths.get(LiveSettings.getFilePath().toString(),"SQLite").toString();
-	}
-
-	public static File getSQLiteFile() {
-		return new File(getSQLitePath(),"Database.sqlite");
-	}
-
-	private static void checkResources() {
-		if (!rootFile.exists()) rootFile.mkdir();
-		if (!iconRootFile.exists()) iconRootFile.mkdir();
-		if (!treeIconRootFile.exists()) treeIconRootFile.mkdir();
-		copyHelpFiles();
-		copyIcons();
-	}
-
 }

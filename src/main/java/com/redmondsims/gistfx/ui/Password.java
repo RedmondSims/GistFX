@@ -6,6 +6,7 @@ import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.preferences.AppSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -16,8 +17,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Password {
@@ -50,6 +53,16 @@ public class Password {
 		label.setMinWidth(lblWidth);
 		label.setMaxWidth(lblWidth);
 		label.setPrefWidth(lblWidth);
+		return label;
+	}
+
+	private static Label newLabel(String text, double width) {
+		Label label = new Label(text);
+		label.setAlignment(Pos.CENTER_RIGHT);
+		label.setPadding(new Insets(5,5,5,5));
+		label.setMinWidth(width);
+		label.setMaxWidth(width);
+		label.setPrefWidth(width);
 		return label;
 	}
 
@@ -159,13 +172,47 @@ public class Password {
 
 	public static boolean verify(String password, Stage parentStage) {
 		passwordMatches = false;
-		double width = 350;
-		double height = 150;
+		double width = 325;
+		double height = 105;
 		String sceneId = "MatchPassword";
-		Label lblVerify = newLabel("Verify Password");
+		Label lblVerify = newLabel("Verify Password",100);
 		PasswordField tfVerify = newPasswordField();
+		tfVerify.getStylesheets().add(UISettings.Theme.TEXT_FIELD.getStyleSheet());
 		Button btnVerify = new Button("Verify");
+		HBox pad1 = newHBox(new Label("    "));
+		HBox pad2 = newHBox(new Label(""));
 		HBox boxVerify = newHBox(lblVerify,tfVerify);
+		VBox vbox = newVBox(pad1,boxVerify);
+		AnchorPane ap = new AnchorPane(vbox);
+		ap.getStylesheets().add(UISettings.Theme.ANCHOR_PANE.getStyleSheet());
+		switch(AppSettings.get().loginScreenColor()) {
+			case RED -> {
+				ap.setId("red");
+				tfVerify.setId("red");
+				lblVerify.setStyle("-fx-text-fill:rgb(255,95,95)");
+			}
+			case GREEN -> {
+				ap.setId("green");
+				tfVerify.setId("green");
+				lblVerify.setStyle("-fx-text-fill:rgb(0,50,53)");
+			}
+			case BLUE -> {
+				ap.setId("blue");
+				tfVerify.setId("blue");
+				lblVerify.setStyle("-fx-text-fill:rgb(190,190,255)");
+			}
+			case YELLOW -> {
+				ap.setId("yellow");
+				tfVerify.setId("yellow");
+				lblVerify.setStyle("-fx-text-fill:black");
+			}
+			case HOTPINK -> {
+				ap.setId("hotpink");
+				tfVerify.setId("hotpink");
+				lblVerify.setStyle("-fx-text-fill:rgb(255,155,255)");
+			}
+		}
+		ap.setPrefSize(width,height);
 		btnVerify.setOnAction(e->{
 			checkForMatch(tfVerify.getText(),password);
 			SceneOne.close(sceneId);
@@ -175,12 +222,13 @@ public class Password {
 			SceneOne.close(sceneId);
 		});
 		final CBooleanProperty responded = new CBooleanProperty(false);
-		final ToolWindow toolWindow = new ToolWindow.Builder(boxVerify)
+		final ToolWindow toolWindow = new ToolWindow.Builder(ap)
 				.attachToStage(parentStage)
 				.setSceneId(sceneId)
+				.transparentStyle()
+				.noButtons()
 				.size(width,height)
 				.title("Verify Password")
-				.addButton(btnVerify)
 				.build();
 		Platform.runLater(() -> {
 			toolWindow.showAndWait();

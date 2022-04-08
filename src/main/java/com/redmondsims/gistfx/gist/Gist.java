@@ -3,12 +3,8 @@ package com.redmondsims.gistfx.gist;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.ui.gist.GistCategory;
-import com.redmondsims.gistfx.ui.gist.Icons;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.scene.Node;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,13 +29,6 @@ public class Gist {
 		this.isPublic = isPublic;
 		this.gistURL  = gistURL;
 		this.gistCategory = Action.getGistCategory(gistId);
-		expandedProperty.addListener((observable, oldValue, newValue) -> {
-			if(gistCategory != null) {
-				if (newValue) {
-					gistCategory.setExpanded(true);
-				}
-			}
-		});
 	}
 
 	private String truncate(String string, int numChars, boolean ellipses) {

@@ -31,18 +31,19 @@ public class MasterResetWindow {
 	private void startWindow() {
 		System.out.println("Showing MasterReset");
 		double width = 400;
-		double height = 385;
+		double height = 415;
 		Label    lblTitle   = new Label("Master Reset");
 		lblTitle.setId("masterReset");
 		Label    lblMessage = new Label(getMessage());
 		lblMessage.setPadding(new Insets(10,10,10,10));
-		CheckBox cbDatabase = new CheckBox("Reset Database (wipe out and create new)");
-		CheckBox cbSettings = new CheckBox("Reset all app settings to default");
-		CheckBox cbCredentials = new CheckBox("Reset Login Credentials");
-		CheckBox cbLocalMetadata = new CheckBox("Wipe out Local Metadata");
-		CheckBox cbGitHubMetadata = new CheckBox("Wipe out GitHub Metadata");
+		CheckBox cbDeleteLocalFiles = new CheckBox("Delete Local Files");
+		CheckBox cbDatabase         = new CheckBox("Reset Database (wipe out and create new)");
+		CheckBox cbSettings         = new CheckBox("Reset all app settings to default");
+		CheckBox cbCredentials      = new CheckBox("Reset Login Credentials");
+		CheckBox cbLocalMetadata    = new CheckBox("Wipe out Local Metadata");
+		CheckBox cbGitHubMetadata   = new CheckBox("Wipe out GitHub Metadata");
 		Button button = new Button("GO");
-		VBox vbox = new VBox(centeredHBox(lblTitle),lblMessage,cbDatabase, cbSettings,cbCredentials,cbLocalMetadata,cbGitHubMetadata,centeredHBox(button));
+		VBox vbox = new VBox(centeredHBox(lblTitle),lblMessage,cbDeleteLocalFiles,cbDatabase, cbSettings,cbCredentials,cbLocalMetadata,cbGitHubMetadata,centeredHBox(button));
 		vbox.setPadding(new Insets(15,15,15,20));
 		vbox.setSpacing(15);
 		cbSettings.selectedProperty().addListener((observable,oldValue,newValue) -> {
@@ -67,7 +68,16 @@ public class MasterResetWindow {
 		});
 		cbLocalMetadata.disableProperty().bind(cbSettings.selectedProperty());
 		cbCredentials.disableProperty().bind(cbSettings.selectedProperty());
-		button.setOnAction(e -> performReset(cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalMetadata.isSelected(), cbGitHubMetadata.isSelected()));
+		cbDeleteLocalFiles.selectedProperty().addListener((observable, odValue, newValue) ->{
+			if(newValue) {
+				cbDatabase.setSelected(false);
+				cbDatabase.setDisable(true);
+			}
+			else {
+				cbDatabase.setDisable(false);
+			}
+		});
+		button.setOnAction(e -> performReset(cbDeleteLocalFiles.isSelected(), cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalMetadata.isSelected(), cbGitHubMetadata.isSelected()));
 		ToolWindow toolWindow = new ToolWindow.Builder(vbox).title("Master Reset").size(width,height).addButton(button).setSceneId(sceneId).build();
 		toolWindow.showAndWait();
 	}
@@ -92,13 +102,14 @@ public class MasterResetWindow {
 		return hbox;
 	}
 
-	private void performReset(boolean database, boolean appSettings, boolean credentials, boolean localMetadata, boolean gitHubMetadata) {
+	private void performReset(boolean deleteLocalFiles, boolean database, boolean appSettings, boolean credentials, boolean localMetadata, boolean gitHubMetadata) {
 		if (!database && !appSettings && !credentials && !localMetadata && !gitHubMetadata) {
 			CustomAlert.showInfo("No changes will be made.", SceneOne.getOwner(sceneId));
 			SceneOne.close(sceneId);
 			System.exit(11);
 		}
 		StringBuilder options = new StringBuilder("You have chosen to perform the following actions:\n\n");
+		if (deleteLocalFiles) options.append("- Delete all local files\n\n");
 		if (database) options.append("- Delete and re-create database\n\n");
 		if (appSettings) options.append("- Reset all app settings to default\n\n");
 		if (credentials) options.append("- Wipe out local credentials\n\n");
@@ -109,26 +120,15 @@ public class MasterResetWindow {
 		}
 		options.append("\nAre you sure this is what you want to do?");
 		if (CustomAlert.showConfirmation(options.toString())) {
-			Label label = new Label("Working ...");
-			label.setMinWidth(300);
-			label.setMinHeight(200);
-			label.setAlignment(Pos.CENTER);
-			label.setId("masterReset");
-			VBox vbox = new VBox(label);
-			SceneOne.close();
-			SceneOne.set(vbox).centered().modality(Modality.APPLICATION_MODAL).show();
-			new Thread(() -> {
-				if (database) Action.deleteDatabaseFile();
-				if (localMetadata) Action.deleteLocalMetaData(!database);
-				if (appSettings) AppSettings.clear().clearAll();
-				if (credentials) AppSettings.resetCredentials();
-				if (gitHubMetadata) Action.deleteGitHubMetadata();
-				Platform.runLater(() -> {
-					CustomAlert.showInfo("It is done!",SceneOne.getOwner());
-					SceneOne.close(sceneId);
-					System.exit(11);
-				});
-			}).start();
+			if (deleteLocalFiles) Action.deleteLocalFiles();
+			if (database) Action.deleteDatabaseFile();
+			if (localMetadata) Action.deleteLocalMetaData(!database);
+			if (appSettings) AppSettings.clear().clearAll();
+			if (credentials) AppSettings.resetCredentials();
+			if (gitHubMetadata) Action.deleteGitHubMetadata();
+			CustomAlert.showInfo("It is done!", SceneOne.getOwner(sceneId));
+			SceneOne.close(sceneId);
+			System.exit(11);
 		}
 		else {
 			CustomAlert.showInfo("No changes will be made.", SceneOne.getOwner(sceneId));

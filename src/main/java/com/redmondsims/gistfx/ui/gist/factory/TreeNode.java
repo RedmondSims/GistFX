@@ -11,17 +11,16 @@ import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.ui.gist.GistCategory;
-import javafx.beans.property.BooleanProperty;
 
 public class TreeNode implements GistInterface {
 
-    private       String       text                     = "";
-    private       GistCategory gistCategory;
-    private final TreeType     type;
+    private       String           text             = "";
+    private       GistCategory     gistCategory;
+    private final TreeType         type;
     private       String           gistId;
     private       String           description;
     private       int              fileId;
-    private final CBooleanProperty categoryExpandedProperty = new CBooleanProperty(false);
+    private final CBooleanProperty expandedProperty = new CBooleanProperty(false);
 
     public TreeNode(){
         this.type = null;
@@ -59,8 +58,12 @@ public class TreeNode implements GistInterface {
         return true;
     }
 
-    public String getCategory() {
+    public String getCategoryName() {
         return gistCategory.getCategoryName();
+    }
+
+    public GistCategory getGistCategory() {
+        return gistCategory;
     }
 
     @Override public String toString() {
@@ -89,21 +92,6 @@ public class TreeNode implements GistInterface {
 
     @Override public String getName() {
         return text;
-    }
-
-    @Override public BooleanProperty expandedProperty() {
-        return switch (type) {
-            case CATEGORY -> gistCategory.expandedProperty();
-            case GIST -> getGist().expandedProperty();
-            case FILE -> null;
-        };
-    }
-
-    @Override public void setExpanded(boolean value) {
-        switch(type) {
-            case GIST -> getGist().setExpanded(value);
-            case CATEGORY -> this.gistCategory.setExpanded(value);
-        }
     }
 
 }

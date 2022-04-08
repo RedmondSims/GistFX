@@ -1,41 +1,51 @@
 package com.redmondsims.gistfx.data;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
+import com.redmondsims.gistfx.enums.LoginStates;
 import com.redmondsims.gistfx.enums.Names;
+import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.gist.WindowManager;
-import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings;
+import com.redmondsims.gistfx.ui.LoginWindow;
 import javafx.application.Platform;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 import org.kohsuke.github.GitHubBuilder;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 class GitHub {
 
-	private       org.kohsuke.github.GitHub                 gitHub;
-	private       ConcurrentHashMap<String, GHGist>         ghGistMap      = null;
-	private       List<GHGist>                              ghGistList;
-	private final Map<String, String>                       descriptionMap = new HashMap<>();
-	private       ConcurrentHashMap<GistFileId, GHGistFile> ghGistFileMap  = new ConcurrentHashMap<>();
+	private       org.kohsuke.github.GitHub             gitHub;
+	private       ConcurrentHashMap<String, GHGist>     ghGistMap            = null;
+	private       List<GHGist>                          ghGistList;
+	private final Map<String, String>                   descriptionMap       = new HashMap<>();
+	private       ConcurrentHashMap<GistFileId, String> ghGistFileContentMap = new ConcurrentHashMap<>();
+	private       boolean                               checkingInternet     = false;
+
 
 	private void accessingGitHub(boolean active) {
+		if(offLine()) return;
 		Action.gitHubActivity(active);
 	}
 
+	private boolean offLine() {
+		return LiveSettings.isOffline();
+	}
+
 	public String getName() {
+		if(offLine()) return "Off Line Mode";
 		try {
 			return gitHub.getMyself().getName();
 		}
@@ -49,49 +59,98 @@ class GitHub {
 	private void notifyUser(String gistId) {
 		new Thread(() -> {
 			boolean proceed = gistId.isEmpty();
-			if(!proceed) {
-				if(descriptionMap.isEmpty()) {
-					for(GHGist ghGist : ghGistList) {
-						String ghGistId = ghGist.getGistId();
+			if (ghGistList != null) {
+				if(!proceed) {
+					for (GHGist ghGist : ghGistList) {
+						String ghGistId    = ghGist.getGistId();
 						String description = ghGist.getDescription();
-						descriptionMap.put(ghGistId,description);
+						descriptionMap.putIfAbsent(ghGistId, description);
 					}
+					String description = descriptionMap.get(gistId);
+					if (!description.equals(Names.GITHUB_METADATA.Name()))
+						proceed = true;
 				}
-				String description = descriptionMap.get(gistId);
-				if(!description.equals(Names.GITHUB_METADATA.Name())) proceed = true;
-			}
-			if(proceed) {
-				WindowManager.updateGitHubLabel("Updating GitHub ", true);
-				while(Action.accessingGitHub()) Action.sleep(100);
-				Action.sleep(2000);
-				WindowManager.updateGitHubLabel("",false);
+				if(proceed) {
+					WindowManager.updateGitHubLabel("Updating GitHub ", true);
+					while(Action.accessingGitHub()) Action.sleep(100);
+					Action.sleep(2000);
+					WindowManager.updateGitHubLabel("",false);
+				}
 			}
 		}).start();
 	}
 
-	public boolean tokenValid(String token) {
+	private boolean internetPings() {
+		boolean response = false;
+		int success = 0;
+		try {
+			InetAddress internet = InetAddress.getByAddress(new byte[]{1,1,1,1});
+			LoginWindow.updateProgress("Checking Internet ",true);
+			checkingInternet = true;
+			new Thread(() -> {
+				while(checkingInternet) {
+					LoginWindow.updateProgress(".",true);
+					Action.sleep(3000);
+				}
+			}).start();
+			for (int x = 0; x < 5; x++) {
+				if(ping("1.1.1.1",2)) {
+					success++;
+				}
+			}
+			response = success >= 4;
+		}
+		catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+		checkingInternet = false;
+		return response;
+	}
+
+	private boolean ping(String host, int pingCount) throws IOException, InterruptedException {
+		String countSwitch = LiveSettings.getOS().equals(OS.WINDOWS) ? "-n" : "-c";
+		String count = String.valueOf(pingCount);
+		ProcessBuilder processBuilder = new ProcessBuilder("ping", countSwitch, count, host);
+		Process proc = processBuilder.start();
+		int returnVal = proc.waitFor();
+		return returnVal == 0;
+	}
+
+	public LoginStates tokenValid(String token) {
+		LoginStates response = LoginStates.TOKEN_FAILURE;
 		try {
 			gitHub = new GitHubBuilder().withOAuthToken(token).build();
 			boolean authenticated = gitHub.isCredentialValid();
+			if(!authenticated) {
+				System.out.println("Failed: " + token);
+			}
 			LiveSettings.setGitHubAuthenticated(authenticated);
 			if(authenticated) {
-				String lastUserId = AppSettings.get().lastGitHubUserId();
-				String thisUserId = String.valueOf(gitHub.getMyself().getId());
-				if (!lastUserId.equals(thisUserId)) AppSettings.set().dataSource(UISettings.DataSource.GITHUB);
-				Action.loadJsonData();
+				response = LoginStates.TOKEN_VALID;
+				Action.loadMetaData();
 				Action.setGitHubUserId(gitHub.getMyself().getId());
 				ghGistList = gitHub.getMyself().listGists().toList();
 			}
-			return authenticated;
+			else {
+				LoginWindow.updateProgress("clearToken failed ");
+				if (!internetPings()) {
+					response = LoginStates.INTERNET_DOWN;
+				}
+			}
+		}
+		catch (SocketException se) {
+			response = LoginStates.INTERNET_DOWN;
+			System.out.println(se.getMessage());
 		}
 		catch (IOException e) {
 			throwAlert();
 			e.printStackTrace();
 		}
-		return false;
+		return response;
 	}
 
 	public boolean noGists() {
+		if(offLine()) return true;
 		try {
 			return gitHub.getMyself().listGists().toList().size() == 0;
 		}
@@ -106,6 +165,7 @@ class GitHub {
 	}
 
 	public boolean ghGistMapIsEmpty() {
+		if(offLine()) return true;
 		try {
 			if (ghGistMap == null) return true;
 			else return ghGistMap.size() < gitHub.getMyself().listGists().toList().size();
@@ -117,44 +177,23 @@ class GitHub {
 	}
 
 	public String getGitHubFileContent(String gistId, String filename) {
-		try {
-			GHGist ghGist = gitHub.getGist(gistId);
-			GHGistFile ghGistFile = ghGist.getFile(filename);
-			return (ghGistFile == null) ? "" : ghGistFile.getContent();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
-
-	public String getLocalGitHubFileContent(String gistId, String filename) {
-		GHGistFile ghGistFile = getLocalGitHubFile(gistId, filename);
-		return (ghGistFile == null) ? "" : ghGistFile.getContent();
-	}
-
-	public GHGistFile getLocalGitHubFile(String gistId, String filename) {
-		for (GistFileId fileId : ghGistFileMap.keySet()) {
-			String     thisGistId   = fileId.getGistId();
-			String     thisFilename = fileId.getFileName();
-			GHGistFile ghGistFile   = ghGistFileMap.get(fileId);
-			if (thisGistId.equals(gistId) && thisFilename.equals(filename)) {
-				return ghGistFile;
-			}
-		}
-		return null;
+		if(offLine()) return "";
+		GHGist ghGist = ghGistMap.get(gistId);
+		return ghGist.getFiles().get(filename).getContent();
 	}
 
 	public Map<String, GHGist> getNewGHGistMap() {
 		try {
-			List<GHGist> list = gitHub.getMyself().listGists().toList();
-			double       size = list.size();
-			ghGistMap     = new ConcurrentHashMap<>();
-			ghGistFileMap = new ConcurrentHashMap<>();
-			for (double x = 0; x < size; x++) {
-				String gistId = list.get((int) x).getGistId();
-				GHGist ghGist = gitHub.getGist(gistId);
-				addGhGistToMap(ghGist);
+			List<GHGist> ghGists = gitHub.getMyself().listGists().toList();
+			double       size = ghGists.size();
+			ghGistMap            = new ConcurrentHashMap<>();
+			ghGistFileContentMap = new ConcurrentHashMap<>();
+			int x=0;
+			for(GHGist ghGist : ghGists) {
+				String gistId = ghGist.getGistId();
+				GHGist realGHGist = gitHub.getGist(gistId);
+				mapGHGist(gistId, realGHGist);
+				x++;
 				setProgress(x / (size - 2));
 			}
 			setProgress(0);
@@ -166,35 +205,39 @@ class GitHub {
 		return ghGistMap;
 	}
 
-	private void addGhGistToMap(GHGist ghGist) {
-		String gistId = ghGist.getGistId();
+	private void mapGHGist(String gistId, GHGist ghGist) {
+		if(offLine()) return;
 		if (ghGistMap != null) {
-			ghGistMap.putIfAbsent(gistId, ghGist);
-			for(String ghGistFilename : ghGist.getFiles().keySet()) {
-				GHGistFile ghGistFile = ghGist.getFile(ghGistFilename);
-				GistFileId fileId = new GistFileId(gistId,ghGistFilename);
-				ghGistFileMap.put(fileId, ghGistFile);
+			if (!ghGistMap.containsKey(gistId)) {
+				ghGistMap.put(gistId, ghGist);
+				for (String ghGistFilename : ghGist.getFiles().keySet()) {
+					GHGistFile ghGistFile = ghGist.getFile(ghGistFilename);
+					GistFileId fileId     = new GistFileId(gistId, ghGistFilename);
+					ghGistFileContentMap.put(fileId, ghGistFile.getContent());
+				}
 			}
 		}
 	}
 
 	private void removeGhGistFromMap(String gistId) {
+		if(offLine()) return;
 		if(ghGistMap != null) {
 			ghGistMap.remove(gistId);
-			for (GistFileId gistFileId : ghGistFileMap.keySet()) {
+			for (GistFileId gistFileId : ghGistFileContentMap.keySet()) {
 				if (gistFileId.getGistId().equals(gistId)) {
-					ghGistFileMap.remove(gistFileId);
+					ghGistFileContentMap.remove(gistFileId);
 				}
 			}
 		}
 	}
 
 	private void updateGHGistMap(String gistId) {
+		if(offLine()) return;
 		new Thread(() -> {
 			try {
 				removeGhGistFromMap(gistId);
 				GHGist ghGist = gitHub.getGist(gistId);
-				addGhGistToMap(ghGist);
+				mapGHGist(gistId, ghGist);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -208,11 +251,13 @@ class GitHub {
 	}
 
 	public void refreshAllData() {
+		if(offLine()) return;
 		getNewGHGistMap();
 		GistManager.startFromGit(ghGistMap, Source.RELOAD);
 	}
 
 	public GHGist getLocalGist(String gistId) {
+		if(offLine()) return null;
 		if (ghGistMap == null) {
 			getNewGHGistMap();
 		}
@@ -220,6 +265,7 @@ class GitHub {
 	}
 
 	public GHGist getGitHubGistByDescription(String description) {
+		if(offLine()) return null;
 		try {
 			for (GHGist gist : gitHub.getMyself().listGists().toList()) {
 				String gistId = gist.getGistId();
@@ -237,6 +283,7 @@ class GitHub {
 	}
 
 	public Date getGistUpdateDate(String gistId) {
+		if(offLine()) return null;
 		try {
 			java.util.Date date = gitHub.getGist(gistId).getUpdatedAt();
 			return new Date(date.getTime());
@@ -249,6 +296,7 @@ class GitHub {
 	}
 
 	public void updateDescription(Gist gist) {
+		if(offLine()) return;
 		String  gistId      = gist.getGistId();
 		String  description = gist.getDescription();
 		try {
@@ -264,14 +312,8 @@ class GitHub {
 		}
 	}
 
-	public void updateFile(GistFile file) {
-		String  gistId   = file.getGistId();
-		String  filename = file.getFilename();
-		String  content  = file.getContent();
-		updateFile(gistId,filename,content);
-	}
-
 	public void renameFile(String gistId, String oldFilename, String newFilename, String content) {
+		if(offLine()) return;
 		try {
 			accessingGitHub(true);
 			notifyUser("");
@@ -285,18 +327,21 @@ class GitHub {
 		}
 	}
 
-	public void updateFile(String gistId, String filename, String content) {
+	public boolean updateFile(String gistId, String filename, String content) {
+		if(offLine()) return true;
 		try {
 			accessingGitHub(true);
 			notifyUser(gistId);
 			gitHub.getGist(gistId).update().updateFile(filename,content).update();
 			updateGHGistMap(gistId);
 			accessingGitHub(false);
+			return true;
 		}
 		catch (IOException e) {
 			throwAlert();
 			e.printStackTrace();
 		}
+		return false;
 	}
 
 	public void delete(Gist gist) {
@@ -308,6 +353,7 @@ class GitHub {
 	}
 
 	private void deleteGist(String gistId) {
+		if(offLine()) return;
 		try {
 			accessingGitHub(true);
 			notifyUser("");
@@ -322,6 +368,7 @@ class GitHub {
 	}
 
 	public void deleteGistByDescription(String description) {
+		if(offLine()) return;
 		try {
 			accessingGitHub(true);
 			notifyUser("");
@@ -354,6 +401,7 @@ class GitHub {
 	}
 
 	public void deleteGistFile(String gistId, String filename) {
+		if(offLine()) return;
 		try {
 			accessingGitHub(true);
 			notifyUser(gistId);
@@ -368,12 +416,14 @@ class GitHub {
 	}
 
 	private void checkMapForNull() {
+		if(offLine()) return;
 		if(ghGistMap == null && LiveSettings.gitHubAuthenticated()) {
 			getNewGHGistMap();
 		}
 	}
 
 	public GHGistFile addFileToGist(String gistId, String filename, String content) {
+		if(offLine()) return null;
 		checkMapForNull();
 		GHGistFile ghGistFile = null;
 		try {
@@ -392,13 +442,14 @@ class GitHub {
 	}
 
 	public GHGist newGist(String description, String filename, String content, boolean isPublic) {
+		if(offLine()) return null;
 		GHGist ghGist = null;
 		try {
 			accessingGitHub(true);
 			notifyUser("");
 			ghGist = gitHub.createGist().public_(isPublic).description(description).file(filename, content).create();
-			ghGist = gitHub.getGist(ghGist.getGistId());
-			addGhGistToMap(ghGist);
+			String gistId = ghGist.getGistId();
+			mapGHGist(gistId, ghGist);
 			accessingGitHub(false);
 		}
 		catch (IOException e) {
@@ -409,6 +460,7 @@ class GitHub {
 	}
 
 	public Integer getForkCount(String gistId) {
+		if(offLine()) return -1;
 		try {
 			return gitHub.getGist(gistId).listForks().toList().size();
 		}

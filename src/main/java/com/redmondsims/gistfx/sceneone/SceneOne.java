@@ -33,6 +33,10 @@ public final class SceneOne {
 		return set(root, defaultSceneName);
 	}
 
+	public static void setParent(Parent root) {
+		setParent(defaultSceneName, root);
+	}
+
 	public static Show show() {
 		return show(defaultSceneName);
 	}
@@ -157,10 +161,17 @@ public final class SceneOne {
 		return new SceneBuilder(root, sceneName, ownerStage);
 	}
 
+	public static void setParent(String sceneName, Parent root) {
+		checkScene(sceneName);
+		sceneMap.get(sceneName).setParent(root);
+	}
+
 	public static Show show(String sceneName) {
 		checkScene(sceneName);
 		lastScene = sceneName;
-		return new Show(sceneName,false);
+		sceneMap.get(sceneName).unHide();
+		//return new Show(sceneName,false);
+		return null;
 	}
 
 	public static Show show(String sceneName, Parent root) {
@@ -183,8 +194,10 @@ public final class SceneOne {
 	}
 
 	public static boolean isShowing(String sceneName) {
-		checkScene(sceneName);
-		return sceneMap.get(sceneName).isShowing();
+		if(sceneMap.containsKey(sceneName)) {
+			return sceneMap.get(sceneName).isShowing();
+		}
+		return false;
 	}
 
 	public static boolean sceneExists(String sceneName) {
@@ -276,6 +289,12 @@ public final class SceneOne {
 			if (!name.equals(sceneName)) {
 				sceneMap.get(name).getStage().hide();
 			}
+		}
+	}
+
+	public static void closeAll() {
+		for (String name : sceneMap.keySet()) {
+			sceneMap.get(name).getStage().close();
 		}
 	}
 
@@ -590,7 +609,6 @@ public final class SceneOne {
 			if (called > 1) return;
 			new Thread(() -> {
 				try {TimeUnit.MILLISECONDS.sleep(300);}catch (InterruptedException e) {e.printStackTrace();}
-
 				if((mouseX > 0 || mouseY > 0) && wait) throw generalError("Cannot both show a Scene using split coordinates and also use showAndWait");
 				if (root != null) sceneMap.get(sceneName).setParent(root);
 				if (mouseX > 0) sceneMap.get(sceneName).splitXAtY(mouseX,posY);
@@ -918,8 +936,10 @@ public final class SceneOne {
 		private void getStageForScene() {
 			StageObject stageObject = stageMap.getOrDefault(sceneName,stageMap.get(defaultSceneName));
 			stage = stageObject.get();
-			if (stageStyle != null) stage.initStyle(stageStyle);
-			if (modality != null) stage.initModality(modality);
+			if(!stage.isShowing()) {
+				if (stageStyle != null) stage.initStyle(stageStyle);
+				if (modality != null) stage.initModality(modality);
+			}
 		}
 
 		private void setScene() {
@@ -1030,11 +1050,12 @@ public final class SceneOne {
 			switch (showOption) {
 				case SHOW_WAIT -> {
 					preShowProcessing();
-					stage.showAndWait();
-					stage.getScene().getWindow().centerOnScreen();
+					if(!stage.isShowing())
+						stage.showAndWait();
 				}
 				case SHOW -> {
-					stage.show();
+					if(!stage.isShowing())
+						stage.show();
 					postShowProcessing();
 				}
 			}
@@ -1191,6 +1212,10 @@ public final class SceneOne {
 				Platform.runLater(() -> stageCloseEventHandler.handle(null));
 			}
 			Platform.runLater(stage::close);
+		}
+
+		public void unHide() {
+			Platform.runLater(stage::show);
 		}
 
 		public void hide() {

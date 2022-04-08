@@ -194,4 +194,18 @@ public class Get {
 	public String lastGitHubUserId() {
 		return prefs.get(LABEL.LAST_GITHUB_USER_ID.Name(), "");
 	}
+
+	public boolean runInSystray() {
+		String value = prefs.get(LABEL.RUN_IN_SYSTRAY.Name(), "false");
+		return value.toLowerCase().equals("true");
+	}
+
+	public String systrayColor() {
+		return prefs.get(LABEL.SYSTRAY_COLOR.Name(), "White");
+	}
+
+	public boolean showAppIcon() {
+		String value = prefs.get(LABEL.SHOW_APP_ICON.Name(), "true");
+		return value.toLowerCase().equals("true");
+	}
 }

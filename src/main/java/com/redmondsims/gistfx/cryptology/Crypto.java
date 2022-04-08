@@ -69,29 +69,9 @@ public class Crypto implements Serializable {
 		sessionKey = encryptCommon(password, KEY);
 	}
 
-	public static void setSessionKey(String userPassword, String gistToken) {
-		if (userPassword.isEmpty())
-			setSessionKeyByToken(gistToken);
-		else
+	public static void setSessionKey(String userPassword) {
+		if (!userPassword.isEmpty())
 			sessionKey = encryptCommon(userPassword, KEY);
-	}
-
-	private static void setSessionKeyByToken(String gistToken) {
-		String lastTokenHash = AppSettings.get().lastTokenHash();
-		String tokenHash = encryptData(gistToken);
-		if(lastTokenHash.isEmpty()) {
-			AppSettings.set().lastTokenHash(tokenHash);
-		}
-		else {
-			if(!lastTokenHash.equals(tokenHash)) {
-				String oldToken = decryptData(lastTokenHash);
-				if(Action.hasData()) {
-					Action.reEncryptData(oldToken, gistToken);
-				}
-				AppSettings.set().lastTokenHash(tokenHash);
-			}
-		}
-		sessionKey = encryptCommon(gistToken, KEY);
 	}
 
 	public static String encryptData(String data) {

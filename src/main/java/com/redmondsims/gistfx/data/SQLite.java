@@ -1,6 +1,6 @@
 package com.redmondsims.gistfx.data;
 
-import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.Launcher;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.gist.Gist;
@@ -15,7 +15,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 
@@ -87,7 +86,7 @@ class SQLite {
 	private boolean createSchema() {
 		boolean result = true;
 		try {
-			InputStream sqlScriptResourceStream = Objects.requireNonNull(Main.class.getResourceAsStream("SQLite/GistFXCreateSchema.sql"));
+			InputStream sqlScriptResourceStream = Objects.requireNonNull(Launcher.class.getResourceAsStream("SQLite/GistFXCreateSchema.sql"));
 			String schemaStatements = IOUtils.toString(sqlScriptResourceStream, StandardCharsets.UTF_8);
 			schemaStatements = schemaStatements.replaceAll("(.)(\\n)", "$1 ");
 			schemaStatements = schemaStatements.replaceAll("CREATE TABLE", "CREATE TABLE IF NOT EXISTS");
@@ -168,7 +167,7 @@ class SQLite {
 				String  gistId      = rs.getString(1);
 				String  name        = Action.getGistName(gistId);
 				String  description = Crypto.decryptWithSessionKey(rs.getString(2));
-				if (name.equals("")) name = description;
+				if (name.equals("")) name = Action.getGistName(gistId);
 				boolean isPublic    = rs.getBoolean(3);
 				String  url         = Crypto.decryptWithSessionKey(rs.getString(4));
 				Gist    gist        = new Gist(gistId, name, description, isPublic, url);
@@ -239,7 +238,7 @@ class SQLite {
 
 	private List<GistFile> getFileMap(String gistId) {
 		List<GistFile> fileList = new ArrayList<>();
-		String                 SQL = "SELECT fileID, fileName, content, uploadDate, dirty FROM GistFiles WHERE gistId = ?";
+		String                 SQL = "SELECT fileID, fileName, content, dirty FROM GistFiles WHERE gistId = ?";
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL);
 			pst.setString(1,gistId);
@@ -248,9 +247,8 @@ class SQLite {
 				Integer  fileId   = rs.getInt(1);
 				String   filename = Crypto.decryptWithSessionKey(rs.getString(2));
 				String   content  = Crypto.decryptWithSessionKey(rs.getString(3));
-				Date uploadDate = rs.getDate(4);
-				boolean  dirty    = rs.getBoolean(5);
-				fileList.add(new GistFile(fileId, gistId, filename, content, uploadDate, dirty));
+				boolean  dirty    = rs.getBoolean(4);
+				fileList.add(new GistFile(fileId, gistId, filename, content, dirty));
 			}
 			rs.close();
 		}
@@ -259,23 +257,17 @@ class SQLite {
 		return fileList;
 	}
 
-	public void saveFile(GistFile file) {
-		Integer fileId   = file.getFileId();
-		String  eContent = Crypto.encryptWithSessionKey(file.getContent());
-		Date uploadDate = file.getUploadDate();
-		boolean dirty    = file.isDirty();
-		String  SQL      = "UPDATE GistFiles SET content = ?, dirty = ?, uploadDate = ? WHERE fileId = ?;";
+	public void saveFile(int fileId, String content, boolean dirty) {
+		String SQL = "UPDATE GistFiles SET content = ?, dirty = ? WHERE fileId = ?;";
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL);
-			pst.setString(1, eContent);
+			pst.setString(1, Crypto.encryptWithSessionKey(content));
 			pst.setBoolean(2, dirty);
-			pst.setDate(3,uploadDate);
-			pst.setInt(4, fileId);
+			pst.setInt(3, fileId);
 			pst.executeUpdate();
 			pst.close();
 		}
-		catch (Exception e) {Action.error(e);}
-
+		catch (SQLException sqe) {sqe.printStackTrace();}
 	}
 
 	public void renameFile(Integer fileId, String newFilename) {
@@ -292,17 +284,17 @@ class SQLite {
 
 	}
 
-	public int newSQLFile(String gistId, String filename, String content, Date uploadDate) {
+	public int newSQLFile(String gistId, String filename, String content) {
 		String eFilename = Crypto.encryptWithSessionKey(filename);
 		String eContent  = Crypto.encryptWithSessionKey(content);
 		int    fileId    = 0;
-		String SQL       = "INSERT INTO GistFiles (gistId, fileName, content, uploadDate) VALUES (?,?,?,?)";
+		String SQL       = "INSERT INTO GistFiles (gistId, fileName, content, gitHubVersion) VALUES (?,?,?,?)";
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
 			pst.setString(1, gistId);
 			pst.setString(2, eFilename);
 			pst.setString(3, eContent);
-			pst.setDate(4,uploadDate);
+			pst.setString(4, eContent);
 			pst.executeUpdate();
 			ResultSet rs = getLastIDResultSet();
 			assert rs != null;
@@ -342,25 +334,56 @@ class SQLite {
 
 	}
 
+	public void updateGitHubVersion(int fileId, String gitHubContent) {
+		String eContent = Crypto.encryptWithSessionKey(gitHubContent);
+		String SQL = "UPDATE GistFiles SET gitHubVersion = ? WHERE fileID = ?;";
+		try {
+			PreparedStatement pst = conn.prepareStatement(SQL);
+			pst.setString(1,eContent);
+			pst.setInt(2, fileId);
+			pst.executeUpdate();
+			pst.close();
+		}
+		catch (SQLException sqe) {sqe.printStackTrace();}
+
+	}
+
+	public String getLocalGitHubVersion(int fileId) {
+		String localGitHubVersion = "";
+		String SQL = "SELECT gitHubVersion FROM GistFiles WHERE fileId = ?;";
+		try {
+			PreparedStatement pst = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
+			pst.setInt(1,fileId);
+			ResultSet rs = pst.executeQuery();
+			if(rs.next()) {
+				localGitHubVersion = Crypto.decryptWithSessionKey(rs.getString(1));
+			}
+			rs.close();
+			pst.close();
+		}
+		catch (SQLException sqe) {sqe.printStackTrace();}
+		return localGitHubVersion;
+	}
+
 	/**
 	 *	NON-encrypted database methods
 	 */
 
 	public boolean hasData() {
-		return gistsHasData() && gistFilesHasData();
+		return gistsHaveRecords() && gistFilesHaveRecords();
 	}
 
-	private boolean gistsHasData() {
+	private boolean gistsHaveRecords() {
 		String  SQL     = "SELECT count(*) FROM Gists;";
-		return hasData(SQL);
+		return hasRecords(SQL);
 	}
 
-	private boolean gistFilesHasData() {
+	private boolean gistFilesHaveRecords() {
 		String  SQL     = "SELECT count(*) FROM GistFiles;";
-		return hasData(SQL);
+		return hasRecords(SQL);
 	}
 
-	private boolean hasData(String SQL) {
+	private boolean hasRecords(String SQL) {
 		boolean hasData = false;
 		try {
 			ResultSet rs = conn.createStatement().executeQuery(SQL);
@@ -417,9 +440,13 @@ class SQLite {
 
 	public void cleanDatabase() {
 		String cleanGists   = "DELETE FROM Gists WHERE gistId IS NOT NULL;";
+		String cleanFiles   = "DELETE FROM GistFiles WHERE fileId <> 0;";
+		String cleanMetadata= "DELETE FROM Metadata WHERE id <> 0;";
 		String resetAutoIncrementFiles = "UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = 'GistFiles';";
 		try {
 			conn.createStatement().executeUpdate(cleanGists);
+			conn.createStatement().executeUpdate(cleanFiles);
+			conn.createStatement().executeUpdate(cleanMetadata);
 			conn.createStatement().executeUpdate(resetAutoIncrementFiles);
 		}
 		catch (Exception e) {Action.error(e);}
@@ -432,8 +459,6 @@ class SQLite {
 			conn.createStatement().executeUpdate(SQL);
 		}
 		catch (Exception e) {Action.error(e);}
-
-
 	}
 	
 	public String getMD2() {
@@ -474,8 +499,7 @@ class SQLite {
 				String  filename   = Crypto.decryptWithSessionKey(rs.getString("filename"));
 				String  content    = Crypto.decryptWithSessionKey(rs.getString("content"));
 				boolean dirty      = rs.getBoolean("dirty");
-				Date    uploadDate = rs.getDate("uploadDate");
-				fileList.add(new GistFileRecord(fileId, gistId, filename, content, dirty, uploadDate));
+				fileList.add(new GistFileRecord(fileId, gistId, filename, content, dirty));
 			}
 			rs.close();
 			conn.createStatement().executeQuery("DELETE FROM Gists");
@@ -486,7 +510,7 @@ class SQLite {
 
 
 		String SQLAddGist = "INSERT INTO Gists (gistId, description, isPublic, url) VALUES (?,?,?,?)";
-		String SQLAddGistFile = "INSERT INTO GistFiles (fileId, gistId, filename, content, dirty, uploadDate) VALUES (?,?,?,?,?,?)";
+		String SQLAddGistFile = "INSERT INTO GistFiles (fileId, gistId, filename, content, dirty) VALUES (?,?,?,?,?)";
 		Crypto.setTempSessionKey(newPassword);
 		try {
 			PreparedStatement pst = conn.prepareStatement(SQLAddGist);
@@ -504,7 +528,6 @@ class SQLite {
 				pst.setString(3, Crypto.encryptWithSessionKey(fileRecord.filename()));
 				pst.setString(4, Crypto.encryptWithSessionKey(fileRecord.content()));
 				pst.setBoolean(5,fileRecord.dirty());
-				pst.setDate(6,fileRecord.uploadDate());
 				pst.executeUpdate();
 			}
 			pst.close();

@@ -18,7 +18,7 @@
         <java.version>18</java.version>
         <javafx.version>18</javafx.version>
         <packaging>jar</packaging>
-        <exec.mainClass>com.redmondsims.gistfx.Main</exec.mainClass>
+        <exec.mainClass>com.redmondsims.gistfx.Launcher</exec.mainClass>
     </properties>
     <dependencies>
         <dependency>
@@ -114,8 +114,22 @@
             <artifactId>joda-time</artifactId>
             <version>2.10.14</version>
         </dependency>
+        <dependency>
+            <groupId>com.dustinredmond.fxtrayicon</groupId>
+            <artifactId>FXTrayIcon</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.simtechdata</groupId>
+            <artifactId>EasyFXControls</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.simtechdata</groupId>
+            <artifactId>SceneOneFX</artifactId>
+            <version>1.1</version>
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -194,6 +208,7 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>windows</id>
                         <phase>package</phase>
                         <goals>
                             <goal>package</goal>
@@ -202,15 +217,23 @@
                             <platform>auto</platform>
                             <createZipball>false</createZipball>
                             <createTarball>true</createTarball>
+<!--
                             <vmArgs>
-                                <vmArg>--module-path=Java/libs</vmArg>
-                                <vmArg>--add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
-                                <!--<vmArg>&#45;&#45;add-exports javafx.graphics/com.sun.javafx.sg.prism=ALL-UNNAMED</vmArg>-->
+                                <vmArg>&#45;&#45;module-path=Java/libs</vmArg>
+                                <vmArg>&#45;&#45;add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
                             </vmArgs>
+-->
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
                             </winConfig>
+                            <macConfig>
+                                <icnsFile>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
+                                <generateDmg>true</generateDmg>
+                                <generatePkg>false</generatePkg>
+                                <volumeName>GistFX</volumeName>
+                                <volumeIcon>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                            </macConfig>
                         </configuration>
                     </execution>
                 </executions>

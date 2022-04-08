@@ -1,6 +1,5 @@
 package com.redmondsims.gistfx.help;
 
-import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.help.html.*;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;

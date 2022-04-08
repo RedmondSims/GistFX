@@ -26,18 +26,19 @@ import static com.redmondsims.gistfx.preferences.UISettings.DataSource.GITHUB;
 
 public class Json {
 
-	private       Categories       CATEGORIES      = new Categories();
-	private       Names            NAMES           = new Names();
-	private       FileDescriptions DESCRIPTIONS    = new FileDescriptions();
-	private       Hosts            HOSTS           = new Hosts();
-	private       GHGist           ghGist;
-	private       MetadataFile     metadataFile;
-	private final Gson             gson            = new GsonBuilder().setPrettyPrinting().create();
-	private       Timer            saveTimer;
-	private boolean makingNew = false;
+	private       Categories                CATEGORIES      = new Categories();
+	private       Names                     NAMES           = new Names();
+	private       FileDescriptions          DESCRIPTIONS    = new FileDescriptions();
+	private       Hosts                     HOSTS           = new Hosts();
+	private       GHGist                    ghGist;
+	private       MetadataFile              metadataFile;
+	private final Gson                      gson            = new GsonBuilder().setPrettyPrinting().create();
+	private       Timer                     saveTimer;
+	private       boolean                   makingNew       = false;
 	private final Map<String, GistCategory> gistCategoryMap = new HashMap<>();
 
  	private void makeNewGist() {
+		if (LiveSettings.isOffline()) return;
 		new Thread(() -> {
 			makingNew = true;
 			while(Action.ghGistMapIsEmpty() && LiveSettings.gitHubAuthenticated()) {
@@ -64,6 +65,7 @@ public class Json {
 	}
 
 	private void reCreateGist() {
+		if (LiveSettings.isOffline()) return;
 		 if (metadataFile != null) {
 			 Action.updateProgress("Refreshing GitHub Metadata");
 			 Action.deleteGistByDescription(GITHUB_METADATA.Name());
@@ -84,6 +86,24 @@ public class Json {
 	 */
 
 	private void getData() {
+		if (LiveSettings.isOffline()) {
+			String json = AppSettings.get().metadata();
+			if(json.isEmpty()) {
+				json = Action.getSQLMetadata();
+			}
+			if (!json.isEmpty()) {
+				metadataFile = gson.fromJson(json,MetadataFile.class);
+				if(metadataFile == null) {
+					System.out.println("Metadata null");
+					System.exit(0);
+				}
+				CATEGORIES   = metadataFile.getCategories();
+				NAMES        = metadataFile.getNames();
+				DESCRIPTIONS = metadataFile.getFileDescriptions();
+				HOSTS        = metadataFile.getHosts();
+			}
+			return;
+		}
 		UISettings.DataSource dataSource           = LiveSettings.getDataSource();
 		String                customDataGitHubJson = "";
 		String                customDataLocalJson  = AppSettings.get().metadata();
@@ -215,15 +235,17 @@ public class Json {
 	private TimerTask saveToGitHub(String jsonString) {
 		return new TimerTask() {
 			@Override public void run() {
-				metadataFile = new MetadataFile(NAMES.getMap(),
-												CATEGORIES.getList(),
-												CATEGORIES.getMap(),
-												DESCRIPTIONS.getMap(),
-												HOSTS.getList());
-				String gistId = ghGist.getGistId();
-				String filename = MetadataFile.FileName;
-				String fileContent = gson.toJson(metadataFile);
-				Action.updateGistFile(gistId,filename,fileContent);
+				if (!LiveSettings.isOffline()) {
+					metadataFile = new MetadataFile(NAMES.getMap(),
+													CATEGORIES.getList(),
+													CATEGORIES.getMap(),
+													DESCRIPTIONS.getMap(),
+													HOSTS.getList());
+					String gistId = ghGist.getGistId();
+					String filename = MetadataFile.FileName;
+					String fileContent = gson.toJson(metadataFile);
+					Action.updateGistFile(gistId,filename,fileContent);
+				}
 			}
 		};
 	}
@@ -232,11 +254,20 @@ public class Json {
 		Action.deleteGistByDescription(MetadataFile.GistDescription);
 	}
 
-	public void loadJsonData() {
+	public void loadMetaData() {
 		getData();
 	}
 
 	private void loadGitHubData() {
+		if (LiveSettings.isOffline()) {
+			String json = Action.getSQLMetadata();
+			metadataFile = gson.fromJson(json,MetadataFile.class);
+			CATEGORIES   = metadataFile.getCategories();
+			NAMES        = metadataFile.getNames();
+			DESCRIPTIONS = metadataFile.getFileDescriptions();
+			HOSTS        = metadataFile.getHosts();
+			return;
+		}
 		ghGist = Action.getGistByDescription(MetadataFile.GistDescription);
 		if (ghGist != null) {
 			String metadataJson = ghGist.getFile(MetadataFile.FileName).getContent();
@@ -355,6 +386,7 @@ public class Json {
 	}
 
 	public void setFileDescription(String gistId, String filename, String description) {
+		System.out.println("filename: " + filename + "\nDescription: " + description);
 		DESCRIPTIONS.setDescription(gistId,filename,description);
 		saveData();
 	}
@@ -403,8 +435,7 @@ public class Json {
 				AppSettings.set().lastGitHubUserId(thisUserId);
 			}
 			else if (!thisUserId.equals(lastUserId)) {
-				Action.deleteLocalMetaData(false);
-				Action.deleteAllLocalData();
+				Action.wipeSQLAndMetaData();
 				loadGitHubData();
 				AppSettings.set().dataSource(GITHUB);
 				LiveSettings.applyAppSettings();

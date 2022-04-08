@@ -8,10 +8,12 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import java.util.ArrayList;
@@ -26,13 +28,14 @@ public class ToolWindow {
 	private final double                    width;
 	private final double                    height;
 	private final boolean                   noButtons;
-	private final Node                      content;
-	private       Button                    closeButton;
+	private final boolean                   transparentStyle;
+	private       Node                      content;
 	private final String                    title;
 	private final List<Button>              buttonList;
 	private final Stage                     callingStage;
 	private final EventHandler<WindowEvent> onCloseHandler;
-	private final EventHandler<Event>        afterCloseEvent;
+	private final EventHandler<Event>       afterCloseEvent;
+	private       String                    response = "";
 
 	public static class Builder {
 
@@ -40,18 +43,24 @@ public class ToolWindow {
 			this.content = content;
 		}
 
-		private       String                    sceneId    = "Tool Window";
+		public Builder (AnchorPane ap) {
+			this.ap = ap;
+		}
+
+		private       Parent parent;
+		private       String                    sceneId          = "Tool Window";
 		private       AnchorPane                ap;
 		private       double                    width;
 		private       double                    height;
-		private       boolean                   noButtons  = false;
-		private final Node                      content;
-		private       String                    title      = "";
-		private       String                    closeName  = "Close";
-		private final List<Button>              buttonList = new ArrayList<>();
+		private       boolean                   noButtons        = false;
+		private       boolean                   transparentStyle = false;
+		private       Node                      content;
+		private       String                    title            = "";
+		private       String                    closeName        = "Close";
+		private final List<Button>              buttonList       = new ArrayList<>();
 		private       Stage                     stage;
 		private       EventHandler<WindowEvent> onCloseHandler;
-		private       EventHandler<Event>        afterCloseEvent;
+		private       EventHandler<Event>       afterCloseEvent;
 
         public Builder attachToStage(Stage stage){
 			this.stage = stage;
@@ -71,6 +80,11 @@ public class ToolWindow {
 
 		public Builder noButtons() {
 			this.noButtons = true;
+			return this;
+		}
+
+		public Builder transparentStyle() {
+			this.transparentStyle = true;
 			return this;
 		}
 
@@ -114,22 +128,24 @@ public class ToolWindow {
 	}
 
 	private ToolWindow (Builder build) {
-		this.sceneId        = build.sceneId;
-		this.width          = build.width;
-		this.height         = build.height;
-		this.noButtons      = build.noButtons;
-		this.content        = build.content;
-		this.title          = build.title;
-		this.buttonList     = build.buttonList;
-		this.callingStage   = build.stage;
-		this.onCloseHandler = build.onCloseHandler;
-		this.afterCloseEvent= build.afterCloseEvent;
+		this.ap               = build.ap;
+		this.sceneId          = build.sceneId;
+		this.width            = build.width;
+		this.height           = build.height;
+		this.noButtons        = build.noButtons;
+		this.transparentStyle = build.transparentStyle;
+		this.content          = build.content;
+		this.title            = build.title;
+		this.buttonList       = build.buttonList;
+		this.callingStage     = build.stage;
+		this.onCloseHandler   = build.onCloseHandler;
+		this.afterCloseEvent  = build.afterCloseEvent;
 		if (!this.noButtons) {
 			if(buttonList.size() == 0) {
-				this.closeButton = new Button(build.closeName);
-				this.closeButton.setMinHeight(35);
-				this.closeButton.setMinWidth(55);
-				this.closeButton.setOnAction(e -> SceneOne.close(sceneId));
+				Button closeButton = new Button(build.closeName);
+				closeButton.setMinHeight(35);
+				closeButton.setMinWidth(55);
+				closeButton.setOnAction(e -> SceneOne.close(sceneId));
 				buttonList.add(closeButton);
 			}
 		}
@@ -140,6 +156,36 @@ public class ToolWindow {
 	}
 
 	public void showAndWait() {
+		if(!SceneOne.sceneExists(sceneId)) {
+			defineParent();
+			if (callingStage != null) {
+				SceneOne.set(ap,sceneId,callingStage)
+						.size(width,height)
+						.title(title)
+						.styleSheets(LiveSettings.getTheme().getStyleSheet())
+						.size(width,height)
+						.onCloseEvent(onCloseHandler)
+						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
+						.showAndWait();
+			}
+			else {
+				SceneOne.set(ap,sceneId)
+						.size(width,height)
+						.title(title)
+						.styleSheets(LiveSettings.getTheme().getStyleSheet())
+						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
+						.size(width,height)
+						.onCloseEvent(onCloseHandler)
+						.showAndWait();
+			}
+			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
+		}
+		else {
+			SceneOne.showScene(sceneId);
+		}
+	}
+
+	private void defineParent() {
 		HBox bbox = new HBox();
 		if (!noButtons) {
 			bbox.getChildren().setAll(FXCollections.observableArrayList(buttonList));
@@ -147,42 +193,33 @@ public class ToolWindow {
 			bbox.setPrefWidth(width);
 			bbox.setSpacing(10);
 			bbox.setAlignment(Pos.CENTER);
-			ap = new AnchorPane(content,bbox);
-			setNodePosition(content,0,0,0,50);
-			setNodePosition(bbox,0,0,-1,10);
+			if (ap == null){
+				ap = new AnchorPane(content, bbox);
+				setNodePosition(content,0,0,0,50);
+				setNodePosition(bbox, 0, 0, -1, 10);
+			}
 		}
 		else {
-			ap = new AnchorPane(content);
-			setNodePosition(content,0,0,0,0);
+			if(ap == null){
+				ap = new AnchorPane(content);
+				setNodePosition(content,0,0,0,0);
+			}
 		}
 		ap.setPrefSize(width,height);
-		if (callingStage != null) {
-			SceneOne.set(ap,sceneId,callingStage)
-					.size(width,height)
-					.title(title)
-					.styleSheets(LiveSettings.getTheme().getStyleSheet())
-					.size(width,height)
-					.centered()
-					.onCloseEvent(onCloseHandler)
- 					.showAndWait();
-			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
-		}
-		else {
-			SceneOne.set(ap,sceneId)
-					.size(width,height)
-					.title(title)
-					.styleSheets(LiveSettings.getTheme().getStyleSheet())
-					.centered()
-					.size(width,height)
-					.onCloseEvent(onCloseHandler)
-					.showAndWait();
-			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
-		}
+	}
+
+	public String showAndWaitResponse() {
+		showAndWait();
+		return response;
 	}
 
 	public void close(){
 		if(SceneOne.sceneExists(sceneId))
 			SceneOne.close(sceneId);
+	}
+
+	public void setResponse(String response) {
+		this.response = response;
 	}
 
 	private void setNodePosition(Node node, double left, double right, double top, double bottom) {
@@ -197,4 +234,25 @@ public class ToolWindow {
 		SceneOne.getScene(sceneId).getStylesheets().add(styleSheet);
 	}
 
+	public String getSceneId() {
+		return sceneId;
+	}
+
+	public void hide() {
+		SceneOne.hide(sceneId);
+	}
+
+	public void show() {
+		SceneOne.showScene(sceneId);
+		setContent(this.content);
+	}
+
+	public void setContent(Node content) {
+		if (this.content != null) {
+			ap.getChildren().remove(this.content);
+			this.content = content;
+			ap.getChildren().add(this.content);
+			setNodePosition(this.content,0,0,0,noButtons ? 0 : 50);
+		}
+	}
 }

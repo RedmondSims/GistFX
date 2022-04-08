@@ -1,14 +1,12 @@
 package com.redmondsims.gistfx.preferences;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.redmondsims.gistfx.Main;
+import com.redmondsims.gistfx.Launcher;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.enums.PaneState;
 import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.ui.gist.CodeEditor;
+import com.redmondsims.gistfx.ui.trayicon.TrayIcon;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,16 +18,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static com.redmondsims.gistfx.enums.PaneState.EXPANDED;
-import static com.redmondsims.gistfx.enums.PaneState.REST;
 
 public class UISettings {
 
@@ -39,13 +30,17 @@ public class UISettings {
 		LIGHT,
 		PROGRESS_BAR,
 		TEXT_FIELD,
-		TEXT_AREA;
+		TEXT_AREA,
+		ANCHOR_PANE,
+		LABEL;
 
-		public static final String darkCSS      = Objects.requireNonNull(Main.class.getResource("StyleSheets/Dark.css")).toExternalForm();
-		public static final String lightCSS     = Objects.requireNonNull(Main.class.getResource("StyleSheets/Light.css")).toExternalForm();
-		public static final String progressCSS  = Objects.requireNonNull(Main.class.getResource("StyleSheets/ProgressBar.css")).toExternalForm();
-		public static final String textFieldCSS = Objects.requireNonNull(Main.class.getResource("StyleSheets/TextField.css")).toExternalForm();
-		public static final String textAreaCSS  = Objects.requireNonNull(Main.class.getResource("StyleSheets/TextArea.css")).toExternalForm();
+		public static final String darkCSS       = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/Dark.css")).toExternalForm();
+		public static final String lightCSS      = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/Light.css")).toExternalForm();
+		public static final String progressCSS   = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/ProgressBar.css")).toExternalForm();
+		public static final String textFieldCSS  = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/TextField.css")).toExternalForm();
+		public static final String textAreaCSS   = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/TextArea.css")).toExternalForm();
+		public static final String anchorPaneCSS = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/AnchorPane.css")).toExternalForm();
+		public static final String labelCSS      = Objects.requireNonNull(Launcher.class.getResource("StyleSheets/Label.css")).toExternalForm();
 
 		public static String get(Theme theme) {
 			return switch (theme) {
@@ -54,6 +49,8 @@ public class UISettings {
 				case PROGRESS_BAR -> "Progress";
 				case TEXT_FIELD -> "TextField";
 				case TEXT_AREA -> "TextArea";
+				case ANCHOR_PANE -> "AnchorPane";
+				case LABEL -> "Label";
 			};
 		}
 
@@ -83,17 +80,11 @@ public class UISettings {
 				CodeEditor.get().getEditor().setCurrentTheme(theme.equals(LIGHT) ? "vs-light" : "vs-dark");
 			});
 			Tooltip.install(choiceBox, Action.newTooltip("Which side of the Force will you chose?"));
-			return newHBox(hboxLeft(lblAppTheme), getSpacedHBoxRight(choiceBox,3.5));
+			return newHBox(hBoxLeft(lblAppTheme), getSpacedHBoxRight(choiceBox, 3.5));
 		}
 
 		public String Name(Theme this) {
-			return switch (this) {
-				case DARK -> "Dark";
-				case LIGHT -> "Light";
-				case PROGRESS_BAR -> "Progress";
-				case TEXT_FIELD -> "TextField";
-				case TEXT_AREA -> "TextArea";
-			};
+			return get(this);
 		}
 
 		public String getStyleSheet(Theme this) {
@@ -103,30 +94,11 @@ public class UISettings {
 				case PROGRESS_BAR -> 	progressCSS;
 				case TEXT_FIELD -> 		textFieldCSS;
 				case TEXT_AREA -> 		textAreaCSS;
+				case ANCHOR_PANE -> 	anchorPaneCSS;
+				case LABEL -> 	labelCSS;
 			};
 		}
 
-		private static File styleSheetFolder;
-		private static File darkCSSFile;
-		private static File lightCSSFile;
-		private static File progressBarCSSFile;
-		private static File textFieldCSSFile;
-		private static File textAreaCSSFile;
-
-	}
-
-	public static void clearStyleSheets() {
-		try {
-			FileUtils.forceDelete(Theme.darkCSSFile);
-			FileUtils.forceDelete(Theme.lightCSSFile);
-			FileUtils.forceDelete(Theme.progressBarCSSFile);
-			FileUtils.forceDelete(Theme.textFieldCSSFile);
-			FileUtils.forceDelete(Theme.textAreaCSSFile);
-			FileUtils.forceDelete(Theme.styleSheetFolder);
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public enum DataSource {
@@ -197,7 +169,7 @@ public class UISettings {
 			});
 			choiceBox.setValue(AppSettings.get().loginScreenChoice());
 			Tooltip.install(choiceBox, Action.newTooltip("Chose between the graphic login screen, or the JavaFX login screen."));
-			return newHBox(hboxLeft(label), getSpacedHBoxRight(choiceBox,3));
+			return newHBox(hBoxLeft(label), getSpacedHBoxRight(choiceBox, 3));
 		}
 
 		public String Name(LoginScreen this) {
@@ -275,7 +247,7 @@ public class UISettings {
 															you can chose from the list, which color you prefer
 															that screen to be."""));
 			label.visibleProperty().bind(LoginScreen.choiceBox.getSelectionModel().selectedIndexProperty().isEqualTo(1));
-			return newHBox(hboxLeft(label), getSpacedHBoxRight(choiceBox, 3));
+			return newHBox(hBoxLeft(label), getSpacedHBoxRight(choiceBox, 3));
 		}
 
 		public String Name(LoginScreenColor this) {
@@ -389,16 +361,15 @@ public class UISettings {
 				AppSettings.set().progressColorSource(checkBox.isSelected() ? USER_CHOICE : RANDOM);
 				LiveSettings.applyAppSettings();
 			});
-			HBox hboxCheck = newHBox(hboxLeft(lblChkBox), getSpacedHBoxRight(checkBox, 87));
-			HBox hboxColor = newHBox(hboxLeft(lblColorPicker), getSpacedHBoxRight(colorPicker, 3.5));
-			hboxColor.visibleProperty().bind(checkBox.selectedProperty());
-			return newVBox(15, hboxCheck,hboxColor);
+			HBox hBoxCheck = newHBox(hBoxLeft(lblChkBox), getSpacedHBoxRight(checkBox, 87.8));
+			HBox hBoxColor = newHBox(hBoxLeft(lblColorPicker), getSpacedHBoxRight(colorPicker, 3.5));
+			hBoxColor.visibleProperty().bind(checkBox.selectedProperty());
+			return newVBox(15, hBoxCheck,hBoxColor);
 		}
 	}
 
 	private static final double     cbw  = 100;
 	private static       ToolWindow toolWindow;
-	private static final Gson       gson = new GsonBuilder().setPrettyPrinting().create();
 
 	private static Label newLabelTypeOne(String text) {
 		return newLabel(text, "SettingsOne");
@@ -428,13 +399,7 @@ public class UISettings {
 		return hbox;
 	}
 
-	private static HBox newHBox(double spacing, Node... nodes) {
-		HBox hbox = new HBox(nodes);
-		hbox.setSpacing(spacing);
-		return hbox;
-	}
-
-	private static HBox hboxLeft(Node... nodes) {
+	private static HBox hBoxLeft(Node... nodes) {
 		HBox hbox = new HBox(nodes);
 		hbox.setSpacing(0);
 		hbox.setAlignment(Pos.CENTER_LEFT);
@@ -443,23 +408,6 @@ public class UISettings {
 
 	private static Node theme(Scene callingScene) {
 		return Theme.getNode(callingScene);
-	}
-
-	private static boolean checkValues(Double value1, Double value2, PaneState state) {
-		boolean validateResult = false;
-		if (state.equals(REST)) {
-			validateResult = value1 < value2;
-			if (!validateResult) {
-				CustomAlert.showWarning("The value of the divider position at rest cannot be greater than the expanded value.");
-			}
-		}
-		if (state.equals(EXPANDED)) {
-			validateResult = value1 > value2;
-			if (!validateResult) {
-				CustomAlert.showWarning("The value of the divider position while expanded cannot be less than the at rest value");
-			}
-		}
-		return validateResult;
 	}
 
 	private static Node loginScreen() {
@@ -491,14 +439,74 @@ public class UISettings {
 																	from warning you that you have edited
 																	Gists that have not been uploaded to GitHub."""));
 		colorPicker.setValue(LiveSettings.getDirtyFileFlagColor());
-		colorPicker.setOnAction(e-> LiveSettings.setDirtyFileFlagColor(colorPicker.getValue()));
+		colorPicker.setOnAction(e-> {
+			LiveSettings.setDirtyFileFlagColor(colorPicker.getValue());
+			WindowManager.refreshFileIcons();
+		});
 		colorPicker.setMaxWidth(101);
 		Tooltip.install(colorPicker, Action.newTooltip("Chose your desired color for the dirty file flag"));
-		HBox hboxSetWarn 	= newHBox(hboxLeft(lblDisableWarning), 	getSpacedHBoxRight(disableWarningCheckBox, 57));
-		HBox hboxColor 		= newHBox(hboxLeft(lblColorPicker),		getSpacedHBoxRight(colorPicker,1));
-		VBox vbColorPicker = newVBox(15, hboxColor);
+		HBox hBoxSetWarn 	= newHBox(hBoxLeft(lblDisableWarning), getSpacedHBoxRight(disableWarningCheckBox, 57));
+		HBox hBoxColor 		= newHBox(hBoxLeft(lblColorPicker), getSpacedHBoxRight(colorPicker, 1));
+		VBox vbColorPicker = newVBox(15, hBoxColor);
 		vbColorPicker.setPadding(new Insets(0,0,10,0));
-		return newVBox(10, vbColorPicker, hboxSetWarn);
+		return newVBox(10, vbColorPicker, hBoxSetWarn);
+	}
+
+	private static VBox getSysTrayNode() {
+		Label lblSysTrayOption = newLabelTypeTwo("\tRun GistFX from System Tray");
+		Label lblShowAppIcon = newLabelTypeTwo(  "\tShow Application Icon");
+		CheckBox cbLaunchInSystray = new CheckBox();
+		CheckBox cbShowAppIcon = new CheckBox();
+		ChoiceBox<String> cbColor = new ChoiceBox<>();
+		cbColor.getItems().add("White");
+		cbColor.getItems().add("Black");
+		cbColor.setValue(AppSettings.get().systrayColor());
+		cbColor.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
+		cbShowAppIcon.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
+		lblShowAppIcon.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
+		cbLaunchInSystray.setSelected(AppSettings.get().runInSystray());
+		cbShowAppIcon.setSelected(AppSettings.get().showAppIcon());
+		cbLaunchInSystray.setOnAction(e -> {
+			AppSettings.set().runInSystray(cbLaunchInSystray.isSelected());
+			if(cbLaunchInSystray.isSelected())
+				TrayIcon.show();
+			else
+				TrayIcon.hide();
+		});
+		cbShowAppIcon.setOnAction(e -> {
+			AppSettings.set().showAppIcon(cbShowAppIcon.isSelected());
+		});
+		cbColor.setOnAction(e->{
+			String selection = cbColor.getValue();
+			if(selection == null || selection.isEmpty()) {
+				selection = "White";
+			}
+			AppSettings.set().systrayColor(selection);
+			cbColor.setValue(selection);
+		});
+		Tooltip.install(cbLaunchInSystray, Action.newTooltip("""
+																	If checked, this will cause GistFX to live
+																	in the System tray on your desktop, making
+																	it readily available (restart is required)."""));
+		Tooltip.install(cbColor, Action.newTooltip("""
+																	If your desktop theme is light, then chose
+																	Black, otherwise, leave it White (default)."""));
+		Tooltip.install(cbShowAppIcon, Action.newTooltip("""
+																	Normally, when you run an app from the
+																	system tray, the standard running icon in
+																	the Dock (Mac) or the Taskbar (Windows) is
+																	not there. Checking this box keeps it there,
+																	making it easier to get back to GistFX.
+																	
+																	By unchecking this box, GistFX will hide
+																	once it loses focus (you click somewhere
+																	else, but you can quickly un-hide it from
+																	the system tray icon. This can help reduce
+																	clutter on your desktop."""));
+		HBox hBoxSetTray = newHBox(hBoxLeft(lblSysTrayOption), getSpacedHBoxRight(cbLaunchInSystray, 59));
+		HBox hBoxSetAppIcon = newHBox(hBoxLeft(lblShowAppIcon), getSpacedHBoxRight(cbShowAppIcon, 86));
+		HBox hBoxColor   = newHBox(getSpacedHBoxRight(cbColor, 210));
+		return newVBox(10,hBoxSetTray,hBoxSetAppIcon,hBoxColor);
 	}
 
 	private static HBox getWarningResetNode() {
@@ -515,8 +523,8 @@ public class UISettings {
 								any warning dialogs that you chose to not
 								show again.
 								"""));
-		HBox hb = newHBox(hboxLeft(label), getSpacedHBoxRight(checkBox, 88));
-		return hboxLeft(hb);
+		HBox hb = newHBox(hBoxLeft(label), getSpacedHBoxRight(checkBox, 88));
+		return hBoxLeft(hb);
 	}
 
 	private static HBox getSpacedHBoxRight(Node node, double space) {
@@ -528,12 +536,6 @@ public class UISettings {
 		return hbox;
 	}
 
-	private static Tooltip newTooltip(String message) {
-		Tooltip tt = Action.newTooltip(message);
-		tt.setShowDuration(Duration.seconds(120));
-		return tt;
-	}
-
 	public static void showWindow(Stage callingStage) {
 		Button btnReset = new Button("Reset Password And Token");
 		btnReset.setOnAction(e -> Platform.runLater(() -> {
@@ -543,10 +545,10 @@ public class UISettings {
 				CustomAlert.showInfo("Done!", null);
 			}
 		}));
-		HBox hboxButtonReset = newHBox(btnReset);
-		VBox vboxButtonReset = newVBox(10,hboxButtonReset);
+		HBox hBoxButtonReset = newHBox(btnReset);
+		VBox vboxButtonReset = newVBox(10,hBoxButtonReset);
 		vboxButtonReset.setPadding(new Insets(10,0,0,0));
-		hboxButtonReset.setAlignment(Pos.CENTER);
+		hBoxButtonReset.setAlignment(Pos.CENTER);
 		Label lblToolBar = newLabelTypeOne("Show tool bar when form loads");
 		CheckBox chkToolBar = new CheckBox();
 		chkToolBar.selectedProperty().addListener((observable, oldValue, newValue) -> AppSettings.set().showToolBar(newValue));
@@ -572,7 +574,7 @@ public class UISettings {
 								first authenticating."""));
 		Tooltip.install(chkToolBar, Action.newTooltip("""
 								Show the tool bar by default. Otherwise,
-								you will need to toggle it on each time 
+								you will need to toggle it on each time
 								GistFX loads.
 								
 								The tool bar changes depending on whats
@@ -581,14 +583,15 @@ public class UISettings {
 								
 								The functionality of each button is also
 								in the programs menu structure."""));
-		HBox hboxBBChk   = newHBox(hboxLeft(lblToolBar), getSpacedHBoxRight(chkToolBar, 61));
-		VBox formContent = new VBox(hboxBBChk,
+		HBox hBoxBBChk   = newHBox(hBoxLeft(lblToolBar), getSpacedHBoxRight(chkToolBar, 75.8));
+		VBox formContent = new VBox(hBoxBBChk,
 									getWarningResetNode(),
 									progressBarChoiceNode(),
 									theme(callingStage.getScene()),
 									loginScreen(),
 									loginScreenColor(),
 									getDirtyFileNode(),
+									getSysTrayNode(),
 									vboxButtonReset);
 		formContent.setPadding(new Insets(10, 10, 10, 10));
 		formContent.setSpacing(10);

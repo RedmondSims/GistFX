@@ -36,7 +36,10 @@ enum LABEL {
 	USER_ICON_FILE_FOLDER,
 	MAIL_SERVER,
 	LAST_TOKEN_HASH,
-	LAST_GITHUB_USER_ID
+	LAST_GITHUB_USER_ID,
+	RUN_IN_SYSTRAY,
+	SYSTRAY_COLOR,
+	SHOW_APP_ICON
 	;
 
 	public String Name(LABEL this) {
@@ -74,6 +77,9 @@ enum LABEL {
 			case MAIL_SERVER -> "GFX_Mail_Server";
 			case LAST_TOKEN_HASH -> "GFX_Last_Token_Hash";
 			case LAST_GITHUB_USER_ID -> "GFX_Last_GitHub_User_Id";
+			case RUN_IN_SYSTRAY -> "GFX_Run_In_Systray";
+			case SYSTRAY_COLOR -> "GFX_Systray_Color";
+			case SHOW_APP_ICON -> "GFX_Show_App_Icon";
 		};
 	}
 

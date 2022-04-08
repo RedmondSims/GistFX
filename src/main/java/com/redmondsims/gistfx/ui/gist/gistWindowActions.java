@@ -17,8 +17,11 @@ import com.redmondsims.gistfx.networking.PayloadBuilder;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
+import com.redmondsims.gistfx.ui.Editors;
 import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
+import com.redmondsims.gistfx.utils.Resources;
 import com.redmondsims.gistfx.utils.Status;
+import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -32,13 +35,13 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
@@ -261,7 +264,11 @@ public class gistWindowActions {
 		for(String gistId : gistMap.keySet()) {
 			actionSum++;
 			Action.setProgress(actionSum / totalActions);
-			if(!ghGistMap.containsKey(gistId)) askUserAboutMissingGist(gistId);
+			if(!ghGistMap.containsKey(gistId)) {
+				Platform.runLater(() -> {
+					askUserAboutMissingGist(gistId);
+				});
+			}
 		}
 		//Add missing GitHub Gist Files to Local database
 		for(String gistId : ghGistMap.keySet()) {
@@ -278,22 +285,21 @@ public class gistWindowActions {
 			}
 		}
 		//Compare contents of local files with GitHub version
+		int nextInQue = 0;
 		for(String gistId : ghGistMap.keySet()) {
 			actionSum++;
 			Action.setProgress(actionSum / totalActions);
 			GHGist ghGist = ghGistMap.get(gistId);
 			if (!ghGist.getDescription().equals(Names.GITHUB_METADATA.Name())) {
 				Map<String, GHGistFile> ghGistFiles        = ghGist.getFiles();
-				Map<String, String>     gistFileContentMap = GistManager.getGistFileContentMap(gistId);
+				Map<String, GistFile>     gistFileMap = GistManager.getGistFileContentMap(gistId);
 				for (String filename : ghGistFiles.keySet()) {
 					GHGistFile ghGistFile    = ghGistFiles.get(filename);
 					String     gitHubContent = ghGistFile.getContent();
-					String     localContent  = gistFileContentMap.get(filename);
-					if ((localContent != null) && (gitHubContent != null)) {
-						if (!localContent.equals(gitHubContent)) {
-							GistManager.getGist(gistId).setExpanded(true);
-							GistManager.getFile(gistId, filename).compareWithGitHub(gitHubContent);
-						}
+					GistFile   gistFile      = gistFileMap.get(filename);
+					if ((gistFile != null) && (gitHubContent != null)) {
+						nextInQue++;
+						gistFile.compareWithGitHub(nextInQue);
 					}
 				}
 			}
@@ -311,7 +317,7 @@ public class gistWindowActions {
 		for(GistFile file : gist.getFiles()) {
 			sb.append("\t").append(file.getFilename()).append("\n");
 		}
-		Label label = new Label("You have a Gist in your local database that no longer exists on GitHub.\n\nWould you like to also delete the Gist from your local data, or would you like to upload the local Gist back into your GitHub repository?");
+		Label label = new Label("You have one or more Gists in your local database that does not exist on GitHub.\n(Perhaps it was created in offline mode or it was deleted from GitHub)\nWould you like to delete the Gist from your local data,\nor would you like to upload the Gist to GitHub?");
 		label.setWrapText(true);
 		label.setPadding(new Insets(10,10,10,10));
 		TextArea taGistInfo = new TextArea(sb.toString());
@@ -383,13 +389,14 @@ public class gistWindowActions {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
-		if(selectedNode == null) return;
 		Platform.runLater(() -> {
 			boolean categorySet = false;
 			String selectedCategory = "";
-			if (selectedNode.getType().equals(CATEGORY)) {
-				categorySet = true;
-				selectedCategory = selectedNode.getCategory();
+			if(selectedNode != null) {
+				if (selectedNode.getType().equals(CATEGORY)) {
+					categorySet = true;
+					selectedCategory = selectedNode.getCategoryName();
+				}
 			}
 			String[] choices = CustomAlert.newGistAlert(getDefaultJavaText("File.java"), categorySet,selectedCategory);
 			if (choices != null) {
@@ -400,18 +407,16 @@ public class gistWindowActions {
 				String  gistFile    = choices[4];
 				String  category    = choices[5];
 				String  newGistID   = GistManager.addNewGistToGitHub(gistName, description, filename, gistFile, isPublic);
-				if (!newGistID.isEmpty()) {
-					if (!category.trim().equals("!@#none#@!")) Action.mapCategoryNameToGist(newGistID, category);
-					else if (categorySet) {
-						Action.mapCategoryNameToGist(newGistID, selectedCategory);
-					}
-
-					WindowManager.fillTree();
+				String finalCategory = (!category.trim().equals("!@#none#@!")) ? category : categorySet ? selectedCategory : "";
+				if (!finalCategory.isEmpty()) {
+					Action.mapCategoryNameToGist(newGistID, finalCategory);
 				}
+				WindowManager.fillTree();
 			}
 		});
 	}
 
+	private String newFileAction = "";
 	public void newFile(Gist gist) {
 		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
@@ -421,32 +426,73 @@ public class gistWindowActions {
 		String                             gistId      = gist.getGistId();
 		StringProperty                     filename    = new SimpleStringProperty();
 		StringProperty                     contents    = new SimpleStringProperty();
-		Map<Response, Map<String, String>> responseMap = CustomAlert.showNewFileAlert(gist.getName(), getDefaultJavaText(gist.getName()));
-		new Thread(() -> {
-			for (Response response : responseMap.keySet()) {
-				if (response == PROCEED) {
-					for (Map<String, String> fileMap : responseMap.values()) {
-						for (String mapFilename : fileMap.keySet()) {
-							filename.setValue(mapFilename);
-							contents.setValue(fileMap.get(mapFilename));
-						}
-					}
-					GistFile file = GistManager.addNewFile(gistId, filename.getValue(), contents.getValue(), "");
-					if (file != null) {
-						String newFilename = file.getFilename();
-						gistWindow.getTreeActions().addFileToBranch(gistId, newFilename);
-						TreeItem<TreeNode> branch = gistWindow.getTreeActions().getBranch(gistId);
-						branch.setExpanded(true);
-						for (TreeItem<TreeNode> leaf : branch.getChildren()) {
-							if (leaf.getValue().toString().equals(filename.getValue())) {
-								gistWindow.getTreeView().getSelectionModel().select(leaf);
-								Platform.runLater(() -> gistWindow.setSelectedNode(leaf.getValue()));
-							}
-						}
+		StringProperty                     description = new SimpleStringProperty();
+
+		double width = 900;
+		double height = 800;
+		Label lblFilename = new Label("Filename");
+		Label lblDescription = new Label("Description");
+		String sceneName = "NewFile";
+		TextField tfFilename = new TextField();
+		TextArea taDescription = new TextArea();
+		Button btnSave = new Button("Save");
+		Button btnCancel = new Button("Cancel");
+		lblFilename.setMinWidth(45);
+		lblFilename.setAlignment(Pos.CENTER_LEFT);
+		lblDescription.setMinWidth(45);
+		lblDescription.setAlignment(Pos.CENTER_LEFT);
+		taDescription.setMinHeight(55);
+		taDescription.setMaxHeight(55);
+		btnSave.setOnAction(e-> {
+			newFileAction = "save";
+			SceneOne.close(sceneName);
+		});
+		btnCancel.setOnAction(e ->{
+			newFileAction = "cancel";
+			SceneOne.close(sceneName);
+		});
+		MonacoFX monaco = Editors.getMonacoOne();
+		AnchorPane apnf = new AnchorPane(lblFilename,lblDescription,tfFilename,taDescription,monaco);
+		setAnchors(lblFilename,10,-1,10,-1);
+		setAnchors(tfFilename,65,400,10,-1);
+		setAnchors(lblDescription,10,10,45,-1);
+		setAnchors(taDescription,10,10,70, -1);
+		setAnchors(monaco,10,10,135,10);
+		monaco.getEditor().getDocument().setText(getDefaultJavaText(gist.getName()));
+		contents.bind(monaco.getEditor().getDocument().textProperty());
+		filename.bind(tfFilename.textProperty());
+		filename.addListener((observable, oldValue, newValue) -> {
+			if (!oldValue.equals(newValue)) {
+				String ext = FilenameUtils.getExtension(newValue);
+				monaco.getEditor().setCurrentLanguage(ext);
+			}
+		});
+		description.bind(taDescription.textProperty());
+		tfFilename.setText(gist.getName().replaceAll(" ","")+".java");
+		ToolWindow toolWindow = new ToolWindow.Builder(apnf)
+				.addButton(btnCancel)
+				.addButton(btnSave)
+				.setSceneId(sceneName)
+				.size(width,height)
+				.attachToStage(gistStage)
+				.title("New File")
+				.build();
+		toolWindow.showAndWait();
+		if(newFileAction.equalsIgnoreCase("save")){
+			GistFile file = GistManager.addNewFile(gistId, filename.get(), contents.get(), description.get());
+			if (file != null) {
+				String newFilename = file.getFilename();
+				gistWindow.getTreeActions().addFileToBranch(gistId, newFilename);
+				TreeItem<TreeNode> branch = gistWindow.getTreeActions().getBranch(gistId);
+				branch.setExpanded(true);
+				for (TreeItem<TreeNode> leaf : branch.getChildren()) {
+					if (leaf.getValue().toString().equals(filename.getValue())) {
+						gistWindow.getTreeView().getSelectionModel().select(leaf);
+						Platform.runLater(() -> gistWindow.setSelectedNode(leaf.getValue()));
 					}
 				}
 			}
-		}).start();
+		}
 	}
 
 	public void deleteFile(GistFile file) {
@@ -464,17 +510,23 @@ public class gistWindowActions {
 		});
 	}
 
-	public void undoFile(GistFile file) {
+	public void undoFile() {
 		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
-		if(file == null) return;
-		Platform.runLater(() -> {
-			if (CustomAlert.showConfirmation("This action will overwrite your local changes with the last version that was uploaded to your GitHub account.\n\nAre you sure?")) {
-				file.undo();
+		GistFile file = gistWindow.getFile();
+		if(file != null) {
+			if (!file.isDirty()) {
+				CustomAlert.showInfo("File has not been edited since the last time it was uploaded to GitHub", SceneOne.getWindow(Resources.getSceneIdGistWindow()));
+				return;
 			}
-		});
+			Platform.runLater(() -> {
+				if (CustomAlert.showConfirmation("This action will overwrite your local changes with the last version that was uploaded to your GitHub account.\n\nAre you sure?")) {
+					file.undo();
+				}
+			});
+		}
 	}
 
 	public void deleteGist(Gist gist) {
@@ -655,71 +707,11 @@ public class gistWindowActions {
 	public void deleteCategory(TreeNode selectedNode) {
 		if (selectedNode == null) return;
 		if (selectedNode.getType().equals(CATEGORY)) {
-			String category = selectedNode.getCategory();
+			String category = selectedNode.getCategoryName();
 			if (CustomAlert.showConfirmation("Are you sure you want to delete category: " + category + "?")) {
 				Action.deleteCategoryName(category);
 				WindowManager.fillTree();
 			}
-		}
-	}
-
-	public void assignCategory(String gistId) {
-		String name     = "Assign";
-		double width    = 450;
-		double height   = 175;
-		String gistName = Action.getGistName(gistId);
-		Text   text1    = new Text("Assign ");
-		Text   text2    = new Text(gistName);
-		Text   text3    = new Text(" to category:");
-		Color  color1;
-		Color  color2;
-		if (LiveSettings.getTheme().equals(UISettings.Theme.DARK)) {
-			color1 = Color.rgb(144, 163, 127);
-			//color2 = Color.rgb(185,55,0);
-			color2 = Color.YELLOW;
-		}
-		else {
-			color1 = Color.BLACK;
-			color2 = Color.DARKRED;
-		}
-		text1.setFill(color1);
-		text2.setFill(color2);
-		text3.setFill(color1);
-		text1.setFont(Font.font("Avenir", 15));
-		text2.setFont(Font.font("Avenir", 15));
-		text3.setFont(Font.font("Avenir", 15));
-		HBox hbox = new HBox(text1, text2, text3);
-		hbox.setSpacing(0);
-		hbox.setPadding(new Insets(0, 0, 0, 0));
-		hbox.setPrefWidth(width - 40);
-		hbox.setAlignment(Pos.CENTER);
-		ChoiceBox<String> cbCategories = new ChoiceBox<>(Action.getCategoryList());
-		Button            btnClose     = new Button("Assign");
-		cbCategories.setMinWidth(150);
-		cbCategories.setMaxWidth(150);
-		btnClose.setMinWidth(55);
-		AnchorPane ap = new AnchorPane(hbox, cbCategories, btnClose);
-		ap.setMinSize(width, height);
-		setAnchors(hbox, 20, 20, 20, -1);
-		btnClose.setOnAction(e -> {
-			SceneOne.close(name);
-			String category = cbCategories.getValue();
-			if (category != null) {
-				Action.mapCategoryNameToGist(gistId, category);
-				WindowManager.fillTree();
-				gistWindow.setSelectedNode(gistWindow.getTreeActions().getCategoryBranch(category).getValue());
-				gistWindow.getTreeActions().getCategoryBranch(Action.getGistCategoryName(gistId)).setExpanded(true);
-			}
-		});
-		SceneOne.set(ap, name).centered().size(width, height).newStage().show();
-		double windowWidth = SceneOne.getWindow(name).getWidth();
-		if (windowWidth > width) {
-			setAnchors(cbCategories, (ap.getWidth() / 2) - 75, -1, 55, -1);
-			setAnchors(btnClose, (ap.getWidth() / 2) - 25.0, -1, -1, 20);
-		}
-		else {
-			setAnchors(cbCategories, (width / 2) - 75, -1, 55, -1);
-			setAnchors(btnClose, (width / 2) - 25.0, -1, -1, 20);
 		}
 	}
 
@@ -747,12 +739,14 @@ public class gistWindowActions {
 	}
 
 	private String getDefaultJavaText(String name) {
-		return "public class " + name + " {\n" +
-			   "\n" +
-			   "\tpublic static void main(String[] args) {\n" +
-			   "\t\tSystem.out.println(\"Hello, World!\");\n" +
-			   "\t}\n" +
-			   "}";
+		return """
+        public class %s {
+        
+        	public static void main(String[] args) {
+        		System.out.println("Hello World!")%s
+        	}
+        
+        }""".formatted(name.replaceAll(" ", ""), ";");
 	}
 
 

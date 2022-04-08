@@ -4,11 +4,11 @@ import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.enums.FileState;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.enums.State;
-import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.networking.Payload;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.gist.GistWindow;
 import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
+import com.redmondsims.gistfx.utils.Resources;
 import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
@@ -97,11 +97,6 @@ public class WindowManager {
 		gistWindow.getActions().renameCategory();
 	}
 
-	public static void setConflict(GistFile file, FileState conflict, boolean selected) {
-		gistWindow.getTreeActions().setFileDirtyState(file, conflict, selected);
-		gistWindow.handleButtonBar();
-	}
-
 	public static void setPBarStyle(String style) {
 		gistWindow.setPBarStyle(style);
 	}
@@ -114,8 +109,8 @@ public class WindowManager {
 		gistWindow.getTreeActions().handleTreeEvent(treeItem);
 	}
 
-	public static void refreshBranch(GistFile gistFile) {
-		gistWindow.getTreeActions().refreshGistBranch(gistFile);
+	public static void refreshLeaf(GistFile gistFile) {
+		gistWindow.getTreeActions().refreshGistLeaf(gistFile);
 	}
 
 	public static void refreshTree() {
@@ -126,13 +121,18 @@ public class WindowManager {
 		gistWindow.fillTree();
 	}
 
-	private static Timer iconTimer;
-
 	public static void refreshFileIcons() {
-		//Use of Timer prevents multiple rapid calls from executing the method more than once
-		if (iconTimer != null) iconTimer.cancel();
-		iconTimer = new Timer();
-		iconTimer.schedule(refreshIcons(), 500);
+		if(gistWindow != null) {
+			gistWindow.getTreeActions().refreshIcons();
+		}
+	}
+
+	public static void showAppSettings() {
+		gistWindow.showAppSettings();
+	}
+
+	public static void showTreeSettings() {
+		gistWindow.showTreeSettings();
 	}
 
 	public static void updateGitHubLabel(String text, boolean show) {
@@ -140,11 +140,8 @@ public class WindowManager {
 			gistWindow.updateGitLabel(text,show);
 	}
 
-	private static TimerTask refreshIcons() {
-		return new TimerTask() {
-			@Override public void run() {
-				gistWindow.getTreeActions().refreshIcons();
-			}
-		};
+	public static void showGistWindow() {
+		SceneOne.show(Resources.getSceneIdGistWindow());
 	}
+
 }

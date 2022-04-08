@@ -3,8 +3,8 @@ CREATE TABLE "GistFiles" (
   "gistId" TEXT,
   "filename" TEXT,
   "content" TEXT,
+  "gitHubVersion" TEXT,
   "dirty" INT DEFAULT 0,
-  "uploadDate" DATE,
   CONSTRAINT "fk_GistFiles_Gists_1" FOREIGN KEY ("gistId") REFERENCES "Gists" ("gistId") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "Unique" UNIQUE ("gistId", "fileName") ON CONFLICT IGNORE
 );

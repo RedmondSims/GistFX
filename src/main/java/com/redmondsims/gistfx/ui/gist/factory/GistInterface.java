@@ -29,10 +29,6 @@ public interface GistInterface extends Serializable {
 
 	boolean canContainChildren();
 
-	BooleanProperty expandedProperty();
-
-	void setExpanded(boolean value);
-
 	String toString();
 
 }

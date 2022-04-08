@@ -71,6 +71,12 @@ public class Clear {
 
 	public void userIconFileFolder()   {prefs.remove(LABEL.USER_ICON_FILE_FOLDER.name());}
 
+	public void runInSystray()   {prefs.remove(LABEL.RUN_IN_SYSTRAY.name());}
+
+	public void systrayColor()   {prefs.remove(LABEL.SYSTRAY_COLOR.name());}
+
+	public void showAppIcon()   {prefs.remove(LABEL.SHOW_APP_ICON.name());}
+
 	public void mailServer()           {prefs.remove(LABEL.MAIL_SERVER.Name());}
 
 	public void lastTokenHash() {
@@ -80,4 +86,5 @@ public class Clear {
 	public void lastGitHubUserId() {
 		prefs.remove(LABEL.LAST_GITHUB_USER_ID.Name());
 	}
+
 }

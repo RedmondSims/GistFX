@@ -1,9 +1,11 @@
 package com.redmondsims.gistfx.gist;
 
+import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Names;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.enums.State;
+import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
@@ -11,7 +13,6 @@ import com.redmondsims.gistfx.utils.Status;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
-import java.sql.Date;
 import java.util.*;
 
 /*
@@ -31,7 +32,7 @@ public class GistManager {
 
 	public static void startFromGit(Map<String, GHGist> ghGistMap, Source launchSource) {
 		Status.setState(State.LOADING);
-		Action.cleanDatabase();
+		Action.wipeSQLAndMetaData();
 		gistMap      = new HashMap<>();
 		for (GHGist ghGist : ghGistMap.values()) {
 			if (!ghGist.getDescription().equals(Names.GITHUB_METADATA.Name())) {
@@ -98,30 +99,37 @@ public class GistManager {
 
 	public static String addNewGistToGitHub(String name, String description, String filename, String content, boolean isPublic) {
 		GHGist ghGist = Action.addGistToGitHub(description, filename, content, isPublic);
+		String gistId;
+		String url;
 		if (ghGist != null) {
-			String gistId = ghGist.getGistId();
-			String url    = ghGist.getHtmlUrl().toString();
-			Gist   gist   = new Gist(gistId, name, description, isPublic, url);
-			Action.addGistToSQL(gist);
-			Action.setGistName(gistId, name);
-			gistMap.put(gistId,gist);
-			Date uploadDate = new Date(System.currentTimeMillis());
-			int fileId = Action.addFileToSQL(gistId,filename,content,uploadDate);
-			GistFile gistFile = new GistFile(fileId,gistId,filename,content,uploadDate,false);
-			gist.addFile(gistFile);
-			return gistId;
+			gistId = ghGist.getGistId();
+			url    = ghGist.getHtmlUrl().toString();
 		}
-		return "";
+		else {
+			gistId = "Offline" + Crypto.randomText(15, Type.STANDARD);
+			url = "";
+		}
+		Gist   gist   = new Gist(gistId, name, description, isPublic, url);
+		Action.addGistToSQL(gist);
+		Action.setGistName(gistId, name);
+		gistMap.put(gistId,gist);
+		int fileId = Action.addFileToSQL(gistId,filename,content);
+		GistFile gistFile = new GistFile(fileId,gistId,filename,content,false);
+		gist.addFile(gistFile);
+		return gistId;
 	}
 
 	public static GistFile addNewFile(String gistId, String filename, String content, String fileDescription) {
-		GistFile file = null;
+		GistFile   file       = null;
 		GHGistFile ghGistFile = Action.addFileToGitHub(gistId, filename, content);
-		if (ghGistFile != null) {
+		if(ghGistFile != null) {
 			file = newGistFileAddSQL(gistId, ghGistFile);
-			getGist(gistId).addFile(file);
-			setFileDescription(gistId,filename,fileDescription);
 		}
+		else {
+			file = newGistFileAddSQL(gistId, filename, content);
+		}
+		getGist(gistId).addFile(file);
+		setFileDescription(gistId, filename, fileDescription);
 		return file;
 	}
 
@@ -137,11 +145,15 @@ public class GistManager {
 		if(ghGistFile != null) {
 			String filename   = ghGistFile.getFileName();
 			String content    = ghGistFile.getContent();
-			Date   uploadDate = new Date(System.currentTimeMillis());
-			int    fileId     = Action.addFileToSQL(gistId, filename, content, uploadDate);
-			return new GistFile(fileId, gistId, filename, content, uploadDate, false);
+			int    fileId     = Action.addFileToSQL(gistId, filename, content);
+			return new GistFile(fileId, gistId, filename, content, false);
 		}
 		return null;
+	}
+
+	private static GistFile newGistFileAddSQL(String gistId, String filename, String content) {
+		int fileId = Action.addFileToSQL(gistId, filename, content);
+		return new GistFile(fileId, gistId, filename, content, false);
 	}
 
 	public static GistFile getFile(String gistId, int fileId) {
@@ -190,21 +202,19 @@ public class GistManager {
 		GistFile[]     files       = new GistFile[oldGist.getFiles().size()];
 		files = oldGist.getFiles().toArray(files);
 		String filename = files[0].getFilename();
-		String content  = files[0].getContent();
+		String content  = files[0].getLiveVersion();
 		GHGist ghGist   = Action.addGistToGitHub(description, filename, content, isPublic);
 		if (ghGist == null) return null;
 		String newGistId = ghGist.getGistId();
-		Date uploadDate = new Date(System.currentTimeMillis());
-		int    fileId    = Action.addFileToSQL(newGistId, filename, content,uploadDate);
-		newFileList.add(new GistFile(fileId,newGistId,filename,content,uploadDate,false));
+		int    fileId    = Action.addFileToSQL(newGistId, filename, content);
+		newFileList.add(new GistFile(fileId,newGistId,filename,content,false));
 		String url     = ghGist.getHtmlUrl().toString();
 		Gist   newGist = new Gist(newGistId, name, description, isPublic, url);
 		for (int x = 1; x < files.length; x++) { //We used zero to create the new Gist
 			filename = files[x].getFilename();
-			content  = files[x].getContent();
-			fileId   = Action.addFileToSQL(newGistId, filename, content,uploadDate);
-			uploadDate = new Date(System.currentTimeMillis());
-			newFileList.add(new GistFile(fileId,newGistId, filename, content, uploadDate, false));
+			content  = files[x].getLiveVersion();
+			fileId   = Action.addFileToSQL(newGistId, filename, content);
+			newFileList.add(new GistFile(fileId,newGistId, filename, content, false));
 			try {
 				ghGist.update().addFile(filename, content).update();
 			}
@@ -286,11 +296,11 @@ public class GistManager {
 		return list;
 	}
 
-	public static Map<String,String> getGistFileContentMap(String gistId) {
-		Map<String,String> newMap = new HashMap<>();
+	public static Map<String,GistFile> getGistFileContentMap(String gistId) {
+		Map<String,GistFile> newMap = new HashMap<>();
 		Gist gist = gistMap.get(gistId);
 		for(GistFile gistFile : gist.getFiles()) {
-			newMap.put(gistFile.getFilename(),gistFile.getContent());
+			newMap.put(gistFile.getFilename(),gistFile);
 		}
 		return newMap;
 	}

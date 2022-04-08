@@ -87,3 +87,23 @@
     /*-fx-prompt-text-fill: rgba(0,125,115,1);*/
     -fx-prompt-text-fill: rgba(0, 0, 0, .5);
 }
+
+#hotpink {
+    -fx-background-color: rgba(131,0,81,1);
+}
+
+#blue {
+    -fx-background-color: rgba(0,20,104,1);
+}
+
+#red {
+    -fx-background-color: rgba(95,0,0,1);
+}
+
+#green {
+    -fx-background-color: rgba(0,50,53,1);
+}
+
+#yellow {
+    -fx-background-color: rgba(255,200,0,1);
+}

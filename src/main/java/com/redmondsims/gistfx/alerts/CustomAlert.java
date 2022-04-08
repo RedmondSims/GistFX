@@ -7,6 +7,7 @@ import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.sceneone.SceneOne;
+import com.redmondsims.gistfx.ui.Editors;
 import eu.mihosoft.monacofx.Document;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
@@ -366,7 +367,7 @@ public class CustomAlert {
 		Label lblFilename        = new Label("Filename:");
 		Label lblCategory        = new Label("Category: " + selectedCategory);
 		Button btnPaste = new Button("Paste");
-		MonacoFX monacoFX = new MonacoFX();
+		MonacoFX monacoFX = Editors.getMonacoOne();
 		Tooltip.install(btnPaste, new Tooltip("Paste text contents from clipboard into document."));
 		btnPaste.setOnAction(e -> {
 			try {
@@ -377,7 +378,6 @@ public class CustomAlert {
 				ex.printStackTrace();
 			}
 		});
-		if (LiveSettings.getTheme().equals(Theme.DARK)) monacoFX.getEditor().setCurrentTheme("vs-dark"); else monacoFX.getEditor().setCurrentTheme("vs-light");
 		lblGistFile.setAlignment(Pos.CENTER_LEFT);
 		lblGistName.setMinWidth(60);
 		lblFilename.setMinWidth(45);

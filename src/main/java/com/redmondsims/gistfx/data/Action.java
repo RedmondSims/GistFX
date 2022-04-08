@@ -1,6 +1,7 @@
 package com.redmondsims.gistfx.data;
 
 import com.redmondsims.gistfx.data.metadata.Json;
+import com.redmondsims.gistfx.enums.LoginStates;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
@@ -11,6 +12,7 @@ import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
 import com.redmondsims.gistfx.ui.gist.GistCategory;
+import com.redmondsims.gistfx.utils.Resources;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -21,10 +23,12 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Date;
 import java.util.Collection;
 import java.util.List;
@@ -59,8 +63,9 @@ public class Action {
 
 	public static void addGistToSQL(Gist gist) {SQLITE.addGist(gist);}
 
-	public static void cleanDatabase() {
+	public static void wipeSQLAndMetaData() {
 		SQLITE.cleanDatabase();
+		AppSettings.clear().metadata();
 	}
 
 	public static void delete(GistFile file) {
@@ -68,8 +73,8 @@ public class Action {
 		SQLITE.deleteGistFile(file);
 	}
 
-	public static int addFileToSQL(String gistId, String filename, String content, Date uploadDate) {
-		return SQLITE.newSQLFile(gistId, filename, content, uploadDate);
+	public static int addFileToSQL(String gistId, String filename, String content) {
+		return SQLITE.newSQLFile(gistId, filename, content);
 	}
 
 	public static void setDirtyFile(Integer fileId, boolean dirty) {
@@ -144,20 +149,21 @@ public class Action {
 		return GITHUB.getForkCount(gistId);
 	}
 
-	public static boolean tokenValid(String token) {
+	public static LoginStates tokenValid(String token) {
 		return GITHUB.tokenValid(token);
 	}
 
 	public static void loadWindow() {
 		UISettings.DataSource dataSource = LiveSettings.getDataSource();
-		if (GITHUB.noGists()) {
-			System.out.println("No Gists");
-			GistManager.startEmpty();
-		}
-		else if (dataSource.equals(UISettings.DataSource.GITHUB)) {
-			LoginWindow.updateProcess("Downloading Gist Objects");
-			Map<String,GHGist> ghGistMap = GITHUB.getNewGHGistMap();
-			GistManager.startFromGit(ghGistMap, Source.GITHUB);
+		if (dataSource.equals(UISettings.DataSource.GITHUB)) {
+			if (GITHUB.noGists()) {
+				GistManager.startEmpty();
+			}
+			else {
+				LoginWindow.updateProgress("Downloading Gist Objects");
+				Map<String,GHGist> ghGistMap = GITHUB.getNewGHGistMap();
+				GistManager.startFromGit(ghGistMap, Source.GITHUB);
+			}
 		}
 		else if (dataSource.equals(UISettings.DataSource.LOCAL)) {
 			GistManager.startFromDatabase();
@@ -165,7 +171,7 @@ public class Action {
 	}
 
 	public static void updateProgress(String text) {
-		LoginWindow.updateProcess(text);
+		LoginWindow.updateProgress(text);
 	}
 
 	public static void refreshAllData() {
@@ -178,6 +184,13 @@ public class Action {
 
 	public static void updateGistFile(String gistId, String filename, String content) {
 		GITHUB.updateFile(gistId, filename, content);
+	}
+
+	public static boolean updateGistFile(int fileId, String gistId, String filename, String content, boolean isDirty) {
+		boolean dirty = LiveSettings.isOffline() || isDirty;
+		SQLITE.updateGitHubVersion(fileId, content);
+		SQLITE.saveFile(fileId,content,dirty);
+		return GITHUB.updateFile(gistId, filename, content);
 	}
 
 	public static GHGist getGistByDescription(String description) {
@@ -212,16 +225,12 @@ public class Action {
 		return GITHUB.ghGistMapIsEmpty();
 	}
 
-	public static String getLocalGitHubFileContent(String gistId, String filename) {
-		return GITHUB.getLocalGitHubFileContent(gistId, filename);
-	}
-
 	public static String getGitHubFileContent(String gistId, String filename) {
-		return GITHUB.getLocalGitHubFileContent(gistId, filename);
+		return GITHUB.getGitHubFileContent(gistId, filename);
 	}
 
-	public static GHGistFile getLocalGitHubFile(String gistId, String filename) {
-		return GITHUB.getLocalGitHubFile(gistId, filename);
+	public static String getLocalGitHubVersion(int fileId) {
+		return SQLITE.getLocalGitHubVersion(fileId);
 	}
 
 	/**
@@ -230,8 +239,8 @@ public class Action {
 
 	public static void deleteGitHubMetadata() {JSON.deleteGitHubMetadata();}
 
-	public static void loadJsonData() {
-		JSON.loadJsonData();
+	public static void loadMetaData() {
+		JSON.loadMetaData();
 	}
 
 	public static String getJSonGistName(String gistId) {
@@ -362,13 +371,8 @@ public class Action {
 		GITHUB.updateDescription(gist);
 	}
 
-	public static void updateGistFile(GistFile file) {
-		SQLITE.saveFile(file);
-		GITHUB.updateFile(file);
-	}
-
-	public static void localFileSave(GistFile file) {
-		SQLITE.saveFile(file);
+	public static void localFileSave(int fileId, String content, boolean dirty) {
+		SQLITE.saveFile(fileId, content, dirty);
 	}
 
 	public static void renameFile(String gistId, Integer fileId, String oldFilename, String newFilename, String content) {
@@ -384,7 +388,7 @@ public class Action {
 		String oldGistId = oldGist.getGistId();
 		String newGistId = newGist.getGistId();
 		String filename = file.getFilename();
-		String content = file.getContent();
+		String content = file.getLiveVersion();
 		GITHUB.addFileToGist(newGistId,filename,content);
 		GITHUB.deleteGistFile(oldGistId,filename);
 		SQLITE.changeGistId(file,newGistId);
@@ -477,13 +481,22 @@ public class Action {
 		JSON.deleteGistMetadata(gistId);
 	}
 
+	public static void deleteLocalFiles() {
+		try {
+			FileUtils.deleteDirectory(Resources.getExternalRootPath().toFile());
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void uploadGistToGitHub(String gistId) {
 		Gist gist = GistManager.getGist(gistId);
 		String description = gist.getDescription();
 		boolean createGhGist = true;
 		String newGistId = "";
 		for(GistFile gistFile : gist.getFiles()) {
-			String content = gistFile.getContent();
+			String content = gistFile.getLiveVersion();
 			String filename = gistFile.getFilename();
 			if(createGhGist) {
 				createGhGist = false;

@@ -170,4 +170,20 @@ public class Set {
 		AppSettings.clear().lastGitHubUserId();
 		prefs.put((LABEL.LAST_GITHUB_USER_ID.Name()), setting);
 	}
+
+	public void runInSystray(boolean setting) {
+		AppSettings.clear().runInSystray();
+		prefs.put((LABEL.RUN_IN_SYSTRAY.Name()), String.valueOf(setting));
+	}
+
+	public void systrayColor(String setting) {
+		AppSettings.clear().systrayColor();
+		prefs.put((LABEL.SYSTRAY_COLOR.Name()), String.valueOf(setting));
+	}
+
+	public void showAppIcon(boolean setting) {
+		AppSettings.clear().showAppIcon();
+		prefs.put((LABEL.SHOW_APP_ICON.Name()), String.valueOf(setting));
+	}
+
 }
