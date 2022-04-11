@@ -296,7 +296,7 @@ public class GistManager {
 		return list;
 	}
 
-	public static Map<String,GistFile> getGistFileContentMap(String gistId) {
+	public static Map<String,GistFile> getGistFileMap(String gistId) {
 		Map<String,GistFile> newMap = new HashMap<>();
 		Gist gist = gistMap.get(gistId);
 		for(GistFile gistFile : gist.getFiles()) {

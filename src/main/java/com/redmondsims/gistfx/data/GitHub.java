@@ -383,7 +383,6 @@ class GitHub {
 					Action.setProgress(0.0);
 					return;
 				}
-				System.out.println(count);
 				Action.setProgress(count/total);
 				count++;
 			}

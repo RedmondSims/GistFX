@@ -99,6 +99,10 @@ public class UISettings {
 			};
 		}
 
+		@Override public String toString() {
+			return Name();
+		}
+
 	}
 
 	public enum DataSource {
@@ -441,7 +445,7 @@ public class UISettings {
 		colorPicker.setValue(LiveSettings.getDirtyFileFlagColor());
 		colorPicker.setOnAction(e-> {
 			LiveSettings.setDirtyFileFlagColor(colorPicker.getValue());
-			WindowManager.refreshFileIcons();
+			WindowManager.refreshTreeIcons();
 		});
 		colorPicker.setMaxWidth(101);
 		Tooltip.install(colorPicker, Action.newTooltip("Chose your desired color for the dirty file flag"));
@@ -540,8 +544,8 @@ public class UISettings {
 		Button btnReset = new Button("Reset Password And Token");
 		btnReset.setOnAction(e -> Platform.runLater(() -> {
 			if (CustomAlert.showConfirmation("Are you sure you want to delete your local Token and Password?\n\nYou will be required to type in a valid token the next time you launch GistFX.\nYou will also have the option of creating a new password at next login.")) {
-				AppSettings.clear().passwordHash();
-				AppSettings.clear().tokenHash();
+				AppSettings.clear().hashedPassword();
+				AppSettings.clear().hashedToken();
 				CustomAlert.showInfo("Done!", null);
 			}
 		}));

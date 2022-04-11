@@ -49,7 +49,7 @@ public class TreeCellFactory implements Callback<TreeView<TreeNode>, TreeCell<Tr
             public void updateItem(final TreeNode item, final boolean empty) {
                 super.updateItem(item, empty);
                 if (item == null) return;
-                setText(getTreeItem().getValue().getText());
+                setText(getTreeItem().getValue().getName());
                 setGraphic(getTreeItem().getGraphic());
             }
         };

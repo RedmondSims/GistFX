@@ -15,6 +15,18 @@
     -fx-text-fill: lightgray;
 }
 
+#Warning {
+    -fx-text-fill: rgb(100,20,20);
+    -fx-font-family: Menlo;
+    -fx-font-size: 17.4;
+}
+
+#ICP {
+    -fx-text-fill: rgb(255,255,255);
+    -fx-font-family: Menlo;
+    -fx-font-size: 15;
+}
+
 #SettingsOne {
     -fx-text-fill: rgba(220,220,200,1);
 }

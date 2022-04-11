@@ -1,7 +1,6 @@
 package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
-import com.redmondsims.gistfx.enums.FileState;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.enums.State;
 import com.redmondsims.gistfx.networking.Payload;
@@ -54,39 +53,48 @@ public class WindowManager {
 	}
 
 	public static void deleteGist() {
+		if(gistWindow != null)
 		gistWindow.getActions().deleteGist(gistWindow.getGist());
 	}
 
 	public static void newGist() {
-		gistWindow.getActions().newGist(gistWindow.getSelectedNode());
+		if(gistWindow != null)
+			gistWindow.getActions().newGist(gistWindow.getSelectedNode());
 	}
 
 	public static void deleteFile() {
-		gistWindow.getActions().deleteFile(gistWindow.getFile());
+		if(gistWindow != null)
+			gistWindow.getActions().deleteFile(gistWindow.getFile());
 	}
 
 	public static void renameFile() {
-		gistWindow.getActions().renameFile(gistWindow.getFile());
+		if(gistWindow != null)
+			gistWindow.getActions().renameFile(gistWindow.getFile());
 	}
 
 	public static void newFile() {
-		gistWindow.getActions().newFile(gistWindow.getGist());
+		if(gistWindow != null)
+			gistWindow.getActions().newFile(gistWindow.getGist());
 	}
 
 	public static void shareObject() {
-		gistWindow.shareObject(gistWindow.getSelectedNode());
+		if(gistWindow != null)
+			gistWindow.shareObject(gistWindow.getSelectedNode());
 	}
 
 	public static void receiveData(Payload payload) {
-		gistWindow.getActions().receiveData(payload);
+		if(gistWindow != null)
+			gistWindow.getActions().receiveData(payload);
 	}
 
 	public static void deleteCategory() {
-		gistWindow.getActions().deleteCategory(gistWindow.getSelectedNode());
+		if(gistWindow != null)
+			gistWindow.getActions().deleteCategory(gistWindow.getSelectedNode());
 	}
 
 	public static void editCategories() {
-		gistWindow.getActions().editCategories();
+		if(gistWindow != null)
+			gistWindow.getActions().editCategories();
 	}
 
 	public static void renameGist() {
@@ -94,44 +102,53 @@ public class WindowManager {
 	}
 
 	public static void renameCategory() {
+		if(gistWindow != null)
 		gistWindow.getActions().renameCategory();
 	}
 
 	public static void setPBarStyle(String style) {
+		if(gistWindow != null)
 		gistWindow.setPBarStyle(style);
 	}
 
 	public static void updateFileContent(String content) {
+		if(gistWindow != null)
 		gistWindow.updateFileContent(content);
 	}
 
 	public static void handleTreeEvent(TreeItem<TreeNode> treeItem) {
+		if(gistWindow != null)
 		gistWindow.getTreeActions().handleTreeEvent(treeItem);
 	}
 
 	public static void refreshLeaf(GistFile gistFile) {
+		if(gistWindow != null)
 		gistWindow.getTreeActions().refreshGistLeaf(gistFile);
 	}
 
 	public static void refreshTree() {
+		if(gistWindow != null)
 		gistWindow.getTreeActions().refreshTree();
 	}
 
 	public static void fillTree() {
+		if(gistWindow != null)
 		gistWindow.fillTree();
 	}
 
-	public static void refreshFileIcons() {
+	public static void refreshTreeIcons() {
 		if(gistWindow != null) {
-			gistWindow.getTreeActions().refreshIcons();
+			gistWindow.getTreeActions().refreshTreeIcons();
 		}
 	}
 
 	public static void showAppSettings() {
+		if(gistWindow != null)
 		gistWindow.showAppSettings();
 	}
 
 	public static void showTreeSettings() {
+		if(gistWindow != null)
 		gistWindow.showTreeSettings();
 	}
 

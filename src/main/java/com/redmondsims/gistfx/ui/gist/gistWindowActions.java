@@ -290,8 +290,8 @@ public class gistWindowActions {
 			Action.setProgress(actionSum / totalActions);
 			GHGist ghGist = ghGistMap.get(gistId);
 			if (!ghGist.getDescription().equals(Names.GITHUB_METADATA.Name())) {
-				Map<String, GHGistFile> ghGistFiles        = ghGist.getFiles();
-				Map<String, GistFile>     gistFileMap = GistManager.getGistFileContentMap(gistId);
+				Map<String, GHGistFile> ghGistFiles = ghGist.getFiles();
+				Map<String, GistFile>   gistFileMap = GistManager.getGistFileMap(gistId);
 				for (String filename : ghGistFiles.keySet()) {
 					GHGistFile ghGistFile    = ghGistFiles.get(filename);
 					String     gitHubContent = ghGistFile.getContent();
@@ -303,7 +303,7 @@ public class gistWindowActions {
 				}
 			}
 		}
-		gistWindow.getTreeActions().refreshIcons();
+		gistWindow.getTreeActions().refreshTreeIcons();
 		gistWindow.updateGitLabel("", false);
 		Action.setProgress(0.0);
 		Status.setGistWindowState(State.NORMAL);
@@ -349,7 +349,6 @@ public class gistWindowActions {
 				.build();
 		toolWindow.showAndWait();
 	}
-
 
 	public void addingDataMessage(boolean show) {
 		double width  = 400;
@@ -667,13 +666,16 @@ public class gistWindowActions {
 			WindowManager.fillTree();
 		});
 		tfNewName.setOnAction(e -> {
-			Action.changeCategoryName(tfSelectedCategory.getText(), tfNewName.getText());
-			tfSelectedCategory.clear();
-			tfNewName.clear();
-			lvCategories.getItems().setAll(Action.getCategoryList());
-			tfNewName.clear();
-			tfNewCategory.requestFocus();
-			WindowManager.fillTree();
+			String oldName = tfSelectedCategory.getText();
+			String newName = tfNewName.getText();
+			Action.changeCategoryName(oldName, newName);
+			Platform.runLater(() -> {
+				gistWindow.getTreeActions().renameCategory(oldName,newName);
+				tfNewCategory.requestFocus();
+				tfSelectedCategory.clear();
+				tfNewName.clear();
+				lvCategories.getItems().setAll(Action.getCategoryList());
+			});
 		});
 		lvCategories.setOnMouseClicked(e -> {
 			tfSelectedCategory.setText(lvCategories.getSelectionModel().getSelectedItem());

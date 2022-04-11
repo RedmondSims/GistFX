@@ -6,7 +6,7 @@
 
     <groupId>com.redmondsims</groupId>
     <artifactId>GistFX</artifactId>
-    <version>3.4.0</version>
+    <version>3.4.1</version>
     <name>GistFX</name>
     <url>https://github.com/redmondsims/gistfx</url>
 
@@ -188,7 +188,7 @@
             <plugin>
                 <groupId>io.github.fvarrui</groupId>
                 <artifactId>javapackager</artifactId>
-                <version>1.6.6</version>
+                <version>1.6.5</version>
                 <configuration>
                     <mainClass>${exec.mainClass}</mainClass>
                     <bundleJre>true</bundleJre>
@@ -209,29 +209,20 @@
                             <createTarball>true</createTarball>
 <!--
                             <vmArgs>
-                                <vmArg>module-path=Java/libs</vmArg>
-                                <vmArg>add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
+                                <vmArg>&#45;&#45;module-path=Java/libs</vmArg>
+                                <vmArg>&#45;&#45;add-modules=javafx.controls,javafx.graphics,javafx.web</vmArg>
                             </vmArgs>
 -->
-<!--
                             <winConfig>
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
-                                <icoFile>C:\IdeaProjects\GistFX\src\main\resources\com\redmondsims\gistfx\Assets\windows\GistFXIcon.ico</icoFile>
-                                <generateSetup>true</generateSetup>
-                                <generateMsi>false</generateMsi>
-                                <generateMsm>false</generateMsm>
-                                <setupMode>askTheUser</setupMode>
-                                <createDesktopIconTask>true</createDesktopIconTask>
-                                <removeOldLibs>true</removeOldLibs>
                             </winConfig>
--->
                             <macConfig>
-                                <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
+                                <icnsFile>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
                                 <generateDmg>true</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>GistFX</volumeName>
-                                <volumeIcon>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                                <volumeIcon>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
                                 <entitlements>entitlements.plist</entitlements>
                             </macConfig>
                         </configuration>

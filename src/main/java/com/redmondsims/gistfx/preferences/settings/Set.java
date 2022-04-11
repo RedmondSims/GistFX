@@ -12,17 +12,17 @@ public class Set {
 	private final Preferences prefs = LABEL.prefs;
 
 	public void hashedToken(String tokenHash) {
-		AppSettings.clear().tokenHash();
+		AppSettings.clear().hashedToken();
 		prefs.put(LABEL.TOKEN_HASH.Name(), tokenHash);
 	}
 
 	public void hashedPassword(String passwordHash) {
-		AppSettings.clear().passwordHash();
+		AppSettings.clear().hashedPassword();
 		prefs.put(LABEL.PASSWORD_HASH.Name(), passwordHash);
 	}
 
 	public void dataSource(UISettings.DataSource option) {
-		AppSettings.clear().loadSource();
+		AppSettings.clear().dataSource();
 		prefs.put(LABEL.DATA_SOURCE.Name(), option.Name());
 	}
 
@@ -41,6 +41,11 @@ public class Set {
 		prefs.put(LABEL.PROGRESS_COLOR_SOURCE.Name(), String.valueOf(choice));
 	}
 
+	public void customProgressColor(boolean value) {
+		AppSettings.clear().customProgressColor();
+		prefs.putBoolean(LABEL.CUSTOM_PROGRESS_COLOR.Name(), value);
+	}
+
 	public void loginScreenChoice(UISettings.LoginScreen option) {
 		AppSettings.clear().logonScreenChoice();
 		prefs.put(LABEL.LOGIN_SCREEN.Name(), option.Name());
@@ -51,19 +56,12 @@ public class Set {
 		prefs.put(LABEL.LOGIN_SCREEN_COLOR.Name(), option.Name());
 	}
 
-	public void firstRun(boolean setting) {
-		AppSettings.clear().firstRun();
-		prefs.put(LABEL.FIRST_RUN.Name(), String.valueOf(setting));
+	public void firstRun(boolean value) {
+		prefs.putBoolean(LABEL.FIRST_RUN.Name(), value);
 	}
 
-	public void showToolBar(boolean setting) {
-		AppSettings.clear().showToolBar();
-		prefs.put(LABEL.TOOL_BAR.Name(), String.valueOf(setting));
-	}
-
-	public void securityOption(UISettings.LoginScreen option) {
-		AppSettings.clear().securityOption();
-		prefs.put(LABEL.SECURITY_OPTION.Name(), option.Name());
+	public void showToolBar(boolean value) {
+		prefs.putBoolean(LABEL.SHOW_TOOL_BAR.Name(), value);
 	}
 
 	public void theme(UISettings.Theme theme) {
@@ -79,32 +77,30 @@ public class Set {
 
 	public void categoryFolderIconColor(Color color) {
 		AppSettings.clear().categoryFolderIconColor();
-		prefs.put(LABEL.CATEGORY_FOLDER_ICON_COLOR.Name(), color.toString());
+		if(color == null)
+			prefs.remove(LABEL.CATEGORY_FOLDER_ICON_COLOR.Name());
+		else
+			prefs.put(LABEL.CATEGORY_FOLDER_ICON_COLOR.Name(), color.toString());
 	}
 
 	public void gistFolderIconColor(Color color) {
 		AppSettings.clear().gistFolderIconColor();
-		prefs.put(LABEL.GIST_FOLDER_ICON_COLOR.name(), color.toString());
+		if(color == null)
+			prefs.remove(LABEL.GIST_FOLDER_ICON_COLOR.Name());
+		else
+			prefs.put(LABEL.GIST_FOLDER_ICON_COLOR.name(), color.toString());
 	}
 
 	public void fileIconColor(Color color) {
-		AppSettings.clear().categoryFolderIconColor();
-		prefs.put("test", color.toString());
+		AppSettings.clear().fileIconColor();
+		if(color == null)
+			prefs.remove(LABEL.FILE_ICON_COLOR.Name());
+		else
+			prefs.put(LABEL.FILE_ICON_COLOR.Name(), color.toString());
 	}
 
-	public void disableDirtyWarning(boolean setting) {
-		AppSettings.clear().disableDirtyWarning();
-		prefs.put(LABEL.DISABLE_DIRTY_WARNING.Name(), String.valueOf(setting));
-	}
-
-	public void wideMode(boolean setting) {
-		AppSettings.clear().wideMode();
-		prefs.put(LABEL.WIDE_MODE.Name(), String.valueOf(setting));
-	}
-
-	public void dividerPositions(String positions) {
-		AppSettings.clear().dividerPositions();
-		prefs.put(LABEL.DIVIDER_POSITIONS.Name(), positions);
+	public void disableDirtyWarning(boolean value) {
+		prefs.putBoolean(LABEL.DISABLE_DIRTY_WARNING.Name(), value);
 	}
 
 	public void metadata(String value) {
@@ -113,47 +109,37 @@ public class Set {
 	}
 
 	public void fileMoveWarning(boolean value) {
-		AppSettings.clear().fileMoveWarning();
-		prefs.put(LABEL.FILE_MOVE_WARNING.Name(), String.valueOf(value));
+		prefs.putBoolean(LABEL.FILE_MOVE_WARNING.Name(), value);
 	}
 
-	public void useDefaultCategoryIcon(boolean setting) {
-		AppSettings.clear().useDefaultCategoryIcon();
-		prefs.put(LABEL.USE_DEFAULT_CATEGORY_ICON.Name(), String.valueOf(setting));
+	public void useDefaultCategoryIcon(boolean value) {
+		prefs.putBoolean(LABEL.USE_DEFAULT_CATEGORY_ICON.Name(), value);
 	}
 
-	public void useDefaultGistIcon(boolean setting) {
-		AppSettings.clear().useDefaultGistIcon();
-		prefs.put(LABEL.USE_DEFAULT_GIST_ICON.Name(), String.valueOf(setting));
+	public void useDefaultGistIcon(boolean value) {
+		prefs.putBoolean(LABEL.USE_DEFAULT_GIST_ICON.Name(), value);
 	}
 
-	public void useDefaultFileIcon(boolean setting) {
-		AppSettings.clear().useDefaultFileIcon();
-		prefs.put(LABEL.USE_DEFAULT_FILE_ICON.Name(), String.valueOf(setting));
+	public void useDefaultFileIcon(boolean value) {
+		prefs.putBoolean(LABEL.USE_DEFAULT_FILE_ICON.Name(), value);
 	}
 
-	public void userCategoryIconPath(String setting) {
-		AppSettings.clear().userCategoryIconPath();
-		prefs.put(LABEL.USER_CATEGORY_ICON_PATH.Name(), setting);
+	public void userCategoryIcon(String setting) {
+		AppSettings.clear().userCategoryIcon();
+		AppSettings.set().useDefaultCategoryIcon(setting.isEmpty());
+		prefs.put(LABEL.USER_CATEGORY_ICON.Name(), setting);
 	}
 
-	public void userGistIconPath(String setting) {
-		AppSettings.clear().userGistIconPath();
-		prefs.put(LABEL.USER_GIST_ICON_PATH.Name(), setting);
+	public void userGistIcon(String setting) {
+		AppSettings.clear().userGistIcon();
+		AppSettings.set().useDefaultGistIcon(setting.isEmpty());
+		prefs.put(LABEL.USER_GIST_ICON.Name(), setting);
 	}
 
-	public void userFileIconPath(String setting) {
-		AppSettings.clear().userFileIconPath();
-		prefs.put(LABEL.USER_FILE_ICON_PATH.Name(), setting);
-	}
-
-	public void userIconFileFolder(String setting) {
-		AppSettings.clear().userIconFileFolder();
-		prefs.put(LABEL.USER_ICON_FILE_FOLDER.Name(), setting);
-	}
-
-	public void setDefaults() {
-		try {prefs.clear();}catch (BackingStoreException e) {e.printStackTrace();}
+	public void userFileIcon(String setting) {
+		AppSettings.clear().userFileIcon();
+		AppSettings.set().useDefaultFileIcon(setting.isEmpty());
+		prefs.put(LABEL.USER_FILE_ICON.Name(), setting);
 	}
 
 	public void mailServer(String setting) {
@@ -171,9 +157,8 @@ public class Set {
 		prefs.put((LABEL.LAST_GITHUB_USER_ID.Name()), setting);
 	}
 
-	public void runInSystray(boolean setting) {
-		AppSettings.clear().runInSystray();
-		prefs.put((LABEL.RUN_IN_SYSTRAY.Name()), String.valueOf(setting));
+	public void runInSystray(boolean value) {
+		prefs.putBoolean((LABEL.RUN_IN_SYSTRAY.Name()), value);
 	}
 
 	public void systrayColor(String setting) {
@@ -181,9 +166,13 @@ public class Set {
 		prefs.put((LABEL.SYSTRAY_COLOR.Name()), String.valueOf(setting));
 	}
 
-	public void showAppIcon(boolean setting) {
-		AppSettings.clear().showAppIcon();
-		prefs.put((LABEL.SHOW_APP_ICON.Name()), String.valueOf(setting));
+	public void showAppIcon(boolean value) {
+		prefs.putBoolean((LABEL.SHOW_APP_ICON.Name()), value);
 	}
+
+	public void setDefaults() {
+		try {prefs.clear();}catch (BackingStoreException e) {e.printStackTrace();}
+	}
+
 
 }

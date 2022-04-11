@@ -133,7 +133,7 @@ public class Hosts {
 		TextField tfNewHost       = new TextField();
 		TextField tfSelectedHost  = new TextField();
 		TextField tfRenameHost    = new TextField();
-		Tooltip.install(tfNewHost, Action.newTooltip("Type in the recipient host name or ip address that you will send data to,then hit ENTER to save it\n\nHostname should be resolvable by DNS. to test, use command prompt and type:\n\nnslookup hostname"));
+		Tooltip.install(tfNewHost, Action.newTooltip("Type in the recipient host name or ip address that you will send data to,then hit ENTER to save it\n\nHostname should be resolvable by DNS. to category, use command prompt and type:\n\nnslookup hostname"));
 		Tooltip.install(tfSelectedHost, Action.newTooltip("Click on a host name from the list, then rename or delete it.\n\nTo rename, just type in the new name and press enter."));
 		tfRenameHost.setEditable(false);
 		tfSelectedHost.setEditable(false);

@@ -11,87 +11,89 @@ import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.ui.gist.GistCategory;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class TreeNode implements GistInterface {
 
-    private       String           text             = "";
-    private       GistCategory     gistCategory;
-    private final TreeType         type;
-    private       String           gistId;
-    private       String           description;
-    private       int              fileId;
-    private final CBooleanProperty expandedProperty = new CBooleanProperty(false);
+	private       String  nodeName;
+	private       GistCategory   gistCategory;
+	private final TreeType         type;
+	private       String           gistId;
+	private       String           description;
+	private       int              fileId;
+	private final CBooleanProperty expandedProperty = new CBooleanProperty(false);
 
-    public TreeNode(){
-        this.type = null;
+	public TreeNode() {
+		this.type = null;
+	}
+
+	public TreeNode(GistCategory gistCategory) {
+		this.gistCategory = gistCategory;
+		this.type         = TreeType.CATEGORY;
+		this.nodeName = gistCategory.getCategoryName();
+	}
+
+	public TreeNode(String text, Gist gist) {
+		this.gistId      = gist.getGistId();
+		this.description = gist.getDescription();
+		this.type        = TreeType.GIST;
+		this.nodeName = gist.getName();
+	}
+
+	public TreeNode(String text, GistFile file) {
+		this.gistId = file.getGistId();
+		this.fileId = file.getFileId();
+		this.type   = TreeType.FILE;
+		this.nodeName = file.getFilename();
+	}
+
+	public boolean canContainChildren() {
+		return true;
+	}
+
+	public String getCategoryName() {
+		return gistCategory.getCategoryName();
+	}
+
+	public GistCategory getGistCategory() {
+		return gistCategory;
+	}
+
+    public void setName(String name) {
+        switch(type) {
+            case CATEGORY -> getGistCategory().setCategoryName(name);
+            case GIST -> getGist().setName(name);
+            case FILE -> getFile().setName(name);
+        }
     }
 
-    public TreeNode(GistCategory gistCategory) {
-        this.gistCategory = gistCategory;
-        this.type = TreeType.CATEGORY;
-        this.text = gistCategory.getCategoryName();
-    }
+	@Override public String toString() {
+		return nodeName;
+	}
 
-    public TreeNode(String text, Gist gist) {
-        this.gistId = gist.getGistId();
-        this.description = gist.getDescription();
-        this.type = TreeType.GIST;
-        this.text = text;
-    }
+	@Override public TreeType getType() {
+		return type;
+	}
 
-    public TreeNode(String text, GistFile file) {
-        this.gistId = file.getGistId();
-        this.fileId = file.getFileId();
-        this.type = TreeType.FILE;
-        this.text = text;
-    }
+	@Override public Gist getGist() {
+		return GistManager.getGist(gistId);
+	}
 
-    public void setText(final String displayText) {
-        text = displayText;
-    }
+	@Override public GistFile getFile() {
+		return GistManager.getFile(gistId, fileId);
+	}
 
-    public String getText() {
-        return text;
-    }
+	@Override public String getGistId() {
+		return gistId;
+	}
 
-    public boolean canContainChildren() {
-        return true;
-    }
+	@Override public String getDescription() {
+		return description;
+	}
 
-    public String getCategoryName() {
-        return gistCategory.getCategoryName();
-    }
-
-    public GistCategory getGistCategory() {
-        return gistCategory;
-    }
-
-    @Override public String toString() {
-        return text;
-    }
-
-    @Override public TreeType getType() {
-        return type;
-    }
-
-    @Override public Gist getGist() {
-        return GistManager.getGist(gistId);
-    }
-
-    @Override public GistFile getFile() {
-        return GistManager.getFile(gistId,fileId);
-    }
-
-    @Override public String getGistId() {
-        return gistId;
-    }
-
-    @Override public String getDescription() {
-        return description;
-    }
-
-    @Override public String getName() {
-        return text;
-    }
+	@Override public String getName() {
+		return nodeName;
+	}
 
 }

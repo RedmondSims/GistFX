@@ -5,6 +5,7 @@ import com.redmondsims.gistfx.Main;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,10 +23,13 @@ public class Resources {
 	private final static String       icons                = "Icons";
 	private final static String       tree                 = "Tree";
 	private final static String       sqlIte               = "SQLite";
-	private final static String       root                 = LiveSettings.getFilePath().toString();
+	private final static String       user                 = "User";
+	private final static String       dev                  = "Dev";
+	private final static String       root                 = LiveSettings.getDevMode() ? Paths.get(LiveSettings.getFilePath().toString(), dev).toString() : Paths.get(LiveSettings.getFilePath().toString()).toString();
 	private final static Path         externalRootPath     = Paths.get(root);
 	private final static Path         externalIconPath     = Paths.get(root, icons);
 	private final static Path         externalTreeIconPath = Paths.get(root, icons, tree);
+	private final static Path         externalUserIconPath = Paths.get(root, icons, tree, user);
 	private final static Path         externalSQLPath      = Paths.get(root, sqlIte);
 	private final static Path         externalHelpFilePath = Paths.get(root, helpFiles);
 	private final static String       conflictName         = "Conflict.png";
@@ -43,6 +47,10 @@ public class Resources {
 
 	public static Path getExternalRootPath() {
 		return externalRootPath;
+	}
+
+	public static Path getExternalUserIconPath() {
+		return externalUserIconPath;
 	}
 
 	public static Path getExternalTreeIconPath() {
@@ -87,6 +95,7 @@ public class Resources {
 		if (!externalTreeIconPath.toFile().exists()) externalTreeIconPath.toFile().mkdir();
 		if (!externalSQLPath.toFile().exists()) externalSQLPath.toFile().mkdir();
 		if (!externalHelpFilePath.toFile().exists()) externalHelpFilePath.toFile().mkdir();
+		if (!externalUserIconPath.toFile().exists()) externalUserIconPath.toFile().mkdir();
 		copyHelpFiles();
 		copyIcons();
 	}
@@ -140,8 +149,24 @@ public class Resources {
 					FileUtils.copyInputStreamToFile(is, outFile);
 				}
 				else if (!outFile.exists()){
-					System.err.println("Something is wrong with the internal resource (Resouorces class, copyIcons(): " + sourceFile);
+					System.err.println("Something is wrong with the internal resource (Resources class, copyIcons(): " + sourceFile);
 					System.exit(0);
+				}
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void copyUserIcon(String userIconPath) {
+		try {
+			Path sourcePath = Paths.get(userIconPath);
+			if(sourcePath.toFile().exists()) {
+				String fileName = FilenameUtils.getName(sourcePath.toString());
+				File outFile = new File(externalUserIconPath.toFile(),fileName);
+				if(!outFile.exists()) {
+					FileUtils.copyFile(sourcePath.toFile(),outFile);
 				}
 			}
 		}

@@ -55,11 +55,11 @@ public class GistFile {
 
 	public void refreshGraphicNode() {
 		Platform.runLater(() -> {
-			WindowManager.handleButtons();
+//			WindowManager.handleButtons();
 			graphicNode.set(getIcon());
 			if (!fileState.equals(lastFileState)) {
 				lastFileState = fileState;
-				WindowManager.refreshFileIcons();
+				WindowManager.refreshTreeIcons();
 			}
 		});
 	}
@@ -261,7 +261,7 @@ public class GistFile {
 	public boolean isInConflict() {return fileState.equals(CONFLICT);}
 
 	public boolean isAlertable() {
-		return fileState.equals(DIRTY) || fileState.equals(CONFLICT);
+		return !fileState.equals(NORMAL);
 	}
 
 	public String getFilename() {
@@ -279,6 +279,10 @@ public class GistFile {
 	}
 
 	public ObjectProperty<Node> getGraphicNode() {return graphicNode;}
+
+	public CStringProperty getNameProperty() {
+		return fileName;
+	}
 
 	/**
 		SQL Actions

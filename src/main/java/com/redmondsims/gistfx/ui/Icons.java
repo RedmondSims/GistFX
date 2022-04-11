@@ -3,7 +3,6 @@ package com.redmondsims.gistfx.ui;
 import com.redmondsims.gistfx.Launcher;
 import java.nio.file.Path;
 
-import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.utils.Resources;
 import javafx.scene.image.*;
@@ -24,7 +23,7 @@ public class Icons {
 	private final static String ConflictName  = "ConflictFlag2.png";
 	private final static String FileName      = "File.png";
 	private final static String FolderName    = "Folder.png";
-	private final static String ToolBar       = "Icons/ToolBar/";
+	private final static String ToolBar       = "Icons/ToolBars/";
 
 	public static void init() {
 		for(Path treeIconPath : Resources.treeIconPaths()) {
@@ -56,7 +55,7 @@ public class Icons {
 	public static ImageView getGistCategoryIcon() {
 		Color color = AppSettings.get().categoryFolderIconColor();
 		boolean useDefault   = AppSettings.get().useDefaultCategoryIcon();
-		Path    userIconPath = (Path) Paths.get(AppSettings.get().userCategoryIconPath());
+		Path    userIconPath = (Path) Paths.get(AppSettings.get().userCategoryIcon());
 		if(!userIconPath.toFile().exists()) useDefault = true;
 		return (useDefault) ? newImageView(folderIcon, Color.WHITE, color) : newImageView(userIconPath);
 	}
@@ -64,7 +63,7 @@ public class Icons {
 	public static ImageView getGistIcon() {
 		Color color = AppSettings.get().gistFolderIconColor();
 		boolean useDefault = AppSettings.get().useDefaultGistIcon();
-		Path userIconPath = (Path) Paths.get(AppSettings.get().userGistIconPath());
+		Path userIconPath = (Path) Paths.get(AppSettings.get().userGistIcon());
 		if(!userIconPath.toFile().exists()) useDefault = true;
 		return (useDefault) ? newImageView(folderIcon, Color.WHITE, color) : newImageView(userIconPath);
 	}
@@ -72,7 +71,7 @@ public class Icons {
 	public static ImageView getFileIcon() {
 		Color color =  AppSettings.get().fileIconColor();
 		boolean useDefault = AppSettings.get().useDefaultFileIcon();
-		Path userIconPath = (Path) Paths.get(AppSettings.get().userFileIconPath());
+		Path userIconPath = (Path) Paths.get(AppSettings.get().userFileIcon());
 		if(!userIconPath.toFile().exists()) useDefault = true;
 		return (useDefault) ? newImageView(fileIcon, Color.WHITE, color) : newImageView(userIconPath);
 	}
