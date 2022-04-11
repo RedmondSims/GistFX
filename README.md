@@ -8,7 +8,7 @@ projects. GistFX provides a desktop Gist client, to make editing, creating, and
 managing Gists a breeze.
 
 ### Features
-- Built-in syntax highlighting for most  languages, using MonacoFX  - the same code editor used in Microsofts open source Visual Studio
+- Built-in syntax highlighting for most  languages, using MonacoFX  - the same code editor used in Microsoft's open source Visual Studio
 - Gists
     - Assign names to gists
     - Add / Delete Gists

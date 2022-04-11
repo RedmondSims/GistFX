@@ -5,7 +5,6 @@ import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -13,10 +12,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 
 public class MasterResetWindow {
 
@@ -27,52 +24,52 @@ public class MasterResetWindow {
 	private final String sceneId = "MasterReset";
 	private final String alertId = "MasterAlert";
 
-	public MasterResetWindow () {
+	public MasterResetWindow() {
 		startWindow();
 	}
 
 	private void startWindow() {
 		System.out.println("Showing MasterReset");
-		double width = 400;
-		double height = 415;
-		Label    lblTitle   = new Label("Master Reset");
+		double width    = 400;
+		double height   = 415;
+		Label  lblTitle = new Label("Master Reset");
 		lblTitle.setId("masterReset");
-		Label    lblMessage = new Label(getMessage());
-		lblMessage.setPadding(new Insets(10,10,10,10));
+		Label lblMessage = new Label(getMessage());
+		lblMessage.setPadding(new Insets(10, 10, 10, 10));
 		CheckBox cbDeleteLocalFiles = new CheckBox("Delete Local Files");
 		CheckBox cbDatabase         = new CheckBox("Reset Database (wipe out and create new)");
 		CheckBox cbSettings         = new CheckBox("Reset all app settings to default");
 		CheckBox cbCredentials      = new CheckBox("Reset Login Credentials");
 		CheckBox cbLocalMetadata    = new CheckBox("Wipe out Local Metadata");
 		CheckBox cbGitHubMetadata   = new CheckBox("Wipe out GitHub Metadata");
-		Button button = new Button("GO");
-		VBox vbox = new VBox(centeredHBox(lblTitle),lblMessage,cbDeleteLocalFiles,cbDatabase, cbSettings,cbCredentials,cbLocalMetadata,cbGitHubMetadata,centeredHBox(button));
-		vbox.setPadding(new Insets(15,15,15,20));
+		Button   button             = new Button("GO");
+		VBox     vbox               = new VBox(centeredHBox(lblTitle), lblMessage, cbDeleteLocalFiles, cbDatabase, cbSettings, cbCredentials, cbLocalMetadata, cbGitHubMetadata, centeredHBox(button));
+		vbox.setPadding(new Insets(15, 15, 15, 20));
 		vbox.setSpacing(15);
-		cbSettings.selectedProperty().addListener((observable,oldValue,newValue) -> {
+		cbSettings.selectedProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue) {
 				cbLocalMetadata.setSelected(false);
 				cbCredentials.setSelected(false);
 			}
 		});
 		cbLocalMetadata.selectedProperty().addListener((observable, oldValue, newValue) -> {
-			if(newValue) {
-				if(cbGitHubMetadata.isSelected()) {
+			if (newValue) {
+				if (cbGitHubMetadata.isSelected()) {
 					metadataWarning();
 				}
 			}
 		});
 		cbGitHubMetadata.selectedProperty().addListener((observable, oldValue, newValue) -> {
-			if(newValue) {
-				if(cbLocalMetadata.isSelected()) {
+			if (newValue) {
+				if (cbLocalMetadata.isSelected()) {
 					metadataWarning();
 				}
 			}
 		});
 		cbLocalMetadata.disableProperty().bind(cbSettings.selectedProperty());
 		cbCredentials.disableProperty().bind(cbSettings.selectedProperty());
-		cbDeleteLocalFiles.selectedProperty().addListener((observable, odValue, newValue) ->{
-			if(newValue) {
+		cbDeleteLocalFiles.selectedProperty().addListener((observable, odValue, newValue) -> {
+			if (newValue) {
 				cbDatabase.setSelected(false);
 				cbDatabase.setDisable(true);
 			}
@@ -81,7 +78,7 @@ public class MasterResetWindow {
 			}
 		});
 		button.setOnAction(e -> performReset(cbDeleteLocalFiles.isSelected(), cbDatabase.isSelected(), cbSettings.isSelected(), cbCredentials.isSelected(), cbLocalMetadata.isSelected(), cbGitHubMetadata.isSelected()));
-		ToolWindow toolWindow = new ToolWindow.Builder(vbox).title("Master Reset").size(width,height).addButton(button).setSceneId(sceneId).build();
+		ToolWindow toolWindow = new ToolWindow.Builder(vbox).title("Master Reset").size(width, height).addButton(button).setSceneId(sceneId).build();
 		toolWindow.showAndWait();
 	}
 
@@ -90,25 +87,24 @@ public class MasterResetWindow {
 				You have chosen to wipe out both the local metadata
 				AND the GitHub metadata. Doing this will DELETE the
 				following:
-				
+								
 				   - ALL of your categories.
 				   - All of your Gist custom names
-				   - All of your file descriptions 
+				   - All of your file descriptions
 				""";
-		CustomAlert.showInfo(message,SceneOne.getOwner(sceneId));
+		CustomAlert.showInfo(message, SceneOne.getOwner(sceneId));
 	}
 
 	private HBox centeredHBox(Node node) {
 		HBox hbox = new HBox(node);
-		hbox.setPadding(new Insets(10,10,10,10));
+		hbox.setPadding(new Insets(10, 10, 10, 10));
 		hbox.setAlignment(Pos.CENTER);
 		return hbox;
 	}
 
 	private void performReset(boolean deleteLocalFiles, boolean database, boolean appSettings, boolean credentials, boolean localMetadata, boolean gitHubMetadata) {
 		if (!deleteLocalFiles && !database && !appSettings && !credentials && !localMetadata && !gitHubMetadata) {
-			CustomAlert.showInfo("No changes will be made.", SceneOne.getOwner(sceneId));
-			SceneOne.close(sceneId);
+			showAlert("No changes will be made.", true);
 			System.exit(11);
 		}
 		StringBuilder options = new StringBuilder("You have chosen to perform the following actions:\n\n");
@@ -116,13 +112,13 @@ public class MasterResetWindow {
 		if (database) options.append("- Delete and re-create database\n\n");
 		if (appSettings) options.append("- Reset all app settings to default\n\n");
 		if (credentials) options.append("- Wipe out local credentials\n\n");
-		if (localMetadata && gitHubMetadata) options.append("- Wipe out ALL Metadata, which will DELETE:\n\t- ALL Categories\n\t- ALL Gist Names\n\t- ALL File Descriptions\n");
+		if (localMetadata && gitHubMetadata) {options.append("- Wipe out ALL Metadata, which will DELETE:\n\t- ALL Categories\n\t- ALL Gist Names\n\t- ALL File Descriptions\n");}
 		else {
 			if (localMetadata) options.append("- Wipe out the LOCAL copy of your metadata\n\twhich will DELETE the local version of:\n\t- Categories\n\t- Gist Names\n\t- File Descriptions\n");
 			if (gitHubMetadata) options.append("- Wipe out the GitHub stored copy of your metadata\n\twhich will DELETE GitHub version of:\n\t- Categories\n\t- Gist Names\n\t- File Descriptions\n");
 		}
 		options.append("\nAre you sure this is what you want to do?");
-		if (showAlert(options.toString())) {
+		if (showAlert(options.toString(), false)) {
 			if (deleteLocalFiles) Action.deleteLocalFiles();
 			if (database) Action.deleteDatabaseFile();
 			if (localMetadata) Action.deleteLocalMetaData(!database);
@@ -139,39 +135,44 @@ public class MasterResetWindow {
 		}
 	}
 
-	private void setAnchors(Node node, double left, double right, double top, double bottom) {
-		if (top != -1) AnchorPane.setTopAnchor(node, top);
-		if (bottom != -1) AnchorPane.setBottomAnchor(node, bottom);
-		if (left != -1) AnchorPane.setLeftAnchor(node, left);
-		if (right != -1) AnchorPane.setRightAnchor(node, right);
-	}
-
 	private boolean proceed = false;
-	private boolean showAlert(String message) {
+
+	private boolean showAlert(String message, boolean showNothing) {
 		TextArea taInfo = new TextArea(message);
-		Button btnNo = new Button("No");
-		Button btnYes = new Button("Yes");
+		Button   btnNo  = new Button("No");
+		Button   btnYes = new Button("Yes");
+		Button   btnOK  = new Button("Ok");
 		taInfo.setEditable(false);
-		btnYes.setOnAction(e->{
+		btnOK.setOnAction(e -> SceneOne.close(alertId));
+		btnYes.setOnAction(e -> {
 			proceed = true;
 			SceneOne.close(alertId);
 		});
-		btnNo.setOnAction(e->{
-			SceneOne.close(alertId);
-		});
+		btnNo.setOnAction(e -> SceneOne.close(alertId));
 		taInfo.setWrapText(true);
 		VBox vBox = new VBox(taInfo);
 		vBox.setAlignment(Pos.CENTER);
-		vBox.setPadding(new Insets(20,20,20,20));
+		vBox.setPadding(new Insets(20, 20, 20, 20));
 		SceneOne.close(sceneId);
-		ToolWindow toolWindow = new ToolWindow.Builder(vBox)
-				.alwaysOnTop()
-				.addButton(btnYes)
-				.addButton(btnNo)
-				.setSceneId(alertId)
-				.title("Are You Sure?")
-				.size(350,275)
-				.build();
+		ToolWindow toolWindow;
+		if (showNothing) {
+			toolWindow = new ToolWindow.Builder(vBox)
+					.alwaysOnTop()
+					.addButton(btnOK)
+					.setSceneId(alertId)
+					.size(205, 145)
+					.build();
+		}
+		else {
+			toolWindow = new ToolWindow.Builder(vBox)
+					.alwaysOnTop()
+					.addButton(btnYes)
+					.addButton(btnNo)
+					.setSceneId(alertId)
+					.title("Are You Sure?")
+					.size(350, 275)
+					.build();
+		}
 		toolWindow.showAndWait();
 		return proceed;
 	}
