@@ -168,10 +168,8 @@ public class UISettings {
 			choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
-				AppSettings.set().loginScreenChoice(choiceBox.getValue());
 				LiveSettings.applyAppSettings();
 			});
-			choiceBox.setValue(AppSettings.get().loginScreenChoice());
 			Tooltip.install(choiceBox, Action.newTooltip("Chose between the graphic login screen, or the JavaFX login screen."));
 			return newHBox(hBoxLeft(label), getSpacedHBoxRight(choiceBox, 3));
 		}
@@ -241,10 +239,8 @@ public class UISettings {
 			ChoiceBox<LoginScreenColor>      choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
-				AppSettings.set().loginScreenColor(choiceBox.getValue());
 				LiveSettings.applyAppSettings();
 			});
-			choiceBox.setValue(AppSettings.get().loginScreenColor());
 			choiceBox.visibleProperty().bind(LoginScreen.choiceBox.getSelectionModel().selectedIndexProperty().isEqualTo(1));
 			Tooltip.install(choiceBox, Action.newTooltip("""
 															When using the graphic login screen (default setting)

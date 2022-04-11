@@ -55,7 +55,6 @@ public class GistFile {
 
 	public void refreshGraphicNode() {
 		Platform.runLater(() -> {
-//			WindowManager.handleButtons();
 			graphicNode.set(getIcon());
 			if (!fileState.equals(lastFileState)) {
 				lastFileState = fileState;

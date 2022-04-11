@@ -405,6 +405,7 @@ public final class SceneOne {
 		private       boolean                        newStage               = false;
 		private Stage stage;
 		private Stage owner;
+		private boolean alwaysOnTop = false;
 
 		private void buildWatcher() {
 			new Thread(() -> {
@@ -420,6 +421,10 @@ public final class SceneOne {
 			}).start();
 		}
 
+		public SceneBuilder alwaysOnTop() {
+			this.alwaysOnTop = true;
+			return this;
+		}
 		public SceneBuilder modality(Modality modality) {
 			this.modality = modality;
 			return this;
@@ -545,6 +550,7 @@ public final class SceneOne {
 			buildExecuted = true;
 			stageMap.remove(sceneName);
 			stage = new Stage();
+			stage.setAlwaysOnTop(alwaysOnTop);
 			if(stageStyle != null) stage.initStyle(stageStyle);
 			if(modality != null) stage.initModality(modality);
 			stageMap.put(sceneName,new StageObject(stage));
@@ -847,6 +853,7 @@ public final class SceneOne {
 		private final Stage                          owner;
 		private double originalWidth = 0;
 		private double originalHeight= 0;
+		private boolean alwaysOnTop;
 
 		private final ChangeListener<Boolean> lostFocusListener = (observable, oldValue, newValue) -> {
 			if (!newValue) {
@@ -871,6 +878,7 @@ public final class SceneOne {
 			autoSize                = build.autoSize;
 			stage                   = build.stage;
 			owner                   = build.owner;
+			alwaysOnTop = build.alwaysOnTop;
 
 			if(owner != null) stage.initOwner(owner);
 			setRoot();

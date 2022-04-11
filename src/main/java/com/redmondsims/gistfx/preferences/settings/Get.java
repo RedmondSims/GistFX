@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx.preferences.settings;
 
+import com.redmondsims.gistfx.enums.LoginScreenColor;
 import com.redmondsims.gistfx.preferences.UISettings;
 import javafx.scene.paint.Color;
 
@@ -47,18 +48,9 @@ public class Get {
 		return UISettings.ProgressColorSource.get(choice);
 	}
 
-	public boolean customProgressColor() {
-		return prefs.getBoolean(LABEL.CUSTOM_PROGRESS_COLOR.Name(), false);
-	}
-
-	public UISettings.LoginScreen loginScreenChoice() {
-		String option = prefs.get(LABEL.LOGIN_SCREEN.Name(), UISettings.LoginScreen.GRAPHIC.Name());
-		return UISettings.LoginScreen.get(option);
-	}
-
-	public UISettings.LoginScreenColor loginScreenColor() {
-		String option = prefs.get(LABEL.LOGIN_SCREEN_COLOR.Name(), UISettings.LoginScreenColor.BLUE.Name());
-		return UISettings.LoginScreenColor.get(option);
+	public LoginScreenColor loginScreenColor() {
+		String option = prefs.get(LABEL.LOGIN_SCREEN_COLOR.Name(), LoginScreenColor.BLUE.Name());
+		return LoginScreenColor.get(option);
 	}
 
 	public boolean firstRun() {
@@ -153,4 +145,5 @@ public class Get {
 	public boolean showAppIcon() {
 		return prefs.getBoolean(LABEL.SHOW_APP_ICON.Name(), true);
 	}
+
 }

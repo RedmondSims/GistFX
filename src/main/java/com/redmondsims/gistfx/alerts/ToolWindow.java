@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -36,6 +37,8 @@ public class ToolWindow {
 	private final EventHandler<WindowEvent> onCloseHandler;
 	private final EventHandler<Event>       afterCloseEvent;
 	private       String                    response = "";
+	private final Modality initModality;
+	private boolean alwaysOnTop;
 
 	public static class Builder {
 
@@ -61,9 +64,22 @@ public class ToolWindow {
 		private       Stage                     stage;
 		private       EventHandler<WindowEvent> onCloseHandler;
 		private       EventHandler<Event>       afterCloseEvent;
+		private Modality initModality;
+		private boolean alwaysOnTop;
+
 
         public Builder attachToStage(Stage stage){
 			this.stage = stage;
+			return this;
+		}
+
+		public Builder alwaysOnTop() {
+			this.alwaysOnTop = true;
+			return this;
+		}
+
+		public Builder initModality(Modality initModality) {
+			this.initModality = initModality;
 			return this;
 		}
 
@@ -140,6 +156,8 @@ public class ToolWindow {
 		this.callingStage     = build.stage;
 		this.onCloseHandler   = build.onCloseHandler;
 		this.afterCloseEvent  = build.afterCloseEvent;
+		this.initModality = build.initModality;
+		this.alwaysOnTop = build.alwaysOnTop;
 		if (!this.noButtons) {
 			if(buttonList.size() == 0) {
 				Button closeButton = new Button(build.closeName);
@@ -165,6 +183,7 @@ public class ToolWindow {
 						.styleSheets(LiveSettings.getTheme().getStyleSheet())
 						.size(width,height)
 						.onCloseEvent(onCloseHandler)
+						.modality(initModality)
 						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
 						.showAndWait();
 			}
@@ -174,8 +193,10 @@ public class ToolWindow {
 						.title(title)
 						.styleSheets(LiveSettings.getTheme().getStyleSheet())
 						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
+						.modality(initModality)
 						.size(width,height)
 						.onCloseEvent(onCloseHandler)
+						.alwaysOnTop()
 						.showAndWait();
 			}
 			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());

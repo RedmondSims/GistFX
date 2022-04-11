@@ -33,25 +33,6 @@ public class WindowManager {
 		});
 	}
 
-	private static Timer buttonTimer;
-
-	public static void handleButtons() {
-		//Use of Timer prevents multiple rapid calls from executing the method more than once
-		if (buttonTimer != null) buttonTimer.cancel();
-		buttonTimer = new Timer();
-		buttonTimer.schedule(buttonTask(), 500);
-	}
-
-	private static TimerTask buttonTask() {
-		return new TimerTask() {
-			@Override public void run() {
-				if (gistWindow != null) {
-					gistWindow.handleButtonBar();
-				}
-			}
-		};
-	}
-
 	public static void deleteGist() {
 		if(gistWindow != null)
 		gistWindow.getActions().deleteGist(gistWindow.getGist());

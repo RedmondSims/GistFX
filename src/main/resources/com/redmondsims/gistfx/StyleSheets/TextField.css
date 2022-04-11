@@ -66,15 +66,12 @@
 .graphic {
     -fx-background-color: transparent;
     -fx-highlight-fill: rgba(0, 175, 155, 1);
-    /*-fx-highlight-text-fill: rgba(0,175,185,1);*/
     -fx-highlight-text-fill: rgba(0, 0, 0, 1);
     -fx-font-size: 11pt;
     -fx-font-family: "Courier New";
-    /*-fx-text-fill: rgba(0,175,185,.7);*/
     -fx-text-fill: ghostwhite;
     -fx-opacity: 1;
     -focus-color: transparent;
-    /*-fx-prompt-text-fill: rgba(0,125,115,1);*/
     -fx-prompt-text-fill: rgba(255, 255, 255, .2);
 }
 

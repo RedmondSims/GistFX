@@ -35,7 +35,7 @@ public class Main extends Application {
 		TrayIcon.start(primaryStage,AppSettings.get().runInSystray());
 		AppSettings.clear().fileMoveWarning();
 		LiveSettings.applyAppSettings();
-		String      color       = LiveSettings.getLoginColor();
+		String      color       = AppSettings.get().loginScreenColor().Name();
 		String      urlPath     = String.format(dockIconBase, color);
 		InputStream imageStream = Main.class.getResourceAsStream(urlPath);
 		try {

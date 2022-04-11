@@ -11,6 +11,10 @@
     -fx-font-size: .01em;
 }
 
+#InfoBox {
+    -fx-background-color: transparent;
+}
+
 .label {
     -fx-text-fill: lightgray;
 }
@@ -142,4 +146,158 @@
 .table-row-cell {
     -fx-border-color: transparent;
     -fx-table-cell-border-color: transparent;
+}
+
+.text-field {
+    -fx-background-color: transparent;
+    -fx-highlight-fill: rgba(0, 175, 155, 1);
+    -fx-highlight-text-fill: rgba(0, 0, 0, 1);
+    -fx-font-size: 11pt;
+    -fx-font-family: "Courier New";
+    -fx-text-fill: ghostwhite;
+    -fx-opacity: 1;
+    -focus-color: transparent;
+    -fx-prompt-text-fill: rgba(255, 255, 255, .2);
+}
+
+.text-field:readonly {
+    -fx-opacity: .8;
+}
+#login {
+    -fx-font-size: 15;
+}
+
+.text-area .scroll-bar:vertical,
+.text-area .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+
+/*******************************************************************************
+ *                                                                             *
+ * Text Areas                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+
+/*
+.text-area {
+    -fx-line-spacing: 10px;
+    -fx-font-family: Arial;
+    -fx-font-size: 12;
+    -fx-text-fill: rgb(255, 255, 255);
+    -fx-opacity: 1.0;
+    -fx-fill: ghostwhite;
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: ghostwhite;
+    -fx-border-color: transparent;
+    -fx-alignment: top-left;
+}
+*/
+
+#filedesc {
+    -fx-font-size: 13;
+    -fx-line-spacing: 10px;
+    -fx-font-family: "Arial";
+    -fx-text-fill: rgb(207, 207, 207);
+    -fx-opacity: 1.0;
+    -fx-fill: ghostwhite;
+    -fx-background-color: transparent;
+    -fx-prompt-text-fill: ghostwhite;
+    -fx-border-color: transparent;
+    -fx-alignment: top-left;
+}
+
+.text-area, .text-area {
+    -fx-background-color: transparent;
+    -fx-font-weight: BOLD;
+    -fx-prompt-text-fill: ghostwhite;
+    -fx-alignment: top-left;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+
+.text-area:disabled, .text-area:disabled > * {
+    -fx-font-weight: BOLD;
+    -fx-font-family: "Courier New";
+    -fx-font-size: 13;
+    -fx-text-fill: rgb(255, 255, 0);
+    -fx-opacity: 1.0;
+}
+
+.text-area .scroll-bar:horizontal,
+.text-area .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+.text-area .scroll-bar:horizontal .track,
+.text-area .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-opacity: 0;
+}
+
+.text-area .scroll-bar:horizontal .thumb,
+.text-area .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0, 0, 0;
+    -fx-background-radius: 0em;
+    -fx-opacity: 0;
+}
+
+
+.text-area .scroll-bar:horizontal:disabled {
+    -fx-opacity: 0;
+}
+
+.text-area.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+.text-area.scroll-pane .viewport {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+
+.text-area.scroll-pane .content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+.text-area.scroll-pane.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0;
+}
+
+#textAreaJack.text-area, .text-area.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-alignment: left;
+}
+
+#textAreaMike.text-area, .text-area.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-alignment: right;
 }

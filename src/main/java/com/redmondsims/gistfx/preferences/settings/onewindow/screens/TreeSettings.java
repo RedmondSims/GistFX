@@ -1,21 +1,18 @@
 package com.redmondsims.gistfx.preferences.settings.onewindow.screens;
 
-
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.ui.TreeIcons;
 import com.redmondsims.gistfx.utils.Resources;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 
@@ -25,35 +22,152 @@ import java.nio.file.Paths;
 
 public class TreeSettings {
 
-	public TreeSettings(double width) {
-		sceneWidth = width;
-	}
+	private Path startFolder;
 
-	private final double sceneWidth;
-	private Path         startFolder;
-
-	public VBox controls(Type type) {
+	public Tab contents (Type type) {
 
 		if (startFolder == null) startFolder = Paths.get(System.getProperty("user.home"));
 
-		ColorPicker colorPicker     = new ColorPicker(getCurrentColor(type));
-		String      thisType        = getTypeString(type);
-		CheckBox    cbUseCustomIcon = Utility.checkBoxLabelLeft("Use custom " + thisType + " Icon?");
-		Button      btnChoseFile    = new Button("Chose File");
-		ImageView   iconImage       = getImageView(type);
-		Label       lblColor        = new Label("Chose " + thisType + " Color");
-		Button      btnDefaultColor = new Button("Default Color");
-		Button      btnResetDefault = new Button("Reset To Default");
-		ColorPicker cpDirty         = new ColorPicker(AppSettings.get().dirtyFileFlagColor());
+		String            thisType           = getTypeString(type);
+		Tab               tab                = new Tab(type.nameCased());
+		GridPane          gridPane           = new GridPane();
+		ColumnConstraints columnConstraints  = new ColumnConstraints();
+		ColumnConstraints columnConstraints0 = new ColumnConstraints();
+		ColumnConstraints columnConstraints1 = new ColumnConstraints();
+		RowConstraints    rowConstraints     = new RowConstraints();
+		RowConstraints    rowConstraints0    = new RowConstraints();
+		RowConstraints    rowConstraints1    = new RowConstraints();
+		RowConstraints    rowConstraints2    = new RowConstraints();
+		ColorPicker       colorPicker        = new ColorPicker(getCurrentColor(type));
+		CheckBox          cbUseCustomIcon    = new CheckBox("Use custom " + thisType + " Icon?");
+		Button            btnChoseFile       = new Button("Chose File");
+		ImageView         iconImage          = getImageView(type);
+		Label             lblColor           = new Label("Chose " + thisType + " Color");
+		Button            btnDefaultColor    = new Button("Default Color");
+		Button            btnResetDefault    = new Button("Reset To Default");
+		ColorPicker       cpDirty            = new ColorPicker(AppSettings.get().dirtyFileFlagColor());
 
+
+		tab.setClosable(false);
+		tab.setText(type.nameCased());
+
+		columnConstraints.setHgrow(javafx.scene.layout.Priority.SOMETIMES);
+		columnConstraints.setMaxWidth(230.0);
+		columnConstraints.setMinWidth(230.0);
+		columnConstraints.setPrefWidth(230.0);
+
+		columnConstraints0.setHgrow(javafx.scene.layout.Priority.SOMETIMES);
+		columnConstraints0.setMaxWidth(125.0);
+		columnConstraints0.setMinWidth(125.0);
+		columnConstraints0.setPrefWidth(125.0);
+
+		columnConstraints1.setHgrow(javafx.scene.layout.Priority.SOMETIMES);
+		columnConstraints1.setMaxWidth(175.0);
+		columnConstraints1.setMinWidth(175.0);
+		columnConstraints1.setPrefWidth(175.0);
+
+		rowConstraints.setMaxHeight(30.0);
+		rowConstraints.setMinHeight(30.0);
+		rowConstraints.setPrefHeight(30.0);
+		rowConstraints.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
+
+		rowConstraints0.setMaxHeight(45.0);
+		rowConstraints0.setMinHeight(45.0);
+		rowConstraints0.setPrefHeight(45.0);
+		rowConstraints0.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
+
+		rowConstraints1.setMaxHeight(45.0);
+		rowConstraints1.setMinHeight(45.0);
+		rowConstraints1.setPrefHeight(45.0);
+		rowConstraints1.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
+
+		rowConstraints2.setMaxHeight(45.0);
+		rowConstraints2.setMinHeight(45.0);
+		rowConstraints2.setPrefHeight(45.0);
+		rowConstraints2.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
+
+		cbUseCustomIcon.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+		cbUseCustomIcon.setMnemonicParsing(false);
+		cbUseCustomIcon.setNodeOrientation(javafx.geometry.NodeOrientation.RIGHT_TO_LEFT);
+		cbUseCustomIcon.setPrefHeight(18.0);
+		cbUseCustomIcon.setPrefWidth(230.0);
+
+		GridPane.setMargin(cbUseCustomIcon, new Insets(35.0, 5.0, 30.0, 0.0));
+		GridPane.setMargin(btnChoseFile, new Insets(35.0, 5.0, 30.0, 0.0));
+		GridPane.setColumnIndex(btnChoseFile, 1);
+		GridPane.setHalignment(btnChoseFile, javafx.geometry.HPos.CENTER);
+		btnChoseFile.setMnemonicParsing(false);
+		btnChoseFile.setPrefHeight(26.0);
+		btnChoseFile.setPrefWidth(110.0);
+
+		GridPane.setMargin(iconImage, new Insets(35.0, 5.0, 30.0, 0.0));
+		GridPane.setColumnIndex(iconImage, 2);
+		GridPane.setHalignment(iconImage, HPos.LEFT);
+		GridPane.setValignment(iconImage, javafx.geometry.VPos.CENTER);
 		iconImage.setPreserveRatio(true);
-		iconImage.setFitWidth(28);
-		lblColor.setAlignment(Pos.CENTER_RIGHT);
+		iconImage.setFitWidth(25.0);
+		iconImage.setPickOnBounds(true);
 
-		//Row HBoxes
-		HBox boxRow1 = Utility.newHBox(5, 10, Pos.CENTER_LEFT, cbUseCustomIcon, btnChoseFile, iconImage);
-		HBox boxRow2 = Utility.newHBox(5, 10, Pos.CENTER_LEFT, lblColor, Utility.getSpacedHBoxRight(colorPicker,14), btnDefaultColor);
-		HBox boxRow4 = Utility.getCenteredHBox(0,10, btnResetDefault);
+		GridPane.setHalignment(lblColor, javafx.geometry.HPos.RIGHT);
+		GridPane.setRowIndex(lblColor, 1);
+		GridPane.setMargin(lblColor, new Insets(0.0, 15.0, 0.0, 0.0));
+
+		GridPane.setColumnIndex(colorPicker, 1);
+		GridPane.setHalignment(colorPicker, javafx.geometry.HPos.CENTER);
+		GridPane.setRowIndex(colorPicker, 1);
+		GridPane.setValignment(colorPicker, javafx.geometry.VPos.CENTER);
+		colorPicker.setPrefHeight(26.0);
+		colorPicker.setPrefWidth(110.0);
+
+		GridPane.setColumnIndex(btnResetDefault, 1);
+		GridPane.setHalignment(btnResetDefault, javafx.geometry.HPos.CENTER);
+		GridPane.setRowIndex(btnResetDefault, 3);
+		btnResetDefault.setMnemonicParsing(false);
+		btnResetDefault.setPrefHeight(26.0);
+		btnResetDefault.setPrefWidth(110.0);
+
+		GridPane.setColumnIndex(btnDefaultColor, 2);
+		GridPane.setHalignment(btnDefaultColor, javafx.geometry.HPos.LEFT);
+		GridPane.setRowIndex(btnDefaultColor, 1);
+		btnDefaultColor.setMnemonicParsing(false);
+		btnDefaultColor.setPrefHeight(26.0);
+		btnDefaultColor.setPrefWidth(110.0);
+
+		if (type.equals(Type.FILE)) {
+			Label lblCP2 = new Label("Dirty File Flag Color");
+			GridPane.setHalignment(lblCP2, javafx.geometry.HPos.RIGHT);
+			GridPane.setRowIndex(lblCP2, 2);
+			GridPane.setMargin(lblCP2, new Insets(0.0, 15.0, 0.0, 0.0));
+			GridPane.setColumnIndex(cpDirty, 1);
+			GridPane.setHalignment(cpDirty, javafx.geometry.HPos.CENTER);
+			GridPane.setRowIndex(cpDirty, 2);
+			gridPane.getChildren().add(lblCP2);
+			gridPane.getChildren().add(cpDirty);
+			cpDirty.setPrefHeight(26.0);
+			cpDirty.setPrefWidth(110.0);
+			cpDirty.setOnAction(e -> {
+				AppSettings.set().dirtyFileFlagColor(cpDirty.getValue());
+				WindowManager.refreshTreeIcons();
+			});
+		}
+
+		tab.setContent(gridPane);
+
+		gridPane.getColumnConstraints().add(columnConstraints);
+		gridPane.getColumnConstraints().add(columnConstraints0);
+		gridPane.getColumnConstraints().add(columnConstraints1);
+		gridPane.getRowConstraints().add(rowConstraints);
+		gridPane.getRowConstraints().add(rowConstraints0);
+		gridPane.getRowConstraints().add(rowConstraints1);
+		gridPane.getRowConstraints().add(rowConstraints2);
+		gridPane.getChildren().add(cbUseCustomIcon);
+		gridPane.getChildren().add(btnChoseFile);
+		gridPane.getChildren().add(iconImage);
+		gridPane.getChildren().add(lblColor);
+		gridPane.getChildren().add(colorPicker);
+		gridPane.getChildren().add(btnResetDefault);
+		gridPane.getChildren().add(btnDefaultColor);
+
 
 		lblColor.visibleProperty().bind(cbUseCustomIcon.selectedProperty().not());
 		btnDefaultColor.visibleProperty().bind(cbUseCustomIcon.selectedProperty().not());
@@ -99,23 +213,7 @@ public class TreeSettings {
 			}
 			WindowManager.refreshTreeIcons();
 		});
-
-
-		VBox vbox = new VBox(-5, boxRow1, boxRow2);
-		if(type.equals(Type.FILE)) {
-			Label lblDirty = new Label("Dirty File Flag Color");
-			cpDirty.setOnAction(e -> {
-				AppSettings.set().dirtyFileFlagColor(cpDirty.getValue());
-				WindowManager.refreshTreeIcons();
-			});
-			cpDirty.setMinHeight(25);
-			cpDirty.setPrefWidth(100);
-			HBox boxRow3 = Utility.newHBox(0,5, Pos.CENTER_LEFT,lblDirty,Utility.getSpacedHBoxRight(cpDirty,-10));
-			vbox.getChildren().add(boxRow3);
-			vbox.setPadding(new Insets(3,3,3,25));
-		}
-		vbox.getChildren().add(boxRow4);
-		return vbox;
+		return tab;
 	}
 
 	private boolean useCustomIcon(Type type) {
@@ -223,6 +321,7 @@ public class TreeSettings {
 		}
 	}
 
+
 	private String getTypeString(Type type) {
 		return switch(type) {
 			case CATEGORY -> "Category Folder";
@@ -231,4 +330,5 @@ public class TreeSettings {
 			default -> "";
 		};
 	}
+
 }

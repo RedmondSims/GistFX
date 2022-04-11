@@ -3,7 +3,7 @@ package com.redmondsims.gistfx.preferences.settings.onewindow;
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.settings.onewindow.screens.GuiElements;
-import com.redmondsims.gistfx.preferences.settings.onewindow.screens.TreeTest;
+import com.redmondsims.gistfx.preferences.settings.onewindow.screens.TreeSettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.utils.Resources;
 import javafx.scene.control.Tab;
@@ -27,10 +27,10 @@ public class SettingsWindow {
 				.build();
 	}
 
-	private final TreeTest treeSettingsCategory = new TreeTest();
-	private final TreeTest treeSettingsGist     = new TreeTest();
-	private final TreeTest treeSettingsFile     = new TreeTest();
-	private final double   width                = 550;
+	private final TreeSettings treeSettingsCategory = new TreeSettings();
+	private final TreeSettings treeSettingsGist     = new TreeSettings();
+	private final TreeSettings treeSettingsFile     = new TreeSettings();
+	private final double       width                = 550;
 	private final String   sceneId              = "SettingWindow";
 	private final Tab      tabGUI               = new Tab("GUI");
 	private final Tab      tabTree              = new Tab("Tree");

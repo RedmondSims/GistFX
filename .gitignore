@@ -2,6 +2,9 @@
 /target/
 .idea
 *.iml
+*.DS_Store
+.DS_Store
 GistFX Access Token
 /src/main/resources/com/redmondsims/gistfx/FXML/
 /src/main/resources/com/redmondsims/gistfx/DevGraphics/untitled folder/
+.java-version

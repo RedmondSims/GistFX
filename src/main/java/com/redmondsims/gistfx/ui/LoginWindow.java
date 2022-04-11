@@ -2,32 +2,27 @@ package com.redmondsims.gistfx.ui;
 
 import com.redmondsims.gistfx.Launcher;
 import com.redmondsims.gistfx.alerts.CustomAlert;
-import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.LoginStates;
+import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.javafx.CProgressBar;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings.LoginScreen;
+import com.redmondsims.gistfx.enums.LoginScreenColor;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import javafx.stage.StageStyle;
 
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -57,11 +52,8 @@ public class LoginWindow {
 
 	static final         TextArea       taInfo               = new TextArea();
 	private static final Label          lblProgress          = new Label(" ");
-	private static final Label          lblLoggedIn          = new Label(" ");
 	private final        StringProperty userPassword         = new SimpleStringProperty("");
 	private final        StringProperty userToken            = new SimpleStringProperty("");
-	private final        StringProperty userMessage          = new SimpleStringProperty("");
-	private final        URL            questionMarkIconPath = Objects.requireNonNull(Launcher.class.getResource("HelpFiles/QuestionMarkIcon.png"));
 	private final        TextField      tfToken;
 	private final        PasswordField  tfPassword;
 	private final        Button         buttonLogin;
@@ -70,11 +62,6 @@ public class LoginWindow {
 	private              boolean        passwordValid        = false;
 	private              boolean        fadeKitty            = true;
 	private              CProgressBar   pBar;
-	private              HBox           hboxToken;
-	private              HBox           hboxPassword;
-	private              HBox           hboxBottom;
-	private              HBox           hboxBlank;
-	private              HBox           hboxPBar;
 	private static final String         sceneId              = "LoginScreen";
 	private              String         hashedPassword;
 	private              String         hashedAccessToken;
@@ -90,12 +77,10 @@ public class LoginWindow {
 	private boolean hasTypedToken;
 	private boolean hasTypedPassword;
 
-
-
 	public LoginWindow() {
-		String styleClass = LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD) ? "standard" : "graphic";
-		tfToken         = newTextField(styleClass);
-		tfPassword      = newPasswordField("GistFX Password", styleClass);
+		LiveSettings.applyAppSettings();
+		tfToken         = newTextField();
+		tfPassword      = newPasswordField("GistFX Password");
 		buttonLogin     = new Button("Login to GitHub");
 		preCheck();
 		startLoginForm();
@@ -103,42 +88,29 @@ public class LoginWindow {
 
 	private void startLoginForm() {
 		taInfo.setDisable(true);
-		taInfo.textProperty().addListener((observable, oldValue, newValue) -> {
-			taInfo.setScrollTop(Double.MAX_VALUE);
-		});
-		assert LiveSettings.getLoginScreen() != null;
+		taInfo.textProperty().addListener((observable, oldValue, newValue) -> taInfo.setScrollTop(Double.MAX_VALUE));
 		tfToken.setId("login");
 		tfPassword.setText("");
 		setControlProperties();
 		if (AppSettings.get().firstRun()) {
 			Help.showIntro();
 		}
-		if (LiveSettings.getLoginScreen().equals(LoginScreen.STANDARD)) {
-			LiveSettings.setTheme(AppSettings.get().theme());
-			guiLogin();
-		}
-		else {
-			LiveSettings.setTheme(Theme.DARK);
-			graphicLogin();
-		}
+		LiveSettings.setTheme(Theme.DARK);
+		loginForm();
 		tfPassword.setText(LiveSettings.getPassword());
 		if(tfPassword.getText().length() > 4) userLogin();
 	}
 
-	private static TextField newTextField(String styleClass) {
+	private static TextField newTextField() {
 		TextField tf = new TextField("");
 		tf.setPromptText("GitHub Token");
-		tf.getStylesheets().add(Theme.TEXT_FIELD.getStyleSheet());
-		tf.getStyleClass().add(styleClass);
 		Tooltip.install(tf, Action.newTooltip("Enter required information then press Enter"));
 		return tf;
 	}
 
-	private static PasswordField newPasswordField(String prompt, String styleClass) {
+	private static PasswordField newPasswordField(String prompt) {
 		PasswordField pf = new PasswordField();
 		pf.setPromptText(prompt);
-		pf.getStylesheets().add(Theme.TEXT_FIELD.getStyleSheet());
-		pf.getStyleClass().add(styleClass);
 		Tooltip.install(pf, new Tooltip("Enter required information then press Enter"));
 		return pf;
 	}
@@ -151,9 +123,7 @@ public class LoginWindow {
 		}
 		taInfo.appendText(message + "\n");
 		final String msg = message;
-		Platform.runLater(() -> {
-			lblProgress.setText(msg);
-		});
+		Platform.runLater(() -> lblProgress.setText(msg));
 	}
 
 	public static void updateProgress(String info, boolean sameLine) {
@@ -183,50 +153,6 @@ public class LoginWindow {
 		tfPassword.setPromptText("GistFX Password");
 	}
 
-	private HBox newHBox(Node... nodes) {
-		HBox hbox = new HBox(nodes);
-		hbox.setSpacing(5);
-		hbox.setAlignment(Pos.CENTER);
-		hbox.setPadding(new Insets(10, 10, 10, 10));
-		return hbox;
-	}
-
-	private void guiLogin() {
-		pBar = Action.getProgressNode(13, Color.BLACK);
-		boolean darkTheme = LiveSettings.getTheme().equals(Theme.DARK);
-		Label   blank1    = new Label(" ");
-		Label   blank2    = new Label(" ");
-		blank1.setPrefWidth(145);
-		blank2.setPrefWidth(150);
-		blank2.setMinHeight(26);
-		Image     imageQMark = new Image(questionMarkIconPath.toExternalForm());
-		ImageView ivQMark    = new ImageView(imageQMark);
-		ivQMark.setPreserveRatio(true);
-		ivQMark.setFitWidth(40);
-		ivQMark.setOnMouseClicked(e -> Help.showCreateTokenHelp());
-		Label lblToken    = new Label("GitHub Access Token:");
-		Label lblPassword = new Label("GistFX Login Password:");
-		lblToken.setMinWidth(135);
-		lblPassword.setMinWidth(135);
-		lblToken.setAlignment(Pos.CENTER_RIGHT);
-		lblPassword.setAlignment(Pos.CENTER_RIGHT);
-		lblLoggedIn.setMinWidth(150);
-		lblLoggedIn.setAlignment(Pos.CENTER_LEFT);
-		lblProgress.setMinWidth(150);
-		lblProgress.setAlignment(Pos.CENTER_LEFT);
-		if (darkTheme) {lblLoggedIn.setStyle("-fx-text-fill: lightgreen");}
-		else {lblLoggedIn.setStyle("-fx-text-fill: green");}
-		hboxToken    = newHBox(lblToken, tfToken);
-		hboxPassword = newHBox(lblPassword, tfPassword);
-		hboxBlank    = newHBox(blank2);
-		hboxBottom   = newHBox(lblLoggedIn, lblProgress);
-		hboxBottom.setAlignment(Pos.CENTER_LEFT);
-		pBar.setMinWidth(330);
-		hboxPBar = newHBox(pBar);
-		hboxPBar.setPadding(new Insets(10, 20, 10, 20));
-		SceneOne.show(sceneId);
-	}
-
 	private void resetToken() {
 		if(CustomAlert.showConfirmation("Reset Token","Are you sure you wish to reset your token?\n\n(No locally saved data will be changed)")) {
 			AppSettings.clear().hashedToken();
@@ -241,14 +167,14 @@ public class LoginWindow {
 		}
 	}
 
-	private void graphicLogin() {
+	private void loginForm() {
 		pBar = Action.getProgressNode(13);
 		ap.setStyle("-fx-background-color: black");
 		String    background       = "Artwork/%s/LoginForm/Background/BackMain.png";
 		String    questionBase     = "Artwork/%s/LoginForm/QuestionMark.png";
 		String    resetTokenBase   = "Artwork/%s/LoginForm/ResetToken.png";
 		String    kittyKittyBase   = "Artwork/%s/LoginForm/KittyKitty.png";
-		String      colorOption  = LiveSettings.getLoginScreenColor().folderName(LiveSettings.getLoginScreenColor());
+		String      colorOption    = AppSettings.get().loginScreenColor().Name();
 		InputStream pathBack       = Objects.requireNonNull(Launcher.class.getResourceAsStream(String.format(background, colorOption)));
 		InputStream rtPath         = Objects.requireNonNull(Launcher.class.getResourceAsStream(String.format(resetTokenBase, colorOption)));
 		InputStream qmPath         = Objects.requireNonNull(Launcher.class.getResourceAsStream(String.format(questionBase, colorOption)));
@@ -287,7 +213,6 @@ public class LoginWindow {
 		addAPNode(pBar, 20, 20, -1, 118);
 		addAPNode(ivReset, 0, 0, 0, 0);
 
-		taInfo.getStylesheets().add(Theme.TEXT_AREA.getStyleSheet());
 		tfToken.setMinHeight(40);
 		tfToken.setMinWidth(400);
 		tfPassword.setMinHeight(40);
@@ -301,6 +226,7 @@ public class LoginWindow {
 				.initStyle(StageStyle.TRANSPARENT)
 				.size(700,323)
 				.onCloseEvent(e -> System.exit(0))
+				.styleSheets(LiveSettings.getTheme().getStyleSheet())
 				.show();
 		fadeKitty(ivKittyKitty);
 		if(noHashedToken) tfToken.requestFocus();
@@ -367,19 +293,13 @@ public class LoginWindow {
 	private LoginStates checkToken(String token) {
 		LoginStates ts = Action.tokenValid(token);
 		if (ts.equals(TOKEN_VALID)) {
-			Platform.runLater(() -> {
-				updateProgress("Token Valid");
-			});
+			Platform.runLater(() -> updateProgress("Token Valid"));
 		}
 		if (ts.equals(TOKEN_FAILURE)) {
-			Platform.runLater(() -> {
-				updateProgress("\nToken NOT Valid");
-			});
+			Platform.runLater(() -> updateProgress("\nToken NOT Valid"));
 		}
 		if (ts.equals(INTERNET_DOWN)) {
-			Platform.runLater(() -> {
-				updateProgress("\nCannot Reach GitHub - Internet Down?");
-			});
+			Platform.runLater(() -> updateProgress("\nCannot Reach GitHub - Internet Down?"));
 		}
 		else {
 			tfPassword.setDisable(false);
@@ -542,14 +462,15 @@ public class LoginWindow {
 		}
 		else {
 			if(LiveSettings.getDataSource().equals(LOCAL)) {
-				Platform.runLater(() -> {
-					updateProgress("Loading local Gist data and creating window");
-				});
+				Platform.runLater(() -> updateProgress("Loading local Gist data and creating window"));
 			}
 			Action.loadWindow();
 			Platform.runLater(() -> pBar.progressProperty().unbind());
 		}
 		Platform.runLater(() -> SceneOne.hide(sceneId));
+		LiveSettings.setTheme(AppSettings.get().theme());
 		stopFadeKitty();
 	}
+
+
 }

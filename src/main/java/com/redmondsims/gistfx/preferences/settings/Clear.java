@@ -9,8 +9,6 @@ public class Clear {
 
 	public void dataSource() {prefs.remove(LABEL.DATA_SOURCE.Name());}
 
-	public void logonScreenChoice()       {prefs.remove(LABEL.LOGIN_SCREEN.Name());}
-
 	public void logonScreenColor()        {prefs.remove(LABEL.LOGIN_SCREEN_COLOR.Name());}
 
 	public void progressColorSource()     {prefs.remove(LABEL.PROGRESS_COLOR_SOURCE.Name());}
@@ -18,10 +16,6 @@ public class Clear {
 	public void progressBarColor()        {prefs.remove(LABEL.PROGRESS_BAR_COLOR.Name());}
 
 	public void progressBarStyle()        {prefs.remove(LABEL.PROGRESS_BAR_STYLE.Name());}
-
-	public void customProgressColor()	{
-		prefs.remove(LABEL.CUSTOM_PROGRESS_COLOR.Name());
-	}
 
 	public void hashedPassword() {prefs.remove(LABEL.PASSWORD_HASH.Name());}
 
@@ -76,7 +70,6 @@ public class Clear {
 	public void systrayColor()   {prefs.remove(LABEL.SYSTRAY_COLOR.name());}
 
 	public void showAppIcon()   {prefs.remove(LABEL.SHOW_APP_ICON.name());}
-
 
 
 	/**

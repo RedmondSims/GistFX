@@ -12,6 +12,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -23,6 +25,7 @@ public class MasterResetWindow {
 	 */
 
 	private final String sceneId = "MasterReset";
+	private final String alertId = "MasterAlert";
 
 	public MasterResetWindow () {
 		startWindow();
@@ -119,7 +122,7 @@ public class MasterResetWindow {
 			if (gitHubMetadata) options.append("- Wipe out the GitHub stored copy of your metadata\n\twhich will DELETE GitHub version of:\n\t- Categories\n\t- Gist Names\n\t- File Descriptions\n");
 		}
 		options.append("\nAre you sure this is what you want to do?");
-		if (CustomAlert.showConfirmation(options.toString())) {
+		if (showAlert(options.toString())) {
 			if (deleteLocalFiles) Action.deleteLocalFiles();
 			if (database) Action.deleteDatabaseFile();
 			if (localMetadata) Action.deleteLocalMetaData(!database);
@@ -134,6 +137,43 @@ public class MasterResetWindow {
 			CustomAlert.showInfo("No changes will be made.", SceneOne.getOwner(sceneId));
 			System.exit(11);
 		}
+	}
+
+	private void setAnchors(Node node, double left, double right, double top, double bottom) {
+		if (top != -1) AnchorPane.setTopAnchor(node, top);
+		if (bottom != -1) AnchorPane.setBottomAnchor(node, bottom);
+		if (left != -1) AnchorPane.setLeftAnchor(node, left);
+		if (right != -1) AnchorPane.setRightAnchor(node, right);
+	}
+
+	private boolean proceed = false;
+	private boolean showAlert(String message) {
+		TextArea taInfo = new TextArea(message);
+		Button btnNo = new Button("No");
+		Button btnYes = new Button("Yes");
+		taInfo.setEditable(false);
+		btnYes.setOnAction(e->{
+			proceed = true;
+			SceneOne.close(alertId);
+		});
+		btnNo.setOnAction(e->{
+			SceneOne.close(alertId);
+		});
+		taInfo.setWrapText(true);
+		VBox vBox = new VBox(taInfo);
+		vBox.setAlignment(Pos.CENTER);
+		vBox.setPadding(new Insets(20,20,20,20));
+		SceneOne.close(sceneId);
+		ToolWindow toolWindow = new ToolWindow.Builder(vBox)
+				.alwaysOnTop()
+				.addButton(btnYes)
+				.addButton(btnNo)
+				.setSceneId(alertId)
+				.title("Are You Sure?")
+				.size(350,275)
+				.build();
+		toolWindow.showAndWait();
+		return proceed;
 	}
 
 	private String getMessage() {

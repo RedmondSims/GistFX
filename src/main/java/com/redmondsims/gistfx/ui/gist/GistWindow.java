@@ -1,20 +1,21 @@
 package com.redmondsims.gistfx.ui.gist;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.redmondsims.gistfx.Launcher;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.Languages;
 import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.enums.*;
+import com.redmondsims.gistfx.enums.Response;
+import com.redmondsims.gistfx.enums.Source;
+import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.networking.Transport;
-import com.redmondsims.gistfx.preferences.*;
+import com.redmondsims.gistfx.preferences.AppSettings;
+import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.preferences.settings.onewindow.SettingsWindow;
 import com.redmondsims.gistfx.sceneone.SceneOne;
@@ -39,7 +40,6 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
@@ -61,8 +61,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.*;
 
 import static com.redmondsims.gistfx.enums.TreeType.*;
 import static com.redmondsims.gistfx.ui.gist.GistWindow.TBStatus.*;
@@ -76,59 +77,57 @@ public class GistWindow {
 		NOSTATE
 	}
 
-	private TBStatus toolbarStatus     = HIDDEN;
-	private TBStatus lastToolbarStatus = NOSTATE;
+	private              TBStatus           toolbarStatus         = HIDDEN;
+	private              TBStatus           lastToolbarStatus     = NOSTATE;
+	private static final Response           PROCEED               = Response.PROCEED;
+	private final        CheckBox           publicCheckBox        = new CheckBox("");
+	private final        Label              lblCheckBox           = new Label("Public");
+	private final        Label              lblGistDescription    = new Label();
+	private final        Label              lblDescriptionLabel   = new Label("Description:");
+	private final        Label              lblGistNameLabel      = new Label("  Gist Name:");
+	private final        Label              lblGitUpdate          = new Label("Updating GitHub");
+	private final        Label              lblGistName           = new Label();
+	private final        Button             buttonSaveFile        = new Button("Upload File");
+	private final        Button             buttonCopyToClipboard = new Button("Clipboard");
+	private final        Button             buttonPasteFromClip   = new Button("Paste");
+	private final        Button             buttonUndo            = new Button("Undo");
+	private final        Button             buttonCompare         = new Button("Resolve Conflict");
+	private final        Button             buttonWideMode        = new Button("Wide Mode");
+	private final        Button             buttonFullScreen      = new Button("Full Screen");
+	private final        Button             buttonDistraction     = new Button("Distraction Free");
+	private final        Button             buttonEditCategories  = new Button("Edit Categories");
+	private final        MyMenuBar          menuBar               = new MyMenuBar();
+	private final        AnchorPane         ap                    = new AnchorPane();
+	private final        AnchorPane         apPane                = new AnchorPane();
+	private final        TextArea           taFileDescription     = new TextArea();
+	private final        ProgressBar        pBar                  = Action.getProgressNode(10);
+	private final        CBooleanProperty   paneExpanded          = new CBooleanProperty(false);
+	public final         CBooleanProperty   inWideMode            = new CBooleanProperty(false);
+	private final        CBooleanProperty   savingData            = new CBooleanProperty(false);
+	public final         CBooleanProperty   inFullScreen          = new CBooleanProperty(false);
+	private final        CBooleanProperty   windowResizing        = new CBooleanProperty(false);
+	private final        Transport          transport             = new Transport();
+	private              TreeItem<TreeNode> treeRoot;
+	private              gistWindowActions  actions;
+	private              TreeActions        treeActions;
+	private              GistFile           file;
+	private              Gist               gist;
+	private              String             gistURL               = "";
+	private              TreeView<TreeNode> treeView;
+	private final        String             sceneId               = Resources.getSceneIdGistWindow();
+	private final        KeyCodeCombination kcCodeMac             = new KeyCodeCombination(KeyCode.C, KeyCombination.META_DOWN);
+	private final        KeyCodeCombination kcCodeOther           = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
+	private final        ToolBars           toolBars              = new ToolBars(this);
+	private              HBox               toolbarAnchored       = getToolBar();
+	private              HBox               toolBarDetached;
+	private              SplitPane          splitPane;
+	private              ToolWindow         toolbarWindow;
+	private final        String             toolbarSceneId        = "ToolBars";
+	private final        MenuItem           miToggleWideMode      = new MenuItem("Toggle Wide Mode");
+	private final        MenuItem           miToggleFullScreen    = new MenuItem("Enter Fullscreen");
+	private final        MenuItem           miToggleToolbarState  = new MenuItem("Detach Toolbar");
+	private              MenuItem           miShowHideToolbar;
 
-	private static final Response PROCEED             = Response.PROCEED;
-	private final        CheckBox publicCheckBox      = new CheckBox("");
-	private final        Label    lblCheckBox         = new Label("Public");
-	private final        Label    lblGistDescription  = new Label();
-	private final        Label    lblDescriptionLabel = new Label("Description:");
-	private final        Label    lblGistNameLabel    = new Label("  Gist Name:");
-	private final        Label    lblGitUpdate        = new Label("Updating GitHub");
-	private final        Label    lblGistName         = new Label();
-
-	private final Button             buttonSaveFile        = new Button("Upload File");
-	private final Button             buttonCopyToClipboard = new Button("Clipboard");
-	private final Button             buttonPasteFromClip   = new Button("Paste");
-	private final Button             buttonUndo            = new Button("Undo");
-	private final Button             buttonCompare         = new Button("Resolve Conflict");
-	private final Button             buttonWideMode        = new Button("Wide Mode");
-	private final Button             buttonFullScreen      = new Button("Full Screen");
-	private final Button             buttonDistraction     = new Button("Distraction Free");
-	private final Button             buttonEditCategories  = new Button("Edit Categories");
-	//private final        ButtonBar          showToolBar             = new ButtonBar();
-	private final MyMenuBar          menuBar               = new MyMenuBar();
-	private final AnchorPane         ap                    = new AnchorPane();
-	private final AnchorPane         apPane                = new AnchorPane();
-	private final TextArea           taFileDescription     = new TextArea();
-	private final ProgressBar        pBar                  = Action.getProgressNode(10);
-	private       TreeType           buttonBarType         = GIST;
-	private final CBooleanProperty   paneExpanded          = new CBooleanProperty(false);
-	public final  CBooleanProperty   inWideMode            = new CBooleanProperty(false);
-	private final CBooleanProperty   savingData            = new CBooleanProperty(false);
-	public final  CBooleanProperty   inFullScreen          = new CBooleanProperty(false);
-	private final CBooleanProperty   windowResizing        = new CBooleanProperty(false);
-	private final CBooleanProperty   recordExpanded        = new CBooleanProperty(false);
-	private final CBooleanProperty   recordSplit           = new CBooleanProperty(false);
-	//private final CBooleanProperty   showToolBar           = new CBooleanProperty(false);
-	//private final CBooleanProperty   detachToolbar         = new CBooleanProperty(false);
-	private final Transport          transport             = new Transport();
-	private       TreeItem<TreeNode> treeRoot;
-	private       gistWindowActions  actions;
-	private       TreeActions        treeActions;
-	private       GistFile           file;
-	private       Gist               gist;
-	private       String             gistURL               = "";
-	private       TreeView<TreeNode> treeView;
-	private final String             sceneId               = Resources.getSceneIdGistWindow();
-	private final Gson               gson                  = new GsonBuilder().setPrettyPrinting().create();
-	private       Timer              resizeTimer;
-	private final KeyCodeCombination kcCodeMac             = new KeyCodeCombination(KeyCode.C, KeyCombination.META_DOWN);
-	private final KeyCodeCombination kcCodeOther           = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
-	private final ToolBars toolBars        = new ToolBars(this);
-	private       HBox     toolbarAnchored = getToolBar();
-	private       HBox     toolBarDetached;
 
 
 	private void setAnchors(Node node, double left, double right, double top, double bottom) {
@@ -136,6 +135,16 @@ public class GistWindow {
 		if (bottom != -1) AnchorPane.setBottomAnchor(node, bottom);
 		if (left != -1) AnchorPane.setLeftAnchor(node, left);
 		if (right != -1) AnchorPane.setRightAnchor(node, right);
+	}
+
+	private void addMainNode(Node node, double left, double right, double top, double bottom) {
+		ap.getChildren().add(node);
+		setAnchors(node, left, right, top, bottom);
+	}
+
+	private void addPaneNode(Node node, double left, double right, double top, double bottom) {
+		apPane.getChildren().add(node);
+		setAnchors(node, left, right, top, bottom);
 	}
 
 	/**
@@ -150,8 +159,6 @@ public class GistWindow {
 		setControlLayoutProperties();
 		setControlActionProperties();
 		addMenuBarItems();
-		buttonBarType = CATEGORY;
-		handleButtonBar();
 		createScene();
 		actions     = new gistWindowActions(SceneOne.getStage(sceneId), SceneOne.getWindow(sceneId), this);
 		treeActions = new TreeActions(this);
@@ -222,14 +229,13 @@ public class GistWindow {
 		window.fireEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSE_REQUEST));
 	}
 
-	private SplitPane splitPane;
 	private void placeControlsOnPane() {
 		menuBar.addMenuBar();
 		addMainNode(menuBar, 0, 0, 0, -1);
 		setAnchors(menuBar, 0, 0, 0, -1);
 		addMainNode(lblGistNameLabel, 20, -1, 35, -1);
 		addMainNode(lblGistName, 105, 250, 35, -1);
-		addMainNode(lblCheckBox, -1, 15, 77, -1);
+		addMainNode(lblCheckBox, -1, 15, 34, -1);
 		addMainNode(lblGitUpdate, -1, 15, 55, -1);
 		addMainNode(lblDescriptionLabel, 20, -1, 55, -1);
 		addMainNode(lblGistDescription, 105, 20, 55, -1);
@@ -244,22 +250,8 @@ public class GistWindow {
 		SplitPane.setResizableWithParent(apPane, true);
 		configurePaneSplitting();
 		toolbarAnchored.setVisible(AppSettings.get().showToolBar());
-/*
-		showToolBar.setPrefHeight(25);
-		showToolBar.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-*/
 		lblDescriptionLabel.setPrefWidth(70);
 		miShowHideToolbar    = new MenuItem( toolbarStatus.equals(HIDDEN) ? "Show Toolbar" : "Hide Toolbar");
-	}
-
-	private void addMainNode(Node node, double left, double right, double top, double bottom) {
-		ap.getChildren().add(node);
-		setAnchors(node, left, right, top, bottom);
-	}
-
-	private void addPaneNode(Node node, double left, double right, double top, double bottom) {
-		apPane.getChildren().add(node);
-		setAnchors(node, left, right, top, bottom);
 	}
 
 	private void configurePaneSplitting() {
@@ -356,7 +348,6 @@ public class GistWindow {
 					new Thread(() -> {
 						Platform.runLater(() -> SceneOne.setFullScreen(sceneId, newValue));
 						miToggleFullScreen.setText(inFullScreen.isTrue() ? "Exit Fullscreen" : "Enter Fullscreen");
-						handleButtonBar();
 						while (windowResizing.isTrue()) Action.sleep(50);
 						if (leavingFullscreen) {
 							SceneOne.toggleWideMode(sceneId, inWideMode.getValue());
@@ -393,10 +384,7 @@ public class GistWindow {
 			}
 		});
 		miToggleFullScreen.setOnAction(e -> inFullScreen.toggle());
-		miToggleWideMode.setOnAction(e -> {
-			inWideMode.toggle();
-			handleButtonBar();
-		});
+		miToggleWideMode.setOnAction(e -> inWideMode.toggle());
 		taFileDescription.textProperty().addListener((observable, oldValue, newValue) ->{
 			if (!taFileDescription.isDisabled()) {
 				if (selectedNode != null) {
@@ -434,9 +422,7 @@ public class GistWindow {
 		lblCheckBox.setVisible(visible);
 		publicCheckBox.setVisible(visible);
 	}
-	private ToolWindow toolbarWindow;
 
-	private final String toolbarSceneId = "ToolBars";
 	private void detachToolBar() {
 		toolBarDetached = getToolBar();
 		double width = 600;
@@ -450,8 +436,8 @@ public class GistWindow {
 					.setSceneId(toolbarSceneId)
 					.size(width, height)
 					.title("Tool Bar")
-					.attachToStage(SceneOne.getStage(sceneId))
-					.onCloseEvent(e->reattachToolbar())
+					.alwaysOnTop()
+					.onCloseEvent(e -> reattachToolbar())
 					.build();
 		}
 		toolbarWindow.showAndWait();
@@ -581,15 +567,6 @@ public class GistWindow {
 		return toolBars.nothingSelected();
 	}
 
-	private void setupRecord() {
-		String name = "splitTest";
-		Label label = new Label("Testing");
-		Button button = new Button("OK");
-		VBox vbox = new VBox(label,button);
-		button.setOnAction(e->SceneOne.close(name));
-		com.redmondsims.gistfx.sceneone.SceneOne.set(vbox,name, SceneOne.getStage(sceneId)).size(200,200).show();
-	}
-
 	private void setButton(Button button, double minMax) {
 		button.setMinWidth(minMax);
 		button.setMaxWidth(minMax);
@@ -609,9 +586,7 @@ public class GistWindow {
 
 	public void updateFileContent(String content) {
 		CodeEditor.setContent(content);
-		new Thread(() -> {
-			Action.sleep(1400);
-		}).start();
+		new Thread(() -> Action.sleep(1400)).start();
 	}
 
 	private void showWorking() {
@@ -638,52 +613,6 @@ public class GistWindow {
 					}
 				}
 			}).start();
-		});
-	}
-
-	private String formatColorString(String color) {
-		String response = color.replaceFirst("0x", "");
-		response = response.substring(0, 6);
-		return response;
-	}
-
-	public void handleButtonBar() {
-		Platform.runLater(() -> {
-/*
-			showToolBar.getButtons().clear();
-			showToolBar.getButtons().setAll(buttonEditCategories, buttonWideMode, buttonFullScreen);
-			if (buttonBarType.equals(FILE)) {
-				showToolBar.getButtons().clear();
-				if (file != null) {
-					boolean isDirty    = file.isDirty();
-					boolean inConflict = file.isInConflict();
-					if (isDirty) {
-						showToolBar.getButtons().setAll(buttonCopyToClipboard, buttonSaveFile, buttonUndo);
-						String colorString = formatColorString(LiveSettings.getDirtyFileFlagColor().toString());
-						buttonSaveFile.setStyle("-fx-text-fill: #" + colorString);
-					}
-					else {
-						buttonSaveFile.setStyle("");
-						showToolBar.getButtons().setAll(buttonCopyToClipboard);
-					}
-					showToolBar.getButtons().add(buttonWideMode);
-					showToolBar.getButtons().add(buttonFullScreen);
-					showToolBar.getButtons().add(buttonDistraction);
-					showToolBar.getButtons().add(buttonPasteFromClip);
-					if (inConflict) {
-						showToolBar.getButtons().add(buttonCompare);
-					}
-				}
-			}
-			if (buttonBarType.equals(GIST)) {
-				showToolBar.getButtons().clear();
-				showToolBar.getButtons().add(buttonWideMode);
-				showToolBar.getButtons().add(buttonFullScreen);
-			}
-			SplitPane.setResizableWithParent(showToolBar, true);
-			showToolBar.setPadding(new Insets(0, 0, 0, 0));
-			showToolBar.setVisible(showToolBar.getValue());
-*/
 		});
 	}
 
@@ -1093,10 +1022,7 @@ public class GistWindow {
 			lblGistName.setText("");
 			publicCheckBox.setDisable(false);
 		});
-		buttonBarType = treeSelection.getType();
 		CodeEditor.setEditorTheme();
-		String dark  = "-fx-text-fill: rgba(155,200,155,1)";
-		String light = "-fx-text-fill: rgba(155,0,0,.5)";
 		lblGistDescription.textProperty().unbind();
 		GistManager.unBindFileObjects();
 		if (!treeSelection.getType().equals(CATEGORY)) {
@@ -1153,7 +1079,6 @@ public class GistWindow {
 			}
 		}
 		reselectToolbar();
-		handleButtonBar();
 	}
 
 	private TreeNode selectedNode;
@@ -1195,17 +1120,6 @@ public class GistWindow {
 		}
 	}
 
-	private void clearCredentials() {
-		if(CustomAlert.showConfirmation("Are you sure you want to clear your credentials?\n\nThe next time you load GistFX, you\nwill be required to put in a valid GitHub token.")) {
-			AppSettings.clear().hashedToken();
-			AppSettings.clear().hashedPassword();
-			CustomAlert.showInfo("Credentials Cleared",SceneOne.getOwner(sceneId));
-		}
-		else {
-			CustomAlert.showInfo("Credentials NOT Cleared",SceneOne.getOwner(sceneId));
-		}
-	}
-
 	public void updateGitLabel(String label, boolean show) {
 		Platform.runLater(() -> {
 			lblGitUpdate.setText(label);
@@ -1234,15 +1148,6 @@ public class GistWindow {
 		}
 	}
 
-	/**
-	 * Menu Bar Methods
-	 */
-
-	private final MenuItem miToggleWideMode    = new MenuItem("Toggle Wide Mode");
-	private final MenuItem miToggleFullScreen  = new MenuItem("Enter Fullscreen");
-	private final MenuItem miToggleToolbarState = new MenuItem("Detach Toolbar");
-	private MenuItem miShowHideToolbar;
-
 	private void showIPAddress() {
 		new Thread(() -> {
 			String ipAddress = UPnP.getExternalIP();
@@ -1253,12 +1158,9 @@ public class GistWindow {
 		}).start();
 	}
 
-
-	private MenuItem newMenuItem(String label, EventHandler<ActionEvent> eventHandler) {
-		MenuItem menuItem = new MenuItem(label);
-		menuItem.setOnAction(eventHandler);
-		return menuItem;
-	}
+	/**
+	 * Menu Bar Methods
+	 */
 
 	private void addMenuBarItems() {
 		String APP_TITLE    = "GistFX";
@@ -1396,13 +1298,6 @@ public class GistWindow {
 			menuView.getItems().add(menuItem);
 			if (separator) {
 				menuView.getItems().add(new SeparatorMenuItem());
-			}
-		}
-
-		private void addToEditMenu(MenuItem menuItem, boolean separator) {
-			menuEdit.getItems().add(menuItem);
-			if (separator) {
-				menuEdit.getItems().add(new SeparatorMenuItem());
 			}
 		}
 

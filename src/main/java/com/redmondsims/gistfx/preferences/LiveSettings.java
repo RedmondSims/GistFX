@@ -20,16 +20,13 @@ public class LiveSettings {
 
 	private static       DataSource                  dataSource;
 	private static       UISettings.Theme            theme                 = DARK;
-	private static       UISettings.LoginScreen      loginScreen;
-	private static       UISettings.LoginScreenColor loginScreenColor;
-	private static       StringProperty              monacoThemeProperty   = new SimpleStringProperty();
-	public static        Color                       progressBarColor      = AppSettings.get().progressBarColor();
+	private static final StringProperty              monacoThemeProperty = new SimpleStringProperty();
+	public static        Color                       progressBarColor    = AppSettings.get().progressBarColor();
 	public static        ProgressColorSource         progressBarColorSource;
 	private static       boolean                     disableDirtyWarning;
 	private static       boolean                     offlineMode           = false;
 	private static       Color                       dirtyFileFlagColor;
 	public static        boolean                     doMasterReset         = false;
-	private static       Double                      lastPaneSplitValue    = 0.0;
 	private static final String                      OSystem               = System.getProperty("os.name").toLowerCase();
 	private static       String                      password              = "";
 	private static       boolean                     authenticatedToGitHub = false;
@@ -51,10 +48,6 @@ public class LiveSettings {
 
 	public static boolean isOffline() {
 		return offlineMode;
-	}
-
-	public static String getMonacoTheme() {
-		return (theme.equals(DARK)) ? "vs-dark" : "vs-light";
 	}
 
 	public static StringProperty monacoThemeProperty() {
@@ -88,8 +81,6 @@ public class LiveSettings {
 		theme                  = AppSettings.get().theme();
 		dirtyFileFlagColor     = AppSettings.get().dirtyFileFlagColor();
 		disableDirtyWarning    = AppSettings.get().disableDirtyWarning();
-		loginScreenColor       = AppSettings.get().loginScreenColor();
-		setLoginScreen(AppSettings.get().loginScreenChoice());
 		GistManager.refreshDirtyFileFlags();
 		monacoThemeProperty.setValue(theme.equals(DARK) ? "vs-dark" : "vs-light");
 		Editors.init();
@@ -118,20 +109,6 @@ public class LiveSettings {
 
 	public static void setTheme(UISettings.Theme theme) {
 		LiveSettings.theme = theme;
-	}
-
-	public static UISettings.LoginScreen getLoginScreen() {
-		return loginScreen;
-	}
-
-	public static UISettings.LoginScreenColor getLoginScreenColor() {return loginScreenColor;}
-
-	public static String getLoginColor() {
-		return loginScreenColor.folderName(loginScreenColor);
-	}
-
-	public static void setLoginScreen(UISettings.LoginScreen loginScreen) {
-		LiveSettings.loginScreen = loginScreen;
 	}
 
 	public static boolean disableDirtyWarning() {return disableDirtyWarning;}

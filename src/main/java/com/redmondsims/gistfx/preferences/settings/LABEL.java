@@ -13,7 +13,6 @@ public enum LABEL {
 	PROGRESS_BAR_COLOR,
 	PROGRESS_COLOR_SOURCE,
 	CUSTOM_PROGRESS_COLOR,
-	LOGIN_SCREEN,
 	LOGIN_SCREEN_COLOR,
 	DATA_SOURCE,
 	FIRST_RUN,
@@ -51,7 +50,6 @@ public enum LABEL {
 				case PROGRESS_BAR_COLOR -> "GFX_DEV_Progress_Bar_Color";
 				case PROGRESS_COLOR_SOURCE -> "GFX_DEV_Progress_Color_Source";
 				case CUSTOM_PROGRESS_COLOR -> "GFX_DEV_Custom_ProgressColor";
-				case LOGIN_SCREEN -> "GFX_DEV_Login_Screen";
 				case LOGIN_SCREEN_COLOR -> "GFX_DEV_Login_Screen_Color";
 				case DATA_SOURCE -> "GFX_DEV_Data_Source";
 				case FIRST_RUN -> "GFX_DEV_First_Run";
@@ -88,7 +86,6 @@ public enum LABEL {
 				case PROGRESS_BAR_COLOR -> "GFX_Progress_Bar_Color";
 				case PROGRESS_COLOR_SOURCE -> "GFX_Progress_Color_Source";
 				case CUSTOM_PROGRESS_COLOR -> "GFX_Custom_ProgressColor";
-				case LOGIN_SCREEN -> "GFX_Login_Screen";
 				case LOGIN_SCREEN_COLOR -> "GFX_Login_Screen_Color";
 				case DATA_SOURCE -> "GFX_Data_Source";
 				case FIRST_RUN -> "GFX_First_Run";

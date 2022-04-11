@@ -6,7 +6,7 @@
 
     <groupId>com.redmondsims</groupId>
     <artifactId>GistFX</artifactId>
-    <version>3.4.1</version>
+    <version>3.4.2</version>
     <name>GistFX</name>
     <url>https://github.com/redmondsims/gistfx</url>
 
@@ -218,11 +218,11 @@
                                 <generateMsi>false</generateMsi>
                             </winConfig>
                             <macConfig>
-                                <icnsFile>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
+                                <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
                                 <generateDmg>true</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>GistFX</volumeName>
-                                <volumeIcon>/Users/michael/IdeaProjects/GistFXTwo/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                                <volumeIcon>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
                                 <entitlements>entitlements.plist</entitlements>
                             </macConfig>
                         </configuration>
