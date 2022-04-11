@@ -1,0 +1,4 @@
+Cd into this directory
+iconutil --convert icns GistFX.iconset
+
+or just run makeicns.sh

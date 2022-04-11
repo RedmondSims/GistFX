@@ -8,8 +8,6 @@ import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings;
-import com.redmondsims.gistfx.ui.gist.GistCategory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
@@ -19,6 +17,7 @@ import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.kohsuke.github.GHGist;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 import static com.redmondsims.gistfx.enums.Names.GITHUB_METADATA;
@@ -33,9 +32,9 @@ public class Json {
 	private       GHGist                    ghGist;
 	private       MetadataFile              metadataFile;
 	private final Gson                      gson            = new GsonBuilder().setPrettyPrinting().create();
+	private static final Gson                      staticGson            = new GsonBuilder().setPrettyPrinting().create();
 	private       Timer                     saveTimer;
 	private       boolean                   makingNew       = false;
-	private final Map<String, GistCategory> gistCategoryMap = new HashMap<>();
 
  	private void makeNewGist() {
 		if (LiveSettings.isOffline()) return;
@@ -74,18 +73,11 @@ public class Json {
 		 }
 	}
 
-	private void loadGistCategoryMap() {
-		gistCategoryMap.clear();
-		for (String category : CATEGORIES.getList()) {
-			gistCategoryMap.put(category,new GistCategory(category));
-		}
-	}
-
 	/**
 	 * Local and GitHub Data File Methods
 	 */
 
-	private void getData() {
+	private void getNewestMetadataData() {
 		if (LiveSettings.isOffline()) {
 			String json = AppSettings.get().metadata();
 			if(json.isEmpty()) {
@@ -104,18 +96,17 @@ public class Json {
 			}
 			return;
 		}
-		UISettings.DataSource dataSource           = LiveSettings.getDataSource();
-		String                customDataGitHubJson = "";
-		String                customDataLocalJson  = AppSettings.get().metadata();
-		String                customDataSQLJson    = Action.getSQLMetadata();
+		String                gitHubDataInJSON = "";
+		String                settingsDataInJSON  = AppSettings.get().metadata();
+		String                SQLDataInJSON    = Action.getSQLMetadata();
 		MetadataFile          customGitHub;
 		MetadataFile          customSQL;
 		MetadataFile          customLocal;
 		boolean               haveGitHubData       = false;
-		boolean               haveLocalData        = !customDataLocalJson.equals("");
-		boolean               haveSQLData          = !customDataSQLJson.equals("");
+		boolean               haveLocalData        = !settingsDataInJSON.equals("");
+		boolean               haveSQLData          = !SQLDataInJSON.equals("");
 
-		Map<Integer, Date> dateMap = new HashMap<>();
+		Map<Integer, Long> timeMap = new HashMap<>();
 		metadataFile = new MetadataFile(NAMES.getMap(),
 										CATEGORIES.getList(),
 										CATEGORIES.getMap(),
@@ -123,35 +114,35 @@ public class Json {
 										HOSTS.getList());
 		ghGist = Action.getGistByDescription(MetadataFile.GistDescription);
 		if (ghGist != null) {
-			customDataGitHubJson = ghGist.getFile(MetadataFile.FileName).getContent();
+			gitHubDataInJSON = ghGist.getFile(MetadataFile.FileName).getContent();
 			haveGitHubData       = true;
 		}
 		if (haveGitHubData) {
-			customGitHub = gson.fromJson(customDataGitHubJson, MetadataFile.class);
-			dateMap.put(1,customGitHub.getDate());
+			customGitHub = gson.fromJson(gitHubDataInJSON, MetadataFile.class);
+			timeMap.put(1,customGitHub.getTimestamp());
 		}
 		if (haveSQLData) {
-			customSQL = gson.fromJson(customDataSQLJson, MetadataFile.class);
-			dateMap.put(2,customSQL.getDate());
+			customSQL = gson.fromJson(SQLDataInJSON, MetadataFile.class);
+			timeMap.put(2,customSQL.getTimestamp());
 		}
 		if (haveLocalData) {
-			customLocal = gson.fromJson(customDataLocalJson, MetadataFile.class);
-			dateMap.put(3,customLocal.getDate());
+			customLocal = gson.fromJson(settingsDataInJSON, MetadataFile.class);
+			timeMap.put(3,customLocal.getTimestamp());
 		}
 		String finalJsonString = "";
-		if (dateMap.size() > 1) {
-			switch (findNewestDate(dateMap)) {
-				case 1 -> finalJsonString = customDataGitHubJson;
-				case 2 -> finalJsonString = customDataSQLJson;
-				case 3 -> finalJsonString = customDataLocalJson;
+		if (timeMap.size() > 1) {
+			switch (findNewestTime(timeMap)) {
+				case 1 -> finalJsonString = gitHubDataInJSON;
+				case 2 -> finalJsonString = SQLDataInJSON;
+				case 3 -> finalJsonString = settingsDataInJSON;
 			}
 		}
-		else if (dateMap.size() == 1) {
-			for(Integer index : dateMap.keySet()) {
+		else if (timeMap.size() == 1) {
+			for(Integer index : timeMap.keySet()) {
 				switch (index) {
-					case 1 -> finalJsonString = customDataGitHubJson;
-					case 2 -> finalJsonString = customDataSQLJson;
-					case 3 -> finalJsonString = customDataLocalJson;
+					case 1 -> finalJsonString = gitHubDataInJSON;
+					case 2 -> finalJsonString = SQLDataInJSON;
+					case 3 -> finalJsonString = settingsDataInJSON;
 				}
 			}
 		}
@@ -190,22 +181,21 @@ public class Json {
 		}
 	}
 
-	private Integer findNewestDate(Map<Integer,Date> dateMap) {
-		SortedSet<Date> dates = new TreeSet<>(dateMap.values());
-		Date finalDate = dates.first();
-		DateTime finalDT = new DateTime(finalDate);
+	private Integer findNewestTime(Map<Integer,Long> timeMap) {
+		SortedSet<Long> times = new TreeSet<>(timeMap.values());
+		Long finalTime = times.first();
 		int finalIndex = 1;
-		for(Integer index : dateMap.keySet()) {
-			DateTime date = new DateTime(dateMap.get(index));
-			if (date.isBefore(finalDT)) {
-				finalDT = date;
+		for(Integer index : timeMap.keySet()) {
+			Long time = timeMap.get(index);
+			if (new Timestamp(time).toInstant().isAfter(new Timestamp(finalTime).toInstant())) {
+				finalTime = time;
 				finalIndex = index;
 			}
 		}
-		for(Integer index : dateMap.keySet()) {
-			DateTime date = new DateTime(dateMap.get(index));
-			if (date.isBefore(finalDT)) {
-				finalDT = date;
+		for(Integer index : timeMap.keySet()) {
+			Long time = timeMap.get(index);
+			if (new Timestamp(time).toInstant().isAfter(new Timestamp(finalTime).toInstant())) {
+				finalTime = time;
 				finalIndex = index;
 			}
 		}
@@ -229,10 +219,10 @@ public class Json {
 		 */
 		if (saveTimer != null) saveTimer.cancel();
 		saveTimer = new Timer();
-		saveTimer.schedule(saveToGitHub(jsonMetadata), 3000);
+		saveTimer.schedule(saveToGitHub(), 3000);
 	}
 
-	private TimerTask saveToGitHub(String jsonString) {
+	private TimerTask saveToGitHub() {
 		return new TimerTask() {
 			@Override public void run() {
 				if (!LiveSettings.isOffline()) {
@@ -255,7 +245,7 @@ public class Json {
 	}
 
 	public void loadMetaData() {
-		getData();
+		getNewestMetadataData();
 	}
 
 	private void loadGitHubData() {
@@ -320,13 +310,11 @@ public class Json {
 
 	public void addCategoryName(String categoryName) {
 		CATEGORIES.addCategory(categoryName.trim());
-		gistCategoryMap.put(categoryName,new GistCategory(categoryName));
 		saveData();
 	}
 
 	public void deleteCategoryName(String categoryName) {
 		CATEGORIES.deleteCategory(categoryName);
-		gistCategoryMap.remove(categoryName);
 		saveData();
 	}
 
@@ -337,9 +325,6 @@ public class Json {
 
 	public void changeCategoryName(String oldName, String newName) {
 		CATEGORIES.renameCategory(oldName,newName.trim());
-		gistCategoryMap.put(newName,gistCategoryMap.get(oldName));
-		gistCategoryMap.get(newName).setCategoryName(newName);
-		gistCategoryMap.remove(oldName);
 		saveData();
 	}
 
@@ -353,18 +338,6 @@ public class Json {
 
 	public ObservableList<String> getCategoryList() {
 		return FXCollections.observableArrayList(CATEGORIES.getList());
-	}
-
-	public Map<String,String> getGistCategoryMap() {
-		return CATEGORIES.getFormattedCategoryMap();
-	}
-
-	public Map<String,String> getMappedCategories() {
-		return CATEGORIES.getCategoryMap();
-	}
-
-	public List<GistCategory> getGistCategoryList() {
-		return new ArrayList<>(gistCategoryMap.values());
 	}
 
 	public List<Gist> getGistsInCategory(String category) {
@@ -397,10 +370,6 @@ public class Json {
 
 	public void deleteFileDescription(String gistId, String filename) {
 		DESCRIPTIONS.deleteDescription(gistId,filename);
-	}
-
-	public GistCategory getGistCategory(String categoryName) {
-		return gistCategoryMap.get(categoryName);
 	}
 
 	/**
@@ -453,6 +422,12 @@ public class Json {
 		DESCRIPTIONS.changeGistId(oldGistId,newGistId);
 		NAMES.changeGistId(oldGistId,newGistId);
 		saveData();
+	}
+
+	public static void getSampleJson() {
+		MetadataFile metadataFile = new MetadataFile(new Names().getMap(),new Categories().getList(),new Categories().getMap(),new FileDescriptions().getMap(),new Hosts().getList());
+		String jsonString = staticGson.toJson(metadataFile);
+		System.out.println(jsonString);
 	}
 
 }

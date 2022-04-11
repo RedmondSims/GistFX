@@ -68,8 +68,12 @@ public class Main extends Application {
 		Action.setDatabaseConnection();
 		setUserAgentStylesheet(STYLESHEET_MODENA);
 		if (changePassword) {
-			if (Password.change(primaryStage)) {System.out.println("Password Changed Successfully");}
-			else {System.out.println("Password Not Changed");}
+			if (Password.change(primaryStage)) {
+				System.out.println("Password Changed Successfully");
+			}
+			else {
+				System.out.println("Password Not Changed");
+			}
 		}
 		new LoginWindow();
 
@@ -84,8 +88,8 @@ public class Main extends Application {
 				stopFlag = true;
 			}
 			if (arg.toLowerCase(Locale.ROOT).startsWith("clearcreds")) {
-				AppSettings.clear().tokenHash();
-				AppSettings.clear().passwordHash();
+				AppSettings.clear().hashedToken();
+				AppSettings.clear().hashedPassword();
 				System.out.println("Credentials Cleared");
 				stopFlag = true;
 			}
@@ -99,9 +103,6 @@ public class Main extends Application {
 			if (arg.toLowerCase().startsWith("changepassword")) {
 				changePassword = true;
 				stopFlag       = true;
-			}
-			if (arg.toLowerCase().startsWith("devmode")) {
-				LiveSettings.setDevMode(true);
 			}
 		}
 		if (stopFlag) System.exit(100);

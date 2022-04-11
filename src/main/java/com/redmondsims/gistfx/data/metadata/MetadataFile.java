@@ -1,5 +1,7 @@
 package com.redmondsims.gistfx.data.metadata;
 
+
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,24 +19,24 @@ class MetadataFile {
 		this.categoryList   = categoryList;
 		this.categoryMap    = categoryMap;
 		this.descriptionMap = descriptionMap;
-		this.hostList       = hostList;
-		date = new Date();
+		this.hostList = hostList;
+		timestamp     = new Timestamp(System.currentTimeMillis()).getTime();
 	}
 
 	private final Map<String, String>               nameMap;
 	private final CopyOnWriteArrayList<String>      categoryList;
 	private final ConcurrentHashMap<String, String> categoryMap;
 	private final ConcurrentHashMap<String, String> descriptionMap;
-	private final List<String>                      hostList;
-	private final Date                              date;
-	private       Date                              lastReWrite;
+	private final List<String> hostList;
+	private final long    timestamp;
+	private       Timestamp    lastReWrite;
 
 	public static final String FileName = "GistFXMetadata.json";
 
 	public static String GistDescription = com.redmondsims.gistfx.enums.Names.GITHUB_METADATA.Name();
 
 	public void setLastReWrite() {
-		lastReWrite = new Date();
+		lastReWrite = new Timestamp(System.currentTimeMillis());
 	}
 
 	public Date getLastReWrite() {
@@ -66,7 +68,7 @@ class MetadataFile {
 		return hosts;
 	}
 
-	public Date getDate() {
-		return date;
+	public long getTimestamp() {
+		return timestamp;
 	}
 }

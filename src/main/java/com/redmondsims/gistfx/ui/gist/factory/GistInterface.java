@@ -21,11 +21,9 @@ public interface GistInterface extends Serializable {
 
 	String getDescription();
 
-	String getName();
-
 	boolean equals(Object obj);
 
-	String getText();
+	String getName();
 
 	boolean canContainChildren();
 

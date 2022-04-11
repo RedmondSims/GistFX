@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx.sceneone;
 
+import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -844,6 +845,8 @@ public final class SceneOne {
 		private final boolean                        autoSize;
 		private final Dimension                      dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		private final Stage                          owner;
+		private double originalWidth = 0;
+		private double originalHeight= 0;
 
 		private final ChangeListener<Boolean> lostFocusListener = (observable, oldValue, newValue) -> {
 			if (!newValue) {
@@ -1065,6 +1068,8 @@ public final class SceneOne {
 			}
 			StageObject stageObject = stageMap.getOrDefault(sceneName, stageMap.get(defaultSceneName));
 			stageObject.setHasShown();
+			originalWidth = scene.getWidth();
+			originalHeight = scene.getHeight();
 		}
 
 		public void show() {
@@ -1125,14 +1130,32 @@ public final class SceneOne {
 			scenePosition.set(posX,posY);
 		}
 
-		public void setFullScreen(boolean fullScreen) {
-			stage.setMaximized(fullScreen);
-			if (fullScreen) {
+		public void setFullScreen(boolean value) {
+			if (value) {
+				snapWidth = stage.getWidth();
 				plot = MAXIMIZED;
 			}
 			else {
 				plot = CENTERED;
 			}
+			stage.setMaximized(value);
+			centerScene();
+		}
+
+		private void centerScene() {
+			new Thread(() -> {
+				Action.sleep(500);
+				double sceneWidth = scene.getWidth();
+				double sceneHeight = scene.getHeight();
+				double screenWidth = dimension.getWidth();
+				double screenHeight = dimension.getHeight();
+				double posX = (screenWidth - sceneWidth) - (.5 * (screenWidth - sceneWidth));
+				double posY = (screenHeight - sceneHeight) - (.5 * (screenHeight - sceneHeight));
+				Platform.runLater(() -> {
+					scene.getWindow().setX(posX);
+					scene.getWindow().setY(posY);
+				});
+			}).start();
 		}
 
 		public void setMaximized(boolean maximized) {
@@ -1225,23 +1248,30 @@ public final class SceneOne {
 			}
 		}
 
-		private       double                    snapWidth = 0;
+		private double snapWidth = 0;
 
 		public void setWideMode(boolean wideMode) {
 			if (stage != null) {
 				if(getStage().isMaximized()) return;
 				if (wideMode) {
-					if(snapWidth == 0) snapWidth = stage.getWidth();
+					if (snapWidth == 0) snapWidth = stage.getWidth();
 					Platform.runLater(() -> {
 						scene.getWindow().setWidth(dimension.getWidth());
-						scene.getWindow().centerOnScreen();
+						centerScene();
 					});
 				}
 				else {
-					if (snapWidth > 0) {
+					if (snapWidth > (dimension.getWidth() * .98)) {
+						if (snapWidth == dimension.getWidth()) snapWidth = dimension.getWidth() * .75;
 						Platform.runLater(() -> {
 							scene.getWindow().setWidth(snapWidth);
-							scene.getWindow().centerOnScreen();
+							centerScene();
+						});
+					}
+					else {
+						Platform.runLater(() -> {
+							scene.getWindow().setWidth(snapWidth);
+							centerScene();
 						});
 					}
 				}

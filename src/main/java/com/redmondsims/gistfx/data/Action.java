@@ -11,7 +11,6 @@ import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
-import com.redmondsims.gistfx.ui.gist.GistCategory;
 import com.redmondsims.gistfx.utils.Resources;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -20,8 +19,10 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.github.GHGist;
@@ -263,10 +264,6 @@ public class Action {
 		return JSON.getCategoryList();
 	}
 
-	public static List<GistCategory> getGistCategoryList() {
-		return JSON.getGistCategoryList();
-	}
-
 	public static void changeCategoryName(String oldName, String newName) {
 		JSON.changeCategoryName(oldName,newName);
 	}
@@ -277,16 +274,6 @@ public class Action {
 
 	public static void deleteCategoryName(String categoryName) {
 		JSON.deleteCategoryName(categoryName);
-	}
-
-	public static GistCategory getGistCategory(String gistId) {
-		String categoryName = JSON.getGistCategoryName(gistId);
-		if(categoryName.isEmpty()) return null;
-		return getGistCategoryByName(categoryName);
-	}
-
-	public static GistCategory getGistCategoryByName(String categoryName) {
-		return JSON.getGistCategory(categoryName);
 	}
 
 	public static void addCategoryName(String categoryName) {
@@ -455,6 +442,7 @@ public class Action {
 	public static Tooltip newTooltip(String message) {
 		Tooltip toolTip = new Tooltip(message);
 		toolTip.setShowDuration(Duration.seconds(120));
+		toolTip.setTextAlignment(TextAlignment.RIGHT);
 		return toolTip;
 	}
 

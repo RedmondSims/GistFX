@@ -42,10 +42,8 @@ public class DistractionFree {
 		};
 	}
 
-	private       AnchorPane                     ap;
 	private       MonacoFX                       monaco;
 	private       Stage                          stage;
-	private       Scene                          scene;
 	private       String                         updatedContent;
 	private final EventHandler<? super KeyEvent> keyEvent;
 
@@ -55,7 +53,7 @@ public class DistractionFree {
 		monaco.getEditor().setCurrentLanguage(language);
 		monaco.getEditor().setCurrentTheme(LiveSettings.getTheme().equals(UISettings.Theme.DARK) ? "vs-dark" : "vs-light");
 		monaco.getEditor().getDocument().setText(content);
-		ap = new AnchorPane(monaco);
+		AnchorPane ap = new AnchorPane(monaco);
 		setNodePosition(monaco,0,0,0,0);
 		stage = new Stage();
 		stage.initStyle(StageStyle.TRANSPARENT);
@@ -64,7 +62,21 @@ public class DistractionFree {
 		String hint = LiveSettings.getOS().equals(OS.MAC) ? "CMD + W to Exit Fullscreen" : "ALT + Q to Exit Fullscreen";
 		stage.setFullScreenExitHint(hint);
 		stage.setFullScreen(true);
-		scene = new Scene(ap);
+		stage.fullScreenProperty().addListener((observable, oldValue, newValue) -> {
+			if(!oldValue.equals(newValue)) {
+				if (oldValue) {
+					updatedContent = monaco.getEditor().getDocument().getText();
+					new Thread(() -> {
+						Action.sleep(400);
+						Platform.runLater(() -> {
+							WindowManager.updateFileContent(updatedContent);
+							stage.close();
+						});
+					}).start();
+				}
+			}
+		});
+		Scene scene = new Scene(ap);
 		scene.setOnKeyPressed(keyEvent);
 		stage.setScene(scene);
 		stage.show();

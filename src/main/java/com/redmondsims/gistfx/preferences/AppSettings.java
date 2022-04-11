@@ -23,14 +23,9 @@ public class AppSettings {
 		return clear;
 	}
 
-	public static void resetPreferences() {
-		clear.clearAll();
-		setter.setDefaults();
-	}
-
 	public static void resetCredentials() {
-		clear.passwordHash();
-		clear.tokenHash();
+		clear.hashedPassword();
+		clear.hashedToken();
 	}
 
 

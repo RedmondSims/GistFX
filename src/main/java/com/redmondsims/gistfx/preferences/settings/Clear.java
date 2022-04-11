@@ -7,7 +7,7 @@ public class Clear {
 
 	private final Preferences prefs = LABEL.prefs;
 
-	public void loadSource()              {prefs.remove(LABEL.DATA_SOURCE.Name());}
+	public void dataSource() {prefs.remove(LABEL.DATA_SOURCE.Name());}
 
 	public void logonScreenChoice()       {prefs.remove(LABEL.LOGIN_SCREEN.Name());}
 
@@ -19,43 +19,33 @@ public class Clear {
 
 	public void progressBarStyle()        {prefs.remove(LABEL.PROGRESS_BAR_STYLE.Name());}
 
-	public void passwordHash()            {prefs.remove(LABEL.PASSWORD_HASH.Name());}
+	public void customProgressColor()	{
+		prefs.remove(LABEL.CUSTOM_PROGRESS_COLOR.Name());
+	}
 
-	public void tokenHash()               {prefs.remove(LABEL.TOKEN_HASH.Name());}
+	public void hashedPassword() {prefs.remove(LABEL.PASSWORD_HASH.Name());}
+
+	public void hashedToken() {prefs.remove(LABEL.TOKEN_HASH.Name());}
 
 	public void theme()                   {prefs.remove(LABEL.THEME.Name());}
 
 	public void firstRun()                {prefs.remove(LABEL.FIRST_RUN.Name());}
 
-	public void showToolBar() {prefs.remove(LABEL.TOOL_BAR.Name());}
-
-	public void securityOption()          {prefs.remove(LABEL.SECURITY_OPTION.Name());}
+	public void showToolBar() {prefs.remove(LABEL.SHOW_TOOL_BAR.Name());}
 
 	public void dirtyFileFlagColor()      {prefs.remove(LABEL.DIRTY_FILE_FLAG_COLOR.name());}
 
-	public void gistFolderIconColor()     {prefs.remove(LABEL.GIST_FOLDER_ICON_COLOR.name());}
-
 	public void categoryFolderIconColor() {prefs.remove(LABEL.CATEGORY_FOLDER_ICON_COLOR.Name());}
 
-	public void fileIconColor()           {prefs.remove("test");}
+	public void gistFolderIconColor()     {prefs.remove(LABEL.GIST_FOLDER_ICON_COLOR.name());}
+
+	public void fileIconColor()           {prefs.remove(LABEL.FILE_ICON_COLOR.Name());}
 
 	public void disableDirtyWarning()     {prefs.remove(LABEL.DISABLE_DIRTY_WARNING.Name());}
-
-	public void wideMode()                {prefs.remove(LABEL.WIDE_MODE.Name());}
-
-	public void dividerPositions()        {prefs.remove(LABEL.DIVIDER_POSITIONS.Name());}
 
 	public void metadata()                {prefs.remove(LABEL.METADATA.Name());}
 
 	public void fileMoveWarning()         {prefs.remove(LABEL.FILE_MOVE_WARNING.Name());}
-
-	public void clearAll() {
-		try {prefs.clear();}catch (BackingStoreException e) {e.printStackTrace();}
-	}
-
-	/**
-	 * Tree Icon SMTPServerSettingsa
-	 */
 
 	public void useDefaultCategoryIcon() {prefs.remove(LABEL.USE_DEFAULT_CATEGORY_ICON.Name());}
 
@@ -63,19 +53,13 @@ public class Clear {
 
 	public void useDefaultFileIcon()   {prefs.remove(LABEL.USE_DEFAULT_FILE_ICON.Name());}
 
-	public void userCategoryIconPath() {prefs.remove(LABEL.USER_CATEGORY_ICON_PATH.name());}
+	public void userCategoryIcon() {
+		prefs.remove(LABEL.USER_CATEGORY_ICON.name());
+	}
 
-	public void userGistIconPath()     {prefs.remove(LABEL.USER_GIST_ICON_PATH.name());}
+	public void userGistIcon() {prefs.remove(LABEL.USER_GIST_ICON.name());}
 
-	public void userFileIconPath()     {prefs.remove(LABEL.USER_FILE_ICON_PATH.name());}
-
-	public void userIconFileFolder()   {prefs.remove(LABEL.USER_ICON_FILE_FOLDER.name());}
-
-	public void runInSystray()   {prefs.remove(LABEL.RUN_IN_SYSTRAY.name());}
-
-	public void systrayColor()   {prefs.remove(LABEL.SYSTRAY_COLOR.name());}
-
-	public void showAppIcon()   {prefs.remove(LABEL.SHOW_APP_ICON.name());}
+	public void userFileIcon() {prefs.remove(LABEL.USER_FILE_ICON.name());}
 
 	public void mailServer()           {prefs.remove(LABEL.MAIL_SERVER.Name());}
 
@@ -85,6 +69,23 @@ public class Clear {
 
 	public void lastGitHubUserId() {
 		prefs.remove(LABEL.LAST_GITHUB_USER_ID.Name());
+	}
+
+	public void runInSystray()   {prefs.remove(LABEL.RUN_IN_SYSTRAY.name());}
+
+	public void systrayColor()   {prefs.remove(LABEL.SYSTRAY_COLOR.name());}
+
+	public void showAppIcon()   {prefs.remove(LABEL.SHOW_APP_ICON.name());}
+
+
+
+	/**
+	 * Tree Icon SMTPServerSettings
+	 */
+
+
+	public void clearAll() {
+		try {prefs.clear();}catch (BackingStoreException e) {e.printStackTrace();}
 	}
 
 }

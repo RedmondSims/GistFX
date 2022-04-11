@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://javafx.com/javafx/18" xmlns:javafx="http://javafx.com/javafx/18">
+    <xs:element name="TabPane">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:tabs"/>
+            </xs:sequence>
+            <xs:attribute name="maxHeight" use="required" type="xs:NMTOKEN"/>
+            <xs:attribute name="maxWidth" use="required" type="xs:NMTOKEN"/>
+            <xs:attribute name="minHeight" use="required" type="xs:NMTOKEN"/>
+            <xs:attribute name="minWidth" use="required" type="xs:NMTOKEN"/>
+            <xs:attribute name="prefHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="prefWidth" use="required" type="xs:decimal"/>
+            <xs:attribute name="tabClosingPolicy" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="tabs">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="javafx:Tab"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Tab">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:content"/>
+            </xs:sequence>
+            <xs:attribute name="closable" use="required" type="xs:boolean"/>
+            <xs:attribute name="text" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="content">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:GridPane"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GridPane">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:columnConstraints"/>
+                <xs:element ref="javafx:rowConstraints"/>
+                <xs:element ref="javafx:children"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="columnConstraints">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="javafx:ColumnConstraints"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ColumnConstraints">
+        <xs:complexType>
+            <xs:attribute name="hgrow" use="required" type="xs:NCName"/>
+            <xs:attribute name="maxWidth" use="required" type="xs:decimal"/>
+            <xs:attribute name="minWidth" use="required" type="xs:decimal"/>
+            <xs:attribute name="prefWidth" use="required" type="xs:decimal"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="rowConstraints">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="javafx:RowConstraints"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="RowConstraints">
+        <xs:complexType>
+            <xs:attribute name="maxHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="minHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="prefHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="vgrow" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="children">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:CheckBox"/>
+                <xs:choice maxOccurs="unbounded">
+                    <xs:element ref="javafx:Button"/>
+                    <xs:element ref="javafx:ColorPicker"/>
+                    <xs:element ref="javafx:ImageView"/>
+                    <xs:element ref="javafx:Label"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="CheckBox">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:GridPane.margin"/>
+            </xs:sequence>
+            <xs:attribute name="contentDisplay" use="required" type="xs:NCName"/>
+            <xs:attribute name="mnemonicParsing" use="required" type="xs:boolean"/>
+            <xs:attribute name="nodeOrientation" use="required" type="xs:NCName"/>
+            <xs:attribute name="prefHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="prefWidth" use="required" type="xs:decimal"/>
+            <xs:attribute name="text" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Button">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="javafx:GridPane.margin"/>
+            </xs:sequence>
+            <xs:attribute name="GridPane.columnIndex" use="required" type="xs:integer"/>
+            <xs:attribute name="GridPane.halignment" use="required" type="xs:NCName"/>
+            <xs:attribute name="GridPane.rowIndex" type="xs:integer"/>
+            <xs:attribute name="mnemonicParsing" use="required" type="xs:boolean"/>
+            <xs:attribute name="prefHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="prefWidth" use="required" type="xs:decimal"/>
+            <xs:attribute name="text" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ColorPicker">
+        <xs:complexType>
+            <xs:attribute name="GridPane.columnIndex" use="required" type="xs:integer"/>
+            <xs:attribute name="GridPane.halignment" use="required" type="xs:NCName"/>
+            <xs:attribute name="GridPane.rowIndex" use="required" type="xs:integer"/>
+            <xs:attribute name="GridPane.valignment" type="xs:NCName"/>
+            <xs:attribute name="prefHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="prefWidth" use="required" type="xs:decimal"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ImageView">
+        <xs:complexType>
+            <xs:attribute name="GridPane.columnIndex" use="required" type="xs:integer"/>
+            <xs:attribute name="GridPane.halignment" use="required" type="xs:NCName"/>
+            <xs:attribute name="GridPane.valignment" use="required" type="xs:NCName"/>
+            <xs:attribute name="fitHeight" use="required" type="xs:decimal"/>
+            <xs:attribute name="fitWidth" use="required" type="xs:decimal"/>
+            <xs:attribute name="pickOnBounds" use="required" type="xs:boolean"/>
+            <xs:attribute name="preserveRatio" use="required" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Label">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:GridPane.margin"/>
+            </xs:sequence>
+            <xs:attribute name="GridPane.halignment" use="required" type="xs:NCName"/>
+            <xs:attribute name="GridPane.rowIndex" use="required" type="xs:integer"/>
+            <xs:attribute name="text" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GridPane.margin">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="javafx:Insets"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Insets">
+        <xs:complexType>
+            <xs:attribute name="right" type="xs:decimal"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

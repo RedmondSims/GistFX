@@ -55,11 +55,11 @@ public class GistFile {
 
 	public void refreshGraphicNode() {
 		Platform.runLater(() -> {
-			WindowManager.handleButtons();
+//			WindowManager.handleButtons();
 			graphicNode.set(getIcon());
 			if (!fileState.equals(lastFileState)) {
 				lastFileState = fileState;
-				WindowManager.refreshFileIcons();
+				WindowManager.refreshTreeIcons();
 			}
 		});
 	}
@@ -95,10 +95,14 @@ public class GistFile {
 			if (Status.comparingLocalDataWithGitHub()) {
 				if (preCheckTimer != null) preCheckTimer.cancel();
 				preCheckTimer = new Timer();
-				preCheckTimer.schedule(commitLater(newValue),2000);
+				preCheckTimer.schedule(commitLater(newValue), 2000);
 			}
 			else {
 				liveVersion.setValue(newValue);
+			}
+			if (liveVersion.isEqualTo(gitHubVersion)) {
+				fileState = NORMAL;
+				refreshGraphicNode();
 			}
 		}
 	};
@@ -257,7 +261,7 @@ public class GistFile {
 	public boolean isInConflict() {return fileState.equals(CONFLICT);}
 
 	public boolean isAlertable() {
-		return fileState.equals(DIRTY) || fileState.equals(CONFLICT);
+		return !fileState.equals(NORMAL);
 	}
 
 	public String getFilename() {
@@ -275,6 +279,10 @@ public class GistFile {
 	}
 
 	public ObjectProperty<Node> getGraphicNode() {return graphicNode;}
+
+	public CStringProperty getNameProperty() {
+		return fileName;
+	}
 
 	/**
 		SQL Actions

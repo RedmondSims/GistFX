@@ -3,3 +3,5 @@
 .idea
 *.iml
 GistFX Access Token
+/src/main/resources/com/redmondsims/gistfx/FXML/
+/src/main/resources/com/redmondsims/gistfx/DevGraphics/untitled folder/

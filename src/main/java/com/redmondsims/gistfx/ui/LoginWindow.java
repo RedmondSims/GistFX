@@ -229,8 +229,8 @@ public class LoginWindow {
 
 	private void resetToken() {
 		if(CustomAlert.showConfirmation("Reset Token","Are you sure you wish to reset your token?\n\n(No locally saved data will be changed)")) {
-			AppSettings.clear().tokenHash();
-			AppSettings.clear().passwordHash();
+			AppSettings.clear().hashedToken();
+			AppSettings.clear().hashedPassword();
 			tfToken.setPromptText("Paste Token (enter)");
 			tfPassword.setPromptText("Type In New Password");
 			tfToken.setEditable(true);
@@ -443,8 +443,8 @@ public class LoginWindow {
 					passwordAttempts++;
 					if (passwordAttempts > 5) {
 						passwordAttempts = 0;
-						AppSettings.clear().passwordHash();
-						AppSettings.clear().tokenHash();
+						AppSettings.clear().hashedPassword();
+						AppSettings.clear().hashedToken();
 						CustomAlert.showWarning("Mandatory Reset", "You have entered the wrong password too many times. Your Gist access token and password have both been reset. You can enter a new (or the same) access token and type in a new password.");
 						Action.wipeSQLAndMetaData();
 						AppSettings.set().dataSource(GITHUB);

@@ -20,7 +20,6 @@ public class Gist {
 	private final String         gistId;
 	private       boolean        isPublic;
 	private List<GistFile> fileList    = new ArrayList<>();
-	private GistCategory   gistCategory;
 
 	public Gist(String gistId, String name, String description, boolean isPublic, String gistURL) {
 		this.gistId = gistId;
@@ -28,7 +27,6 @@ public class Gist {
 		this.description.setValue(description);
 		this.isPublic = isPublic;
 		this.gistURL  = gistURL;
-		this.gistCategory = Action.getGistCategory(gistId);
 	}
 
 	private String truncate(String string, int numChars, boolean ellipses) {
@@ -41,10 +39,6 @@ public class Gist {
 	/**
 	 * Public Setters
 	 */
-
-	public void setGistCategory(GistCategory gistCategory) {
-		this.gistCategory = gistCategory;
-	}
 
 	public void addFiles(List<GistFile> fileList) {
 		this.fileList = fileList;
