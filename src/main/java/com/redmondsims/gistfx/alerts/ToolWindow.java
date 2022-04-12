@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx.alerts;
 
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.collections.FXCollections;
@@ -38,7 +39,7 @@ public class ToolWindow {
 	private final EventHandler<Event>       afterCloseEvent;
 	private       String                    response = "";
 	private final Modality initModality;
-	private boolean alwaysOnTop;
+	private final boolean  alwaysOnTop;
 
 	public static class Builder {
 
@@ -180,7 +181,7 @@ public class ToolWindow {
 				SceneOne.set(ap,sceneId,callingStage)
 						.size(width,height)
 						.title(title)
-						.styleSheets(LiveSettings.getTheme().getStyleSheet())
+						.styleSheets(AppSettings.get().theme().getStyleSheet())
 						.size(width,height)
 						.onCloseEvent(onCloseHandler)
 						.modality(initModality)
@@ -191,7 +192,7 @@ public class ToolWindow {
 				SceneOne.set(ap,sceneId)
 						.size(width,height)
 						.title(title)
-						.styleSheets(LiveSettings.getTheme().getStyleSheet())
+						.styleSheets(AppSettings.get().theme().getStyleSheet())
 						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
 						.modality(initModality)
 						.size(width,height)

@@ -2,6 +2,7 @@ package com.redmondsims.gistfx.preferences.settings.onewindow.screens;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.gist.WindowManager;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
@@ -25,13 +26,6 @@ public class Utility {
 		return hbox;
 	}
 
-	public static HBox newHBox(double height, Node... nodes) {
-		HBox hbox = new HBox(nodes);
-		hbox.setSpacing(20);
-		hbox.setPrefHeight(height);
-		return hbox;
-	}
-
 	public static HBox newHBox(double height, double spacing, Node... nodes) {
 		HBox hbox = new HBox(nodes);
 		hbox.setSpacing(spacing);
@@ -44,6 +38,10 @@ public class Utility {
 		hbox.setAlignment(alignment);
 		hbox.setPrefHeight(height);
 		return hbox;
+	}
+
+	public static HBox newHBox(double spacing, Node... nodes) {
+		return new HBox(spacing, nodes);
 	}
 
 	public static HBox newHBox(Pos alignment, double height, double spacing, double padding, Node... nodes) {
@@ -117,7 +115,7 @@ public class Utility {
 		vbox.setPrefWidth(width);
 		vbox.setMinWidth(width);
 		vbox.setMaxWidth(width);
-		vbox.getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		vbox.getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		return vbox;
 	}
 

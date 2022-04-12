@@ -5,7 +5,6 @@ import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.gist.WindowManager;
-import com.redmondsims.gistfx.ui.gist.CodeEditor;
 import com.redmondsims.gistfx.ui.trayicon.TrayIcon;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -68,6 +67,7 @@ public class UISettings {
 			ObservableList<Theme> themeList = FXCollections.observableList(Arrays.asList(DARK, LIGHT));
 			ChoiceBox<Theme>      choiceBox = new ChoiceBox<>(themeList);
 			choiceBox.setPrefWidth(cbw);
+/*
 			choiceBox.setValue(AppSettings.get().theme());
 			choiceBox.setOnAction(e -> {
 				Theme theme = choiceBox.getValue();
@@ -77,8 +77,9 @@ public class UISettings {
 				callingScene.getStylesheets().clear();
 				callingScene.getStylesheets().add(styleSheet);
 				toolWindow.setStyleSheet(styleSheet);
-				CodeEditor.get().getEditor().setCurrentTheme(theme.equals(LIGHT) ? "vs-light" : "vs-dark");
+				CodeEditor.get().getEditor().setCurrentTheme(AppSettings.get().theme(LIGHT) ? "vs-light" : "vs-dark");
 			});
+*/
 			Tooltip.install(choiceBox, Action.newTooltip("Which side of the Force will you chose?"));
 			return newHBox(hBoxLeft(lblAppTheme), getSpacedHBoxRight(choiceBox, 3.5));
 		}
@@ -167,9 +168,7 @@ public class UISettings {
 			Label                       label     = newLabelTypeOne("Preferred Login Screen");
 			choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
-			choiceBox.setOnAction(e -> {
-				LiveSettings.applyAppSettings();
-			});
+			choiceBox.setOnAction(e -> LiveSettings.applyAppSettings());
 			Tooltip.install(choiceBox, Action.newTooltip("Chose between the graphic login screen, or the JavaFX login screen."));
 			return newHBox(hBoxLeft(label), getSpacedHBoxRight(choiceBox, 3));
 		}
@@ -186,14 +185,14 @@ public class UISettings {
 
 	}
 
-	public enum LoginScreenColor {
+	public enum Colors {
 		RED,
 		GREEN,
 		BLUE,
 		YELLOW,
 		HOTPINK;
 
-		public static String get(LoginScreenColor pref) {
+		public static String get(Colors pref) {
 			return switch (pref) {
 				case RED -> "Red";
 				case GREEN -> "Green";
@@ -203,7 +202,7 @@ public class UISettings {
 			};
 		}
 
-		public String folderName(LoginScreenColor pref) {
+		public String folderName(Colors pref) {
 			return switch(pref) {
 				case RED -> "Red";
 				case GREEN -> "Green";
@@ -213,16 +212,16 @@ public class UISettings {
 			};
 		}
 
-		private static ObservableList<LoginScreenColor> colorList () {
+		private static ObservableList<Colors> colorList () {
 			return FXCollections.observableArrayList(
-					LoginScreenColor.RED,
-					LoginScreenColor.GREEN,
-					LoginScreenColor.BLUE,
-					LoginScreenColor.YELLOW,
-					LoginScreenColor.HOTPINK);
+					Colors.RED,
+					Colors.GREEN,
+					Colors.BLUE,
+					Colors.YELLOW,
+					Colors.HOTPINK);
 		}
 
-		public static LoginScreenColor get(String pref) {
+		public static Colors get(String pref) {
 			return switch (pref) {
 				case "Red" -> RED;
 				case "Green" -> GREEN;
@@ -234,9 +233,9 @@ public class UISettings {
 		}
 
 		public static HBox getNode() {
-			ObservableList<LoginScreenColor> list      = colorList();
+			ObservableList<Colors> list      = colorList();
 			Label                            label     = newLabelTypeOne("Login Screen Color");
-			ChoiceBox<LoginScreenColor>      choiceBox = new ChoiceBox<>(list);
+			ChoiceBox<Colors>      choiceBox = new ChoiceBox<>(list);
 			choiceBox.setPrefWidth(cbw);
 			choiceBox.setOnAction(e -> {
 				LiveSettings.applyAppSettings();
@@ -250,7 +249,7 @@ public class UISettings {
 			return newHBox(hBoxLeft(label), getSpacedHBoxRight(choiceBox, 3));
 		}
 
-		public String Name(LoginScreenColor this) {
+		public String Name(Colors this) {
 			return switch (this) {
 				case RED -> "Red";
 				case GREEN -> "Green";
@@ -338,14 +337,10 @@ public class UISettings {
 			ColorPicker colorPicker = new ColorPicker();
 			colorPicker.setMaxWidth(100);
 			colorPicker.setValue(AppSettings.get().progressBarColor());
-			checkBox.setSelected(AppSettings.get().progressColorSource().equals(ProgressColorSource.USER_CHOICE));
 			colorPicker.setOnAction(e->{
-				AppSettings.set().progressBarColor(colorPicker.getValue());
 				LiveSettings.applyAppSettings();
 				String colorString = "#" + colorPicker.getValue().toString().replaceFirst("0x","").substring(0,6);
 				String style ="-fx-accent: " + colorString + ";";
-				AppSettings.set().progressBarStyle(style);
-				WindowManager.setPBarStyle(style);
 			});
 			Tooltip.install(checkBox, Action.newTooltip("""
 															If this is unchecked, GistFX will
@@ -358,7 +353,6 @@ public class UISettings {
 															and the one in the main window.
 															"""));
 			checkBox.setOnAction(e -> {
-				AppSettings.set().progressColorSource(checkBox.isSelected() ? USER_CHOICE : RANDOM);
 				LiveSettings.applyAppSettings();
 			});
 			HBox hBoxCheck = newHBox(hBoxLeft(lblChkBox), getSpacedHBoxRight(checkBox, 87.8));
@@ -415,7 +409,7 @@ public class UISettings {
 	}
 
 	private static Node loginScreenColor() {
-		return LoginScreenColor.getNode();
+		return Colors.getNode();
 	}
 
 	private static Node progressBarChoiceNode() {
@@ -460,14 +454,14 @@ public class UISettings {
 		ChoiceBox<String> cbColor = new ChoiceBox<>();
 		cbColor.getItems().add("White");
 		cbColor.getItems().add("Black");
-		cbColor.setValue(AppSettings.get().systrayColor());
+		//cbColor.setValue(AppSettings.get().systrayColor());
 		cbColor.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
 		cbShowAppIcon.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
 		lblShowAppIcon.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
-		cbLaunchInSystray.setSelected(AppSettings.get().runInSystray());
+		cbLaunchInSystray.setSelected(AppSettings.get().runInSystemTray());
 		cbShowAppIcon.setSelected(AppSettings.get().showAppIcon());
 		cbLaunchInSystray.setOnAction(e -> {
-			AppSettings.set().runInSystray(cbLaunchInSystray.isSelected());
+			AppSettings.set().runInSystemTray(cbLaunchInSystray.isSelected());
 			if(cbLaunchInSystray.isSelected())
 				TrayIcon.show();
 			else
@@ -481,7 +475,7 @@ public class UISettings {
 			if(selection == null || selection.isEmpty()) {
 				selection = "White";
 			}
-			AppSettings.set().systrayColor(selection);
+		//	AppSettings.set().systrayColor(selection);
 			cbColor.setValue(selection);
 		});
 		Tooltip.install(cbLaunchInSystray, Action.newTooltip("""

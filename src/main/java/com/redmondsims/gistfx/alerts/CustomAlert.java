@@ -3,6 +3,7 @@ package com.redmondsims.gistfx.alerts;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Response;
 import com.redmondsims.gistfx.enums.Type;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.UISettings.Theme;
@@ -65,7 +66,7 @@ public class CustomAlert {
 		alert.initModality(Modality.APPLICATION_MODAL);
 		alert.setHeaderText(header);
 		alert.getDialogPane().setContent(content);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		return alert;
 	}
 
@@ -75,14 +76,14 @@ public class CustomAlert {
 		alert.initModality(Modality.APPLICATION_MODAL);
 		alert.setHeaderText(header);
 		alert.setContentText(content);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		return alert;
 	}
 
 	public static void showInfo(String headerText, String contentText, Window owner) {
 		Alert alert = getAlert(Alert.AlertType.INFORMATION, headerText, contentText);
 		alert.initOwner(owner);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		addDialogIconTo(alert, true);
 		alert.showAndWait();
 	}
@@ -90,7 +91,7 @@ public class CustomAlert {
 	public static boolean showInfoResponse(String contentText, Window owner) {
 		Alert alert = getAlert(Alert.AlertType.INFORMATION, "", contentText);
 		alert.initOwner(owner);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		addDialogIconTo(alert, true);
 		alert.showAndWait();
 		return true;
@@ -99,7 +100,7 @@ public class CustomAlert {
 	public static void showInfo(String headerText, Node content, Window owner) {
 		Alert alert = getAlert(Alert.AlertType.INFORMATION, headerText, content);
 		alert.initOwner(owner);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		addDialogIconTo(alert, true);
 		alert.showAndWait();
 	}
@@ -107,7 +108,7 @@ public class CustomAlert {
 	public static void showRequireOK(String headerText, String content, Window owner) {
 		Alert alert = getAlert(Alert.AlertType.INFORMATION, headerText, content);
 		alert.initOwner(owner);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		addDialogIconTo(alert, true);
 		alert.showAndWait();
 	}
@@ -119,7 +120,7 @@ public class CustomAlert {
 	public static void showWarning(String headerText, String contentText) {
 		Alert alert = getAlert(Alert.AlertType.ERROR, headerText, contentText);
 		addDialogIconTo(alert, false);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		alert.showAndWait();
 	}
 
@@ -138,7 +139,7 @@ public class CustomAlert {
 		alert.getButtonTypes().clear();
 		alert.getButtonTypes().setAll(cancel, proceed);
 		alert.getDialogPane().setPadding(new Insets(10, 20, 0, 10));
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Button btnProceed = (Button) alert.getDialogPane().lookupButton(proceed);
 		Button btnCancel  = (Button) alert.getDialogPane().lookupButton(cancel);
 		btnProceed.setDefaultButton(false);
@@ -161,7 +162,7 @@ public class CustomAlert {
 		alert.getButtonTypes().setAll(cancel, save, exit);
 
 		alert.getDialogPane().setPadding(new Insets(10, 20, 0, 10));
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Button btnSave = (Button) alert.getDialogPane().lookupButton(save);
 		Button btnCancel  = (Button) alert.getDialogPane().lookupButton(cancel);
 		Button btnExit = (Button) alert.getDialogPane().lookupButton(exit);
@@ -182,7 +183,7 @@ public class CustomAlert {
 		addDialogIconTo(alert, false);
 		alert.getButtonTypes().clear();
 		alert.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Optional<ButtonType> result = alert.showAndWait();
 		return result.isPresent() && result.get().equals(ButtonType.YES);
 	}
@@ -196,7 +197,7 @@ public class CustomAlert {
 		addDialogIconTo(alert, false);
 		alert.getButtonTypes().clear();
 		alert.getButtonTypes().addAll(ButtonType.YES, ButtonType.CANCEL);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Optional<ButtonType> result = alert.showAndWait();
 		if (result.isPresent() && result.get().equals(ButtonType.YES)) {
 			if (tfYes.getText().equals("YES")) {
@@ -257,7 +258,7 @@ public class CustomAlert {
 	private static Text newText(String string) {
 		Text          text = new Text(string);
 		Color color;
-		if (LiveSettings.getTheme().equals(Theme.DARK)) {
+		if (AppSettings.get().theme().equals(com.redmondsims.gistfx.enums.Theme.DARK)) {
 			color = Color.rgb(144,163,127);
 		}
 		else {
@@ -308,7 +309,7 @@ public class CustomAlert {
 		ButtonType proceed = new ButtonType("Proceed", ButtonBar.ButtonData.OK_DONE);
 		alert.getButtonTypes().clear();
 		alert.getButtonTypes().addAll(proceed, ButtonType.CANCEL);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Optional<ButtonType>  option      = alert.showAndWait();
 		Map<Response, String> responseMap = new HashMap<>();
 		if (option.isPresent() && option.get().equals(ButtonType.CANCEL)) {
@@ -435,7 +436,7 @@ public class CustomAlert {
 		ButtonType createGist = new ButtonType("Create Gist", ButtonBar.ButtonData.YES);
 		alert.getButtonTypes().clear();
 		alert.getButtonTypes().addAll(createGist, ButtonType.CANCEL);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Optional<ButtonType> option  = alert.showAndWait();
 		String[]             choices = null;
 		if (option.isPresent()) {
@@ -459,7 +460,7 @@ public class CustomAlert {
 		Response response   = Response.CANCELED;
 		Label    lblMessage = new Label("Creating a new file in Gist: " + gistName + "\n\nPlease enter a name for this new file then click on Create File\n");
 		MonacoFX codeEditor = new MonacoFX();
-		codeEditor.getEditor().setCurrentTheme(LiveSettings.getTheme().equals(UISettings.Theme.DARK) ? "vs-dark" : "vs-light");
+		codeEditor.getEditor().setCurrentTheme(com.redmondsims.gistfx.enums.Theme.getMonacoTheme());
 		codeEditor.getEditor().getDocument().setText(fileContent);
 		codeEditor.getEditor().setCurrentLanguage("java");
 		lblMessage.setWrapText(true);
@@ -480,7 +481,7 @@ public class CustomAlert {
 		ButtonType createFile = new ButtonType("Create File", ButtonBar.ButtonData.YES);
 		alert.getButtonTypes().clear();
 		alert.getButtonTypes().addAll(createFile, ButtonType.CANCEL);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		Optional<ButtonType> option = alert.showAndWait();
 		Map<String,String> fileMap = new HashMap<>();
 		fileMap.put(tfFilename.getText(),codeEditor.getEditor().getDocument().getText());
@@ -500,7 +501,7 @@ public class CustomAlert {
 		alert.setTitle(applicationTitle);
 		alert.setHeaderText("Exception Occurred");
 		alert.setContentText(message.isEmpty() ? "An unknown error occurred.\n" + e.getMessage() : message);
-		alert.getDialogPane().getScene().getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+		alert.getDialogPane().getScene().getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		String exceptionText = e.getLocalizedMessage();
 
 		Label label = new Label("The exception message was:");

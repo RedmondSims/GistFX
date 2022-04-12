@@ -1,6 +1,8 @@
 package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.OS;
+import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.TreeIcons;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -66,12 +68,6 @@ public class ToolBars {
 		imgDeleteDown     = new Image(TreeIcons.getToolBarIcon("Kitty/KittyDeleteDown.png"));
 		Image iCopyToClipboard    = new Image(TreeIcons.getToolBarIcon("CopyToClipboard.png"));
 		Image iPasteFromClipboard = new Image(TreeIcons.getToolBarIcon("PasteFromClipboard.png"));
-		Image iFull               = new Image(TreeIcons.getToolBarIcon("FullScreen.png"));
-		Image iDistractionFree    = new Image(TreeIcons.getToolBarIcon("DistractionFree.png"));
-		Image iSaveFile           = new Image(TreeIcons.getToolBarIcon("SaveFile.png"));
-		Image iDeleteGist         = new Image(TreeIcons.getToolBarIcon("DeleteGist.png"));
-		Image iEditCategories     = new Image(TreeIcons.getToolBarIcon("EditCategories.png"));
-		Image iUndo			      = new Image(TreeIcons.getToolBarIcon("Undo.png"));
 		ivCopyToClipboard    = new ImageView(iCopyToClipboard);
 		ivPasteFromClipboard = new ImageView(iPasteFromClipboard);
 		ivWide               = new ImageView(imgWideUp);
@@ -118,19 +114,23 @@ public class ToolBars {
 		ivEditCategories.setPreserveRatio(true);
 		ivUndo.setPreserveRatio(true);
 
-		double fitWidth = 35;
-		double fitWidthP = 50;
+		double fitWidth = 50;
+
+		if(LiveSettings.getOS().equals(OS.WINDOWS)) {
+			fitWidth = 35;
+			//TODO Find out if the size delta is ok with Dustin
+		}
 
 		ivCopyToClipboard		.setFitWidth(fitWidth);
 		ivPasteFromClipboard	.setFitWidth(fitWidth);
 		ivWide					.setFitWidth(fitWidth+35);
-		ivFull					.setFitWidth(fitWidthP);
-		ivDistractionFree		.setFitWidth(fitWidthP+20);
-		ivSaveFile				.setFitWidth(fitWidthP);
-		ivDeleteGist			.setFitWidth(fitWidthP);
+		ivFull					.setFitWidth(fitWidth);
+		ivDistractionFree		.setFitWidth(fitWidth+20);
+		ivSaveFile				.setFitWidth(fitWidth);
+		ivDeleteGist			.setFitWidth(fitWidth);
 		ivNewGist				.setFitWidth(fitWidth+25);
-		ivEditCategories		.setFitWidth(fitWidthP);
-		ivUndo					.setFitWidth(fitWidthP);
+		ivEditCategories		.setFitWidth(fitWidth);
+		ivUndo					.setFitWidth(fitWidth);
 
 		Tooltip.install(ivCopyToClipboard, Action.newTooltip("Copy selected file to clipboard"));
 		Tooltip.install(ivPasteFromClipboard, Action.newTooltip("Paste clipboard to selected file and overwrite"));

@@ -12,9 +12,6 @@ import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class WindowManager {
 
 	private static GistWindow gistWindow;
@@ -87,9 +84,9 @@ public class WindowManager {
 		gistWindow.getActions().renameCategory();
 	}
 
-	public static void setPBarStyle(String style) {
+	public static void refreshPBarStyle() {
 		if(gistWindow != null)
-		gistWindow.setPBarStyle(style);
+			gistWindow.refreshPBarStyle();
 	}
 
 	public static void updateFileContent(String content) {

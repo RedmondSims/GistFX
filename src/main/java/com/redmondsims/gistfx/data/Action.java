@@ -19,12 +19,11 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tooltip;
-import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.github.GHGist;
 import org.kohsuke.github.GHGistFile;
 
@@ -36,10 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/*
+/**
  * One class to rule them all - Action is the class that isolates the rest of the program from those classes that affect change on data.
  * Its intent is to ensure data integrity as well as simplify workflow throughout the program.
  */
+
 
 public class Action {
 
@@ -69,6 +69,13 @@ public class Action {
 		AppSettings.clear().metadata();
 	}
 
+	public static void wipeSQLOnly() {
+		if(SQLITE.getConn() == null) {
+			SQLITE.setConnection();
+		}
+		SQLITE.cleanDatabase();
+	}
+
 	public static void delete(GistFile file) {
 		GITHUB.delete(file);
 		SQLITE.deleteGistFile(file);
@@ -90,7 +97,7 @@ public class Action {
 		return SQLITE.getGistMap();
 	}
 
-	public static String getGistName(GHGist ghGist) {
+	public static String getGistName(@NotNull GHGist ghGist) {
 		return JSON.getName(ghGist.getGistId());
 	}
 
@@ -405,12 +412,8 @@ public class Action {
 	 * ProgressBar Methods
 	 */
 
-	public static CProgressBar getProgressNode(double height) {
+	public static CProgressBar getProgressBar(double height) {
 		return new CProgressBar(progress, height);
-	}
-
-	public static CProgressBar getProgressNode(double height, Color color) {
-		return new CProgressBar(progress, height, color);
 	}
 
 	public static void sleep(long milliseconds) {

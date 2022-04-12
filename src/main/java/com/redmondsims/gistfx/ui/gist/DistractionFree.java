@@ -2,7 +2,9 @@ package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.OS;
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.gist.WindowManager;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
@@ -51,7 +53,7 @@ public class DistractionFree {
 	public void start(String content, String language) {
 		monaco = new MonacoFX();
 		monaco.getEditor().setCurrentLanguage(language);
-		monaco.getEditor().setCurrentTheme(LiveSettings.getTheme().equals(UISettings.Theme.DARK) ? "vs-dark" : "vs-light");
+		monaco.getEditor().setCurrentTheme(Theme.getMonacoTheme());
 		monaco.getEditor().getDocument().setText(content);
 		AnchorPane ap = new AnchorPane(monaco);
 		setNodePosition(monaco,0,0,0,0);

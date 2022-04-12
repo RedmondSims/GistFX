@@ -1,9 +1,9 @@
 package com.redmondsims.gistfx;
 
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.Colors;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
 import com.redmondsims.gistfx.ui.Password;
 import com.redmondsims.gistfx.ui.TreeIcons;
@@ -30,12 +30,13 @@ public class Main extends Application {
 
 
 	@Override public void start(Stage primaryStage) throws Exception {
+		LiveSettings.init();
 		Resources.init();
 		TreeIcons.init();
-		TrayIcon.start(primaryStage,AppSettings.get().runInSystray());
+		TrayIcon.start(primaryStage,AppSettings.get().runInSystemTray());
 		AppSettings.clear().fileMoveWarning();
 		LiveSettings.applyAppSettings();
-		String      color       = AppSettings.get().loginScreenColor().Name();
+		String      color       = LiveSettings.getLoginScreenColor().Name();
 		String      urlPath     = String.format(dockIconBase, color);
 		InputStream imageStream = Main.class.getResourceAsStream(urlPath);
 		try {
@@ -103,6 +104,9 @@ public class Main extends Application {
 			if (arg.toLowerCase().startsWith("changepassword")) {
 				changePassword = true;
 				stopFlag       = true;
+			}
+			if (arg.toLowerCase().startsWith("wipesql")) {
+				Action.wipeSQLOnly();
 			}
 		}
 		if (stopFlag) System.exit(100);

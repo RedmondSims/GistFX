@@ -7,16 +7,17 @@ import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Response;
 import com.redmondsims.gistfx.enums.Source;
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
+import com.redmondsims.gistfx.javafx.CProgressBar;
 import com.redmondsims.gistfx.networking.Transport;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.preferences.settings.onewindow.SettingsWindow;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.Editors;
@@ -99,9 +100,9 @@ public class GistWindow {
 	private final        MyMenuBar          menuBar               = new MyMenuBar();
 	private final        AnchorPane         ap                    = new AnchorPane();
 	private final        AnchorPane         apPane                = new AnchorPane();
-	private final        TextArea           taFileDescription     = new TextArea();
-	private final        ProgressBar        pBar                  = Action.getProgressNode(10);
-	private final        CBooleanProperty   paneExpanded          = new CBooleanProperty(false);
+	private final TextArea         taFileDescription = new TextArea();
+	private final CProgressBar     pBar              = Action.getProgressBar(10);
+	private final CBooleanProperty paneExpanded      = new CBooleanProperty(false);
 	public final         CBooleanProperty   inWideMode            = new CBooleanProperty(false);
 	private final        CBooleanProperty   savingData            = new CBooleanProperty(false);
 	public final         CBooleanProperty   inFullScreen          = new CBooleanProperty(false);
@@ -258,13 +259,13 @@ public class GistWindow {
 		splitPane.getItems().get(0).setOnMouseEntered(e -> {
 			if (inWideMode.isTrue()) {
 				paneExpanded.setTrue();
-				splitPane.getDividers().get(0).setPosition(.1);
+				splitPane.getDividers().get(0).setPosition(AppSettings.get().dividerExpanded());
 			}
 		});
 		splitPane.getItems().get(0).setOnMouseExited(e -> {
 			if (inWideMode.isTrue()) {
 				paneExpanded.setFalse();
-				splitPane.getDividers().get(0).setPosition(.02);
+				splitPane.getDividers().get(0).setPosition(AppSettings.get().dividerAtRest());
 			}
 		});
 	}
@@ -290,7 +291,6 @@ public class GistWindow {
 		lblCheckBox.setGraphic(publicCheckBox);
 		lblCheckBox.setContentDisplay(ContentDisplay.RIGHT);
 		pBar.setPrefHeight(10);
-		pBar.setStyle(com.redmondsims.gistfx.preferences.AppSettings.get().progressBarStyle());
 		pBar.setVisible(pBar.progressProperty().isBound());
 		labelsVisible(false);
 		lblGitUpdate.setId("notify");
@@ -332,10 +332,10 @@ public class GistWindow {
 					new Thread(() -> {
 						Platform.runLater(() -> SceneOne.toggleWideMode(sceneId, newV));
 						if(newV) {
-							splitPane.getDividers().get(0).setPosition(.03);
+							splitPane.getDividers().get(0).setPosition(AppSettings.get().dividerAtRest());
 						}
 						else {
-							splitPane.getDividers().get(0).setPosition(.15);
+							splitPane.getDividers().get(0).setPosition(AppSettings.get().dividerExpanded());
 						}
 					}).start();
 				}
@@ -353,10 +353,10 @@ public class GistWindow {
 							SceneOne.toggleWideMode(sceneId, inWideMode.getValue());
 						}
 						if(inWideMode.isTrue()) {
-							splitPane.getDividers().get(0).setPosition(.03);
+							splitPane.getDividers().get(0).setPosition(AppSettings.get().dividerAtRest());
 						}
 						else {
-							splitPane.getDividers().get(0).setPosition(.15);
+							splitPane.getDividers().get(0).setPosition(AppSettings.get().dividerExpanded());
 						}
 					}).start();
 				}
@@ -907,8 +907,8 @@ public class GistWindow {
 		CodeEditor.get().getEditor().getDocument().setText(newText);
 	}
 
-	public void setPBarStyle(String style) {
-		pBar.setStyle(style);
+	public void refreshPBarStyle() {
+		pBar.refreshStyle();
 	}
 
 	private boolean filesInConflict() {
@@ -958,12 +958,16 @@ public class GistWindow {
 		}
 	}
 
+	public SplitPane getSplitPane() {
+		return splitPane;
+	}
+
 	/**
 	 * Popup Windows and User Actions
 	 */
 
 	public void showAppSettings() {
-		new SettingsWindow().show();
+		new SettingsWindow(this).show();
 		//UISettings.showWindow(SceneOne.getStage(sceneId));
 	}
 
@@ -1165,6 +1169,7 @@ public class GistWindow {
 	private void addMenuBarItems() {
 		String APP_TITLE    = "GistFX";
 
+		//TODO Clean This Up
 
 		menuBar.addToFileMenu("New File", e -> actions.newFile(gist), false);
 		menuBar.addToFileMenu("Save File", e -> saveFile(), false);

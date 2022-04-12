@@ -31,6 +31,11 @@
     -fx-font-size: 15;
 }
 
+#LargerFont {
+    -fx-font-size: 18;
+    -fx-text-fill: rgb(255,255,100);
+}
+
 #SettingsOne {
     -fx-text-fill: rgba(220,220,200,1);
 }

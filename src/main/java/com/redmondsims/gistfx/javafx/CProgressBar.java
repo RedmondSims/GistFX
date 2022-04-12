@@ -1,78 +1,31 @@
 package com.redmondsims.gistfx.javafx;
 
-import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings;
-import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
-import com.redmondsims.gistfx.preferences.UISettings.Theme;
+import com.redmondsims.gistfx.enums.StyleSheet;
+import com.redmondsims.gistfx.enums.Theme;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.paint.Color;
 
-import java.util.Random;
-
 public class CProgressBar extends ProgressBar {
 
-	public CProgressBar(DoubleProperty bindProperty, double height) {
+	public CProgressBar(DoubleProperty valueProperty, double height) {
 		super(0);
-		progressProperty().bind(bindProperty);
+		progressProperty().bind(valueProperty);
 		setPrefHeight(height);
-		setup();
+		setStyle();
 	}
 
-	public CProgressBar(DoubleProperty bindProperty, double height, Color color) {
-		super(0);
-		progressProperty().bind(bindProperty);
-		setPrefHeight(height);
-		getStylesheets().add(Theme.PROGRESS_BAR.getStyleSheet());
-		setTheme();
-		String accent = "#" + color.toString().replaceFirst("0x","").substring(0,6);
-		setStyle("-fx-accent: " + accent + ";");
+	private void setStyle() {
+		Color color = AppSettings.get().progressBarColor();
+		String colorString  = "#" + color.toString().replaceFirst("0x", "").substring(0, 6);
+		String style = "-fx-accent: " + colorString + ";";
+		getStylesheets().add(StyleSheet.PROGRESS.getStyleSheet());
+		getStyleClass().add(AppSettings.get().theme().equals(Theme.DARK) ? "dark" : "light");
+		setStyle(style);
 	}
 
-	private void setup() {
-		getStylesheets().add(Theme.PROGRESS_BAR.getStyleSheet());
-
-		setTheme();
-		LiveSettings.applyAppSettings();
-		if (LiveSettings.progressBarColorSource.equals(ProgressColorSource.RANDOM)) {
-			addRandomColor();
-		}
-		else {
-			addUserColorChoice();
-		}
-	}
-
-	private void addRandomColor() {
-		getStyleClass().add(randomStyleClass());
-	}
-
-	private void addUserColorChoice() {
-		String accent = "#" + LiveSettings.progressBarColor.toString().replaceFirst("0x","").substring(0,6);
-		setStyle("-fx-accent: " + accent + ";");
-	}
-
-	private void setTheme() {
-		if (LiveSettings.getTheme().equals(Theme.DARK)) {
-			getStyleClass().add("dark");
-		}
-		else {
-			getStyleClass().add("light");
-		}
-	}
-
-	private String randomStyleClass() {
-		String[] colors = new String[]{
-				UISettings.ProgressBarColor.RED.getStyleClass(),
-				UISettings.ProgressBarColor.ORANGE.getStyleClass(),
-				UISettings.ProgressBarColor.YELLOW.getStyleClass(),
-				UISettings.ProgressBarColor.GREEN.getStyleClass(),
-				UISettings.ProgressBarColor.BLUE.getStyleClass(),
-				UISettings.ProgressBarColor.CYAN.getStyleClass(),
-				UISettings.ProgressBarColor.HOTPINK.getStyleClass(),
-				UISettings.ProgressBarColor.OCEAN.getStyleClass()
-		};
-
-		Random random = new Random();
-		return colors[random.nextInt(0, 7)];
+	public void refreshStyle() {
+		setStyle();
 	}
 }

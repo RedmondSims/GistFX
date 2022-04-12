@@ -1,6 +1,7 @@
 package com.redmondsims.gistfx.preferences.settings;
 
-import com.redmondsims.gistfx.enums.LoginScreenColor;
+import com.redmondsims.gistfx.enums.Colors;
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import javafx.scene.paint.Color;
@@ -11,6 +12,22 @@ import java.util.prefs.Preferences;
 public class Set {
 
 	private final Preferences prefs = LABEL.prefs;
+
+
+	public void progressColorRandom(boolean value) {
+		AppSettings.clear().progressColorRandom();
+		prefs.putBoolean(LABEL.PROGRESS_COLOR_RANDOM.Name(), value);
+	}
+
+	public void progressColorLogin(boolean value) {
+		AppSettings.clear().progressColorLogin();
+		prefs.putBoolean(LABEL.PROGRESS_COLOR_LOGIN.Name(), value);
+	}
+
+	public void progressCustomColor(Color color) {
+		AppSettings.clear().progressCustomColor();
+		prefs.put(LABEL.PROGRESS_CUSTOM_COLOR.Name(), String.valueOf(color));
+	}
 
 	public void hashedToken(String tokenHash) {
 		AppSettings.clear().hashedToken();
@@ -27,24 +44,14 @@ public class Set {
 		prefs.put(LABEL.DATA_SOURCE.Name(), option.Name());
 	}
 
-	public void progressBarColor(Color color) {
-		AppSettings.clear().progressBarColor();
-		prefs.put(LABEL.PROGRESS_BAR_COLOR.Name(), String.valueOf(color));
-	}
-
-	public void progressBarStyle(String style) {
-		AppSettings.clear().progressBarStyle();
-		prefs.put(LABEL.PROGRESS_BAR_STYLE.Name(), style);
-	}
-
-	public void progressColorSource(UISettings.ProgressColorSource choice) {
-		AppSettings.clear().progressColorSource();
-		prefs.put(LABEL.PROGRESS_COLOR_SOURCE.Name(), String.valueOf(choice));
-	}
-
-	public void loginScreenColor(LoginScreenColor option) {
+	public void loginScreenColor(Colors option) {
 		AppSettings.clear().logonScreenColor();
 		prefs.put(LABEL.LOGIN_SCREEN_COLOR.Name(), option.Name());
+	}
+
+	public void loginScreenRandom(boolean value) {
+		AppSettings.clear().logonScreenRandom();
+		prefs.putBoolean(LABEL.LOGIN_SCREEN_RANDOM.Name(), value);
 	}
 
 	public void firstRun(boolean value) {
@@ -55,7 +62,7 @@ public class Set {
 		prefs.putBoolean(LABEL.SHOW_TOOL_BAR.Name(), value);
 	}
 
-	public void theme(UISettings.Theme theme) {
+	public void theme(Theme theme) {
 		AppSettings.clear().theme();
 		prefs.put(LABEL.THEME.Name(), theme.Name());
 	}
@@ -148,17 +155,28 @@ public class Set {
 		prefs.put((LABEL.LAST_GITHUB_USER_ID.Name()), setting);
 	}
 
-	public void runInSystray(boolean value) {
+	public void runInSystemTray(boolean value) {
+		AppSettings.clear().runInSystemTray();
 		prefs.putBoolean((LABEL.RUN_IN_SYSTRAY.Name()), value);
 	}
 
-	public void systrayColor(String setting) {
+	public void systrayColor(Colors setting) {
 		AppSettings.clear().systrayColor();
-		prefs.put((LABEL.SYSTRAY_COLOR.Name()), String.valueOf(setting));
+		prefs.put((LABEL.SYSTRAY_COLOR.Name()),setting.Name());
 	}
 
 	public void showAppIcon(boolean value) {
 		prefs.putBoolean((LABEL.SHOW_APP_ICON.Name()), value);
+	}
+
+	public void dividerAtRest(double value) {
+		AppSettings.clear().dividerAtRest();
+		prefs.putDouble(LABEL.DIVIDER_AT_REST.Name(), value);
+	}
+
+	public void dividerExpanded(double value) {
+		AppSettings.clear().dividerAtRest();
+		prefs.putDouble(LABEL.DIVIDER_EXPANDED.Name(), value);
 	}
 
 	public void setDefaults() {

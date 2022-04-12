@@ -32,6 +32,10 @@ class SQLite {
 	 *	Local File operations for SQLite
 	 */
 
+	public Connection getConn() {
+		return conn;
+	}
+
 	public void setConnection() {
 		boolean createSchema  = !sqliteFile.exists();
 		String  connString    = "jdbc:sqlite:" + sqliteFile.getAbsolutePath();

@@ -8,6 +8,7 @@ package com.redmondsims.gistfx.ui.gist.factory;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
@@ -41,6 +42,7 @@ public class TreeCellFactory implements Callback<TreeView<TreeNode>, TreeCell<Tr
     private int                     dropIndex;
     private TreeItem<TreeNode>      draggedItem;
 
+    //FIXME Figure out why I can't edit the label of a TreeNode and have that change affect their related object
 
     public TreeCell<TreeNode> call(final TreeView treeView) {
         TreeCell<TreeNode> cell = new TreeNodeCell
@@ -243,7 +245,7 @@ public class TreeCellFactory implements Callback<TreeView<TreeNode>, TreeCell<Tr
         text3.setFont(Font.font("Avenir",15));
         Color color1;
         Color color2;
-        if (LiveSettings.getTheme().equals(UISettings.Theme.DARK)) {
+        if (AppSettings.get().theme().equals(Theme.DARK)) {
             color1 = Color.rgb(164,203,167);
             color2 = Color.rgb(255,255,0);
         }

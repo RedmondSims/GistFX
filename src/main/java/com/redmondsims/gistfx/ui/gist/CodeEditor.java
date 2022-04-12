@@ -1,6 +1,8 @@
 package com.redmondsims.gistfx.ui.gist;
 
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.gist.GistFile;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import eu.mihosoft.monacofx.MonacoFX;
@@ -35,9 +37,7 @@ public class CodeEditor {
 	}
 
 	public static void setContent(String content) {
-		Platform.runLater(() -> {
-			monacoFX.getEditor().getDocument().setText(content);
-		});
+		Platform.runLater(() -> monacoFX.getEditor().getDocument().setText(content));
 	}
 
 	public static void requestFocus() {monacoFX.requestFocus();}
@@ -47,12 +47,7 @@ public class CodeEditor {
 	public static void show()         {monacoFX.setVisible(true);}
 
 	public static void setEditorTheme() {
-		if(LiveSettings.getTheme().equals(UISettings.Theme.DARK)) {
-			monacoFX.getEditor().setCurrentTheme("vs-dark");
-		}
-		else {
-			monacoFX.getEditor().setCurrentTheme("vs-light");
-		}
+		monacoFX.getEditor().setCurrentTheme(Theme.getMonacoTheme());
 	}
 
 	public static MonacoFX get() {

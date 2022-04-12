@@ -12,12 +12,13 @@ import javafx.event.EventHandler;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Stage;
 
+import java.net.MalformedURLException;
 
 
 public class TrayIcon {
 
 	private static FXTrayIcon trayIcon;
-	private static MenuItem menuNewGist;
+	private static MenuItem   menuNewGist;
 	private static MenuItem menuEditCategories;
 	private static MenuItem menuManageApplication;
 	private static MenuItem menuAppSettings;
@@ -27,19 +28,24 @@ public class TrayIcon {
 
 
 	public static void start(Stage primaryStage, boolean show) {
-		if(FXTrayIcon.isSupported()) {
-			assignMenuActions();
-			int dimension = LiveSettings.getOS().equals(OS.WINDOWS) ? 19 : 26;
-			trayIcon = new FXTrayIcon
-					.Builder(primaryStage,Resources.getTrayIconURL(),dimension,dimension)
-					.menuItem(menuExit)
-					.build();
-			if(show) show();
+		try {
+			if(FXTrayIcon.isSupported()) {
+				assignMenuActions();
+				int dimension = LiveSettings.getOS().equals(OS.WINDOWS) ? 19 : 26;
+				trayIcon = new FXTrayIcon
+						.Builder(primaryStage, Resources.getTrayIconFile().toURL(), dimension, dimension)
+						.menuItem(menuExit)
+						.build();
+				if(show) show();
+			}
+		}
+		catch (MalformedURLException e) {
+			e.printStackTrace();
 		}
 	}
 
 	public static void show() {
-		if(AppSettings.get().runInSystray()) {
+		if(AppSettings.get().runInSystemTray()) {
 			if (trayIcon != null)
 				trayIcon.show();
 		}
@@ -82,5 +88,9 @@ public class TrayIcon {
 		trayIcon.addMenuItems(menuNewGist,menuEditCategories,menuAppSettings,menuTreeSettings);
 		trayIcon.addSeparator();
 		trayIcon.addMenuItem(menuExit);
+	}
+
+	public static void setGraphic() {
+		trayIcon.setGraphic(Resources.getTrayIconFile());
 	}
 }

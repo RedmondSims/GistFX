@@ -9,11 +9,11 @@ public enum LABEL {
 	PASSWORD_HASH,
 	TOKEN_HASH,
 	THEME,
-	PROGRESS_BAR_THEME,
-	PROGRESS_BAR_COLOR,
-	PROGRESS_COLOR_SOURCE,
-	CUSTOM_PROGRESS_COLOR,
+	PROGRESS_COLOR_RANDOM,
+	PROGRESS_COLOR_LOGIN,
+	PROGRESS_CUSTOM_COLOR,
 	LOGIN_SCREEN_COLOR,
+	LOGIN_SCREEN_RANDOM,
 	DATA_SOURCE,
 	FIRST_RUN,
 	SHOW_TOOL_BAR,
@@ -22,7 +22,6 @@ public enum LABEL {
 	GIST_FOLDER_ICON_COLOR,
 	FILE_ICON_COLOR,
 	CATEGORY_FOLDER_ICON_COLOR,
-	PROGRESS_BAR_STYLE,
 	DISABLE_DIRTY_WARNING,
 	FILE_MOVE_WARNING,
 	METADATA,
@@ -37,7 +36,9 @@ public enum LABEL {
 	LAST_GITHUB_USER_ID,
 	RUN_IN_SYSTRAY,
 	SYSTRAY_COLOR,
-	SHOW_APP_ICON
+	SHOW_APP_ICON,
+	DIVIDER_AT_REST,
+	DIVIDER_EXPANDED
 	;
 
 	public String Name(LABEL this) {
@@ -46,17 +47,16 @@ public enum LABEL {
 				case PASSWORD_HASH -> "GFX_DEV_Password_Hash";
 				case TOKEN_HASH -> "GFX_DEV_Token_Hash";
 				case THEME -> "GFX_DEV_Theme";
-				case PROGRESS_BAR_THEME -> "GFX_DEV_Progress_Bar_Theme";
-				case PROGRESS_BAR_COLOR -> "GFX_DEV_Progress_Bar_Color";
-				case PROGRESS_COLOR_SOURCE -> "GFX_DEV_Progress_Color_Source";
-				case CUSTOM_PROGRESS_COLOR -> "GFX_DEV_Custom_ProgressColor";
+				case PROGRESS_COLOR_RANDOM -> "GFX_DEV_Progress_Color_Random";
+				case PROGRESS_COLOR_LOGIN -> "GFX_DEV_Progress_Color_Login";
+				case PROGRESS_CUSTOM_COLOR -> "GFX_DEV_Progress_Custom_Color";
 				case LOGIN_SCREEN_COLOR -> "GFX_DEV_Login_Screen_Color";
+				case LOGIN_SCREEN_RANDOM -> "GFX_DEV_Login_Screen_Random";
 				case DATA_SOURCE -> "GFX_DEV_Data_Source";
 				case FIRST_RUN -> "GFX_DEV_First_Run";
 				case SHOW_TOOL_BAR -> "GFX_DEV_Show_Tool_Bar";
 				case FLAG_DIRTY_FILES -> "GFX_DEV_Flag_Dirty_Files";
 				case DIRTY_FILE_FLAG_COLOR -> "GFX_DEV_Dirty_File_Flag_Color";
-				case PROGRESS_BAR_STYLE -> "GFX_DEV_Progress_Bar_Style";
 				case DISABLE_DIRTY_WARNING -> "GFX_DEV_Disable_Dirty_Warning";
 				case FILE_MOVE_WARNING -> "GFX_DEV_File_Move_Warning";
 				case METADATA -> "GFX_DEV_Metadata";
@@ -75,6 +75,8 @@ public enum LABEL {
 				case RUN_IN_SYSTRAY -> "GFX_DEV_Run_In_Systray";
 				case SYSTRAY_COLOR -> "GFX_DEV_Systray_Color";
 				case SHOW_APP_ICON -> "GFX_DEV_Show_App_Icon";
+				case DIVIDER_AT_REST -> "GFX_DEV_Divider_At_Rest";
+				case DIVIDER_EXPANDED -> "GFX_DEV_Divider_Expanded";
 			};
 		}
 		else {
@@ -82,17 +84,16 @@ public enum LABEL {
 				case PASSWORD_HASH -> "GFX_Password_Hash";
 				case TOKEN_HASH -> "GFX_Token_Hash";
 				case THEME -> "GFX_Theme";
-				case PROGRESS_BAR_THEME -> "GFX_Progress_Bar_Theme";
-				case PROGRESS_BAR_COLOR -> "GFX_Progress_Bar_Color";
-				case PROGRESS_COLOR_SOURCE -> "GFX_Progress_Color_Source";
-				case CUSTOM_PROGRESS_COLOR -> "GFX_Custom_ProgressColor";
+				case PROGRESS_COLOR_RANDOM -> "GFX_Progress_Color_Random";
+				case PROGRESS_COLOR_LOGIN -> "GFX_Progress_Color_Login";
+				case PROGRESS_CUSTOM_COLOR -> "GFX_Progress_Custom_Color";
 				case LOGIN_SCREEN_COLOR -> "GFX_Login_Screen_Color";
+				case LOGIN_SCREEN_RANDOM -> "GFX_Login_Screen_Random";
 				case DATA_SOURCE -> "GFX_Data_Source";
 				case FIRST_RUN -> "GFX_First_Run";
 				case SHOW_TOOL_BAR -> "GFX_Show_Tool_Bar";
 				case FLAG_DIRTY_FILES -> "GFX_Flag_Dirty_Files";
 				case DIRTY_FILE_FLAG_COLOR -> "GFX_Dirty_File_Flag_Color";
-				case PROGRESS_BAR_STYLE -> "GFX_Progress_Bar_Style";
 				case DISABLE_DIRTY_WARNING -> "GFX_Disable_Dirty_Warning";
 				case FILE_MOVE_WARNING -> "GFX_File_Move_Warning";
 				case METADATA -> "GFX_Metadata";
@@ -111,6 +112,8 @@ public enum LABEL {
 				case RUN_IN_SYSTRAY -> "GFX_Run_In_Systray";
 				case SYSTRAY_COLOR -> "GFX_Systray_Color";
 				case SHOW_APP_ICON -> "GFX_Show_App_Icon";
+				case DIVIDER_AT_REST -> "GFX_Divider_At_Rest";
+				case DIVIDER_EXPANDED -> "GFX_Divider_Expanded";
 			};
 		}
 	}

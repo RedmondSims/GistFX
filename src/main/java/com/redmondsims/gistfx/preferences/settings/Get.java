@@ -1,6 +1,8 @@
 package com.redmondsims.gistfx.preferences.settings;
 
-import com.redmondsims.gistfx.enums.LoginScreenColor;
+import com.redmondsims.gistfx.enums.Colors;
+import com.redmondsims.gistfx.enums.Theme;
+import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import javafx.scene.paint.Color;
 
@@ -12,6 +14,32 @@ public class Get {
 	private final Preferences prefs = LABEL.prefs;
 
 
+
+	public Color progressBarColor() {
+		Color color;
+		if(progressColorRandom()) {
+			color = Colors.random();
+		}
+		else if (progressColorLogin()) {
+			color = LiveSettings.getLoginScreenColor().getColor();
+		}
+		else {
+			color = progressCustomColor();
+		}
+		return color;
+	}
+
+	public boolean progressColorRandom() {
+		return prefs.getBoolean(LABEL.PROGRESS_COLOR_RANDOM.Name(), true);
+	}
+
+	public boolean progressColorLogin() {
+		return prefs.getBoolean(LABEL.PROGRESS_COLOR_LOGIN.Name(), true);
+	}
+
+	public Color progressCustomColor() {
+		return Color.valueOf(prefs.get(LABEL.PROGRESS_CUSTOM_COLOR.Name(), loginScreenColor().toString()));
+	}
 
 	public String hashedToken() {
 		return prefs.get(LABEL.TOKEN_HASH.Name(), "");
@@ -26,31 +54,15 @@ public class Get {
 		return UISettings.DataSource.get(option);
 	}
 
-	public Color progressBarColor() {
-		if (progressColorSource() == UISettings.ProgressColorSource.RANDOM) {
-			Color[] colors = new Color[]{Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.ORANGE, Color.HOTPINK, Color.LIGHTBLUE};
-			Random  random = new Random();
-			int     top    = colors.length - 1;
-			return colors[random.nextInt(top)];
+	public Colors loginScreenColor() {
+		if (loginScreenRandom()) {
+			return LiveSettings.getLoginScreenColor();
 		}
-		String color = prefs.get(LABEL.PROGRESS_BAR_COLOR.Name(), "#FF0000");
-		return Color.valueOf(color);
+		return Colors.get(prefs.get(LABEL.LOGIN_SCREEN_COLOR.Name(), Colors.BLUE.Name()));
 	}
 
-	public String progressBarStyle() {
-		String colorString  = "#" + progressBarColor().toString().replaceFirst("0x", "").substring(0, 6);
-		String defaultStyle = "-fx-accent: " + colorString + ";";
-		return prefs.get(LABEL.PROGRESS_BAR_STYLE.Name(), defaultStyle);
-	}
-
-	public UISettings.ProgressColorSource progressColorSource() {
-		String choice = prefs.get(LABEL.PROGRESS_COLOR_SOURCE.Name(), UISettings.ProgressColorSource.RANDOM.getName());
-		return UISettings.ProgressColorSource.get(choice);
-	}
-
-	public LoginScreenColor loginScreenColor() {
-		String option = prefs.get(LABEL.LOGIN_SCREEN_COLOR.Name(), LoginScreenColor.BLUE.Name());
-		return LoginScreenColor.get(option);
+	public boolean loginScreenRandom() {
+		return prefs.getBoolean(LABEL.LOGIN_SCREEN_RANDOM.Name(), true);
 	}
 
 	public boolean firstRun() {
@@ -61,9 +73,9 @@ public class Get {
 		return prefs.getBoolean(LABEL.SHOW_TOOL_BAR.Name(), true);
 	}
 
-	public UISettings.Theme theme() {
+	public Theme theme() {
 		String option = prefs.get(LABEL.THEME.Name(), UISettings.Theme.DARK.Name());
-		return UISettings.Theme.get(option);
+		return Theme.get(option);
 	}
 
 	public Color dirtyFileFlagColor() {
@@ -134,16 +146,25 @@ public class Get {
 		return prefs.get(LABEL.LAST_GITHUB_USER_ID.Name(), "");
 	}
 
-	public boolean runInSystray() {
+	public boolean runInSystemTray() {
 	 	return prefs.getBoolean(LABEL.RUN_IN_SYSTRAY.Name(), false);
 	}
 
-	public String systrayColor() {
-		return prefs.get(LABEL.SYSTRAY_COLOR.Name(), "White");
+	public Colors systrayColor() {
+		return Colors.get(prefs.get(LABEL.SYSTRAY_COLOR.Name(), "White"));
 	}
 
 	public boolean showAppIcon() {
 		return prefs.getBoolean(LABEL.SHOW_APP_ICON.Name(), true);
 	}
+
+	public double dividerAtRest() {
+		return prefs.getDouble(LABEL.DIVIDER_AT_REST.Name(), 0.0);
+	}
+
+	public double dividerExpanded() {
+		return prefs.getDouble(LABEL.DIVIDER_EXPANDED.Name(), 0.0);
+	}
+
 
 }

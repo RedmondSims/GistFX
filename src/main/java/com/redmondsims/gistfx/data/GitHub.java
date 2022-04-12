@@ -12,9 +12,7 @@ import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
 import javafx.application.Platform;
-import org.kohsuke.github.GHGist;
-import org.kohsuke.github.GHGistFile;
-import org.kohsuke.github.GitHubBuilder;
+import org.kohsuke.github.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -57,6 +55,8 @@ class GitHub {
 	}
 
 	private void notifyUser(String gistId) {
+		gitHub.searchCommits().committerEmail("");
+
 		new Thread(() -> {
 			boolean proceed = gistId.isEmpty();
 			if (ghGistList != null) {

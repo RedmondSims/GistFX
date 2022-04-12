@@ -5,12 +5,12 @@ import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.LoginStates;
+import com.redmondsims.gistfx.enums.StyleSheet;
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.javafx.CProgressBar;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.enums.LoginScreenColor;
-import com.redmondsims.gistfx.preferences.UISettings.Theme;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -66,6 +66,8 @@ public class LoginWindow {
 	private              String         hashedPassword;
 	private              String         hashedAccessToken;
 	private              LoginStates    tokenStatus;
+	private Theme startingTheme;
+
 
 	/**
 	 * For preCheck and password state check
@@ -95,7 +97,8 @@ public class LoginWindow {
 		if (AppSettings.get().firstRun()) {
 			Help.showIntro();
 		}
-		LiveSettings.setTheme(Theme.DARK);
+		startingTheme = AppSettings.get().theme();
+		AppSettings.set().theme(Theme.DARK);
 		loginForm();
 		tfPassword.setText(LiveSettings.getPassword());
 		if(tfPassword.getText().length() > 4) userLogin();
@@ -168,7 +171,7 @@ public class LoginWindow {
 	}
 
 	private void loginForm() {
-		pBar = Action.getProgressNode(13);
+		pBar = Action.getProgressBar(13);
 		ap.setStyle("-fx-background-color: black");
 		String    background       = "Artwork/%s/LoginForm/Background/BackMain.png";
 		String    questionBase     = "Artwork/%s/LoginForm/QuestionMark.png";
@@ -197,10 +200,8 @@ public class LoginWindow {
 		ivReset.setOnMouseClicked(e -> resetToken());
 		ivBack.setPreserveRatio(true);
 		ivBack.setFitWidth(700);
-		ivBack.setFitHeight(323);
 		ivReset.setPreserveRatio(true);
 		ivReset.setFitWidth(700);
-		ivReset.setFitHeight(323);
 		ivKittyKitty.setPreserveRatio(true);
 		ivKittyKitty.setFitWidth(700);
 
@@ -226,11 +227,12 @@ public class LoginWindow {
 				.initStyle(StageStyle.TRANSPARENT)
 				.size(700,323)
 				.onCloseEvent(e -> System.exit(0))
-				.styleSheets(LiveSettings.getTheme().getStyleSheet())
+				.styleSheets(StyleSheet.DARK.getStyleSheet())
 				.show();
 		fadeKitty(ivKittyKitty);
 		if(noHashedToken) tfToken.requestFocus();
 		else tfPassword.requestFocus();
+		Editors.init();
 	}
 
 	private void sleep(long milliseconds) {
@@ -468,7 +470,7 @@ public class LoginWindow {
 			Platform.runLater(() -> pBar.progressProperty().unbind());
 		}
 		Platform.runLater(() -> SceneOne.hide(sceneId));
-		LiveSettings.setTheme(AppSettings.get().theme());
+		AppSettings.set().theme(startingTheme);
 		stopFadeKitty();
 	}
 

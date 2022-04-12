@@ -17,7 +17,7 @@ public class Launcher {
 		System.exit(0);
 */
 
-		if (AppSettings.get().runInSystray() && !AppSettings.get().showAppIcon()) {
+		if (AppSettings.get().runInSystemTray() && !AppSettings.get().showAppIcon()) {
 			System.setProperty("apple.awt.UIElement", "true");
 			Toolkit.getDefaultToolkit();
 		}

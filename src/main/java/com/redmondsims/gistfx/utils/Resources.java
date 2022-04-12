@@ -10,7 +10,6 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ public class Resources {
 	private final static String       helpFiles            = "HelpFiles";
 	private final static String       icons                = "Icons";
 	private final static String       tree                 = "Tree";
+	private final static String       tray                 = "Tray";
 	private final static String       sqlIte               = "SQLite";
 	private final static String       user                 = "User";
 	private final static String       dev                  = "Dev";
@@ -32,13 +32,20 @@ public class Resources {
 	private final static Path         externalUserIconPath = Paths.get(root, icons, tree, user);
 	private final static Path         externalSQLPath      = Paths.get(root, sqlIte);
 	private final static Path         externalHelpFilePath = Paths.get(root, helpFiles);
+	private final static Path         externalTrayIconPath = Paths.get(root, icons, tray);
 	private final static String       conflictName         = "Conflict.png";
 	private final static String       dirtyFlagName        = "DirtyFlag.png";
 	private final static String       fileName             = "File.png";
 	private final static String       folderName           = "Folder.png";
 	private final static List<String> sourceFiles          = new ArrayList<>(Arrays.asList(conflictName, dirtyFlagName, folderName, fileName));
-	private final static URL          trayIconWhite        = Main.class.getResource("Icons/Tray/White.png");
-	private final static URL          trayIconBlack        = Main.class.getResource("Icons/Tray/White.png");
+	private final static String       trayIconWhite        = "White.png";
+	private final static String       trayIconBlack        = "Black.png";
+	private final static String       trayIconBlue         = "Blue.png";
+	private final static String       trayIconGreen        = "Green.png";
+	private final static String       trayIconHotPink      = "HotPink.png";
+	private final static String       trayIconRed          = "Red.png";
+	private final static String       trayIconYellow       = "Yellow.png";
+	private final static List<String> trayIconSourceFiles = new ArrayList<>(Arrays.asList(trayIconWhite,trayIconBlack,trayIconBlue,trayIconGreen,trayIconHotPink,trayIconRed,trayIconYellow));
 	private final static String       sceneIdGistWindow    = "GistWindow";
 
 	public static void init() {
@@ -57,11 +64,15 @@ public class Resources {
 		return externalTreeIconPath;
 	}
 
-	public static URL getTrayIconURL() {
+	public static File getTrayIconFile() {
 		return switch (AppSettings.get().systrayColor()) {
-			case "White" -> trayIconWhite;
-			case "Black" -> trayIconBlack;
-			default -> null;
+			case WHITE -> Paths.get(externalTrayIconPath.toString(),trayIconWhite).toFile();
+			case BLACK -> Paths.get(externalTrayIconPath.toString(),trayIconBlack).toFile();
+			case BLUE -> Paths.get(externalTrayIconPath.toString(),trayIconBlue).toFile();
+			case GREEN -> Paths.get(externalTrayIconPath.toString(),trayIconGreen).toFile();
+			case HOTPINK -> Paths.get(externalTrayIconPath.toString(),trayIconHotPink).toFile();
+			case RED -> Paths.get(externalTrayIconPath.toString(),trayIconRed).toFile();
+			case YELLOW -> Paths.get(externalTrayIconPath.toString(),trayIconYellow).toFile();
 		};
 	}
 
@@ -96,6 +107,7 @@ public class Resources {
 		if (!externalSQLPath.toFile().exists()) externalSQLPath.toFile().mkdir();
 		if (!externalHelpFilePath.toFile().exists()) externalHelpFilePath.toFile().mkdir();
 		if (!externalUserIconPath.toFile().exists()) externalUserIconPath.toFile().mkdir();
+		if (!externalTrayIconPath.toFile().exists()) externalTrayIconPath.toFile().mkdir();
 		copyHelpFiles();
 		copyIcons();
 	}
@@ -150,6 +162,17 @@ public class Resources {
 				}
 				else if (!outFile.exists()){
 					System.err.println("Something is wrong with the internal resource (Resources class, copyIcons(): " + sourceFile);
+					System.exit(0);
+				}
+			}
+			for (String trayIconFile : trayIconSourceFiles) {
+				InputStream is      = Main.class.getResourceAsStream(icons + "/" + tray + "/" + trayIconFile);
+				File        outFile = new File(externalTrayIconPath.toFile(), trayIconFile);
+				if (is != null && !outFile.exists()) {
+					FileUtils.copyInputStreamToFile(is, outFile);
+				}
+				else if (!outFile.exists()){
+					System.err.println("Something is wrong with the internal resource (Resources class, copyIcons(): " + trayIconFile);
 					System.exit(0);
 				}
 			}

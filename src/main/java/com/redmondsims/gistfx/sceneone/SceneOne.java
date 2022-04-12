@@ -1,6 +1,7 @@
 package com.redmondsims.gistfx.sceneone;
 
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -886,7 +887,7 @@ public final class SceneOne {
 			for(String styleSheet : styleSheets) {
 				scene.getStylesheets().add(styleSheet);
 			}
-			scene.getStylesheets().add(LiveSettings.getTheme().getStyleSheet());
+			scene.getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 			if (build.exitClose) {
 				setStageCloseEvent(e -> SceneOne.exit());
 			}

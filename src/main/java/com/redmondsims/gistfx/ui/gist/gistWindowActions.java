@@ -3,10 +3,7 @@ package com.redmondsims.gistfx.ui.gist;
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.ToolWindow;
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.enums.Names;
-import com.redmondsims.gistfx.enums.Response;
-import com.redmondsims.gistfx.enums.State;
-import com.redmondsims.gistfx.enums.Type;
+import com.redmondsims.gistfx.enums.*;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
@@ -14,6 +11,7 @@ import com.redmondsims.gistfx.gist.WindowManager;
 import com.redmondsims.gistfx.networking.FileRecord;
 import com.redmondsims.gistfx.networking.Payload;
 import com.redmondsims.gistfx.networking.PayloadBuilder;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
@@ -164,7 +162,7 @@ public class gistWindowActions {
 		textTwo.setStrokeWidth(4);
 		textThree.setStrokeWidth(4);
 		textFour.setStrokeWidth(4);
-		if(LiveSettings.getTheme().equals(UISettings.Theme.DARK)) {
+		if(AppSettings.get().theme().equals(Theme.DARK)) {
 			textTwo.setFill(Color.DARKORANGE);
 			textFour.setFill(Color.DARKORANGE);
 		}
@@ -357,7 +355,7 @@ public class gistWindowActions {
 		Label  label  = new Label("Creating new Gists and adding them to your GitHub account");
 		label.setAlignment(Pos.CENTER);
 		AnchorPane dmAP = new AnchorPane(label);
-		if (LiveSettings.getTheme().equals(UISettings.Theme.DARK)) {
+		if (AppSettings.get().theme().equals(Theme.DARK)) {
 			label.setStyle("-fx-text-fill: ghostwhite");
 			dmAP.setStyle("-fx-border-color: yellow;-fx-border-width: 1em");
 		}

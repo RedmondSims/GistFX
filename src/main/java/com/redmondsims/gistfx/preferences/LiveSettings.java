@@ -1,6 +1,8 @@
 package com.redmondsims.gistfx.preferences;
 
+import com.redmondsims.gistfx.enums.Colors;
 import com.redmondsims.gistfx.enums.OS;
+import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.preferences.UISettings.DataSource;
 import com.redmondsims.gistfx.preferences.UISettings.ProgressColorSource;
@@ -14,25 +16,36 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.redmondsims.gistfx.enums.OS.*;
-import static com.redmondsims.gistfx.preferences.UISettings.Theme.DARK;
+import static com.redmondsims.gistfx.enums.Theme.*;
 
 public class LiveSettings {
 
-	private static       DataSource                  dataSource;
-	private static       UISettings.Theme            theme                 = DARK;
-	private static final StringProperty              monacoThemeProperty = new SimpleStringProperty();
-	public static        Color                       progressBarColor    = AppSettings.get().progressBarColor();
-	public static        ProgressColorSource         progressBarColorSource;
-	private static       boolean                     disableDirtyWarning;
-	private static       boolean                     offlineMode           = false;
-	private static       Color                       dirtyFileFlagColor;
-	public static        boolean                     doMasterReset         = false;
-	private static final String                      OSystem               = System.getProperty("os.name").toLowerCase();
-	private static       String                      password              = "";
-	private static       boolean                     authenticatedToGitHub = false;
-	private static       Taskbar                     taskbar;
-	private final static Integer                     tcpPortNumber         = 59383;
-	private static       boolean                     devMode               = false;
+	private static       DataSource          dataSource;
+	private static final StringProperty      monacoThemeProperty   = new SimpleStringProperty();
+	private static       boolean             disableDirtyWarning;
+	private static       boolean             offlineMode           = false;
+	private static       Color               dirtyFileFlagColor;
+	public static        boolean             doMasterReset         = false;
+	private static final String              OSystem               = System.getProperty("os.name").toLowerCase();
+	private static       String              password              = "";
+	private static       boolean             authenticatedToGitHub = false;
+	private static       Taskbar             taskbar;
+	private final static Integer             tcpPortNumber         = 59383;
+	private static       boolean             devMode               = false;
+	private static Colors loginScreenColor;
+
+	public static void init() {
+		if(AppSettings.get().loginScreenRandom()) {
+			loginScreenColor = Colors.randomLoginScreen();
+		}
+		else {
+			loginScreenColor = AppSettings.get().loginScreenColor();
+		}
+	}
+
+	public static Colors getLoginScreenColor() {
+		return loginScreenColor;
+	}
 
 	public static void setDevMode(boolean mode) {
 		devMode = mode;
@@ -77,13 +90,10 @@ public class LiveSettings {
 
 	public static void applyAppSettings() {
 		dataSource             = AppSettings.get().dataSource();
-		progressBarColorSource = AppSettings.get().progressColorSource();
-		theme                  = AppSettings.get().theme();
 		dirtyFileFlagColor     = AppSettings.get().dirtyFileFlagColor();
 		disableDirtyWarning    = AppSettings.get().disableDirtyWarning();
 		GistManager.refreshDirtyFileFlags();
-		monacoThemeProperty.setValue(theme.equals(DARK) ? "vs-dark" : "vs-light");
-		Editors.init();
+		monacoThemeProperty.setValue(Theme.getMonacoTheme());
 	}
 
 	public static void setTaskbar(Taskbar taskbar) {
@@ -101,14 +111,6 @@ public class LiveSettings {
 
 	public static DataSource getDataSource() {
 		return dataSource;
-	}
-
-	public static UISettings.Theme getTheme() {
-		return theme;
-	}
-
-	public static void setTheme(UISettings.Theme theme) {
-		LiveSettings.theme = theme;
 	}
 
 	public static boolean disableDirtyWarning() {return disableDirtyWarning;}

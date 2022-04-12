@@ -7,15 +7,23 @@ public class Clear {
 
 	private final Preferences prefs = LABEL.prefs;
 
+	public void progressColorRandom() {
+		prefs.remove(LABEL.PROGRESS_COLOR_RANDOM.Name());
+	}
+
+	public void progressColorLogin() {
+		prefs.remove(LABEL.PROGRESS_COLOR_LOGIN.Name());
+	}
+
+	public void progressCustomColor() {
+		prefs.remove(LABEL.PROGRESS_CUSTOM_COLOR.Name());
+	}
+
 	public void dataSource() {prefs.remove(LABEL.DATA_SOURCE.Name());}
 
 	public void logonScreenColor()        {prefs.remove(LABEL.LOGIN_SCREEN_COLOR.Name());}
 
-	public void progressColorSource()     {prefs.remove(LABEL.PROGRESS_COLOR_SOURCE.Name());}
-
-	public void progressBarColor()        {prefs.remove(LABEL.PROGRESS_BAR_COLOR.Name());}
-
-	public void progressBarStyle()        {prefs.remove(LABEL.PROGRESS_BAR_STYLE.Name());}
+	public void logonScreenRandom()        {prefs.remove(LABEL.LOGIN_SCREEN_RANDOM.Name());}
 
 	public void hashedPassword() {prefs.remove(LABEL.PASSWORD_HASH.Name());}
 
@@ -65,11 +73,15 @@ public class Clear {
 		prefs.remove(LABEL.LAST_GITHUB_USER_ID.Name());
 	}
 
-	public void runInSystray()   {prefs.remove(LABEL.RUN_IN_SYSTRAY.name());}
+	public void runInSystemTray() {prefs.remove(LABEL.RUN_IN_SYSTRAY.name());}
 
 	public void systrayColor()   {prefs.remove(LABEL.SYSTRAY_COLOR.name());}
 
 	public void showAppIcon()   {prefs.remove(LABEL.SHOW_APP_ICON.name());}
+
+	public void dividerAtRest()   {prefs.remove(LABEL.DIVIDER_AT_REST.name());}
+
+	public void dividerExpanded()   {prefs.remove(LABEL.DIVIDER_EXPANDED.name());}
 
 
 	/**
