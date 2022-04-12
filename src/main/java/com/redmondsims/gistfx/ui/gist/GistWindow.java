@@ -1202,7 +1202,7 @@ public class GistWindow {
 				final Label text    = new Label(APP_TITLE + "\nVersion: " + version + "\n");
 				final String license = """
 				Copyright © %s
-					Dustin K. Redmond <dredmond@gaports.com>
+					Dustin K. Redmond <dustin@dustinredmond.com>
 					Michael D. Sims <mike@simtechdata.com>
 				
 				Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the **Software**), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
