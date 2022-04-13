@@ -2,6 +2,7 @@ package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.OS;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.TreeIcons;
 import javafx.collections.FXCollections;
@@ -21,32 +22,32 @@ public class ToolBars {
 		setIconActions();
 	}
 
-	private ImageView ivCopyToClipboard;
-	private ImageView ivPasteFromClipboard;
-	private ImageView ivWide;
-	private ImageView ivFull;
-	private ImageView ivDistractionFree;
-	private ImageView ivSaveFile;
-	private ImageView ivDeleteGist;
-	private ImageView ivNewGist;
-	private ImageView ivEditCategories;
-	private ImageView ivUndo;
-	private Image imgWideUp;
-	private Image imgWideDown;
-	private Image imgKittyUp;
-	private Image imgKittyDown;
-	private Image imgFullUp;
-	private Image imgFullDown;
-	private Image imgCloudUp;
-	private Image imgCloudDown;
-	private Image imgUndoUp;
-	private Image imgUndoDown;
-	private Image imgCategoriesUp;
-	private Image imgCategoriesDown;
-	private Image imgSaveUp;
-	private Image imgSaveDown;
-	private Image imgDeleteUp;
-	private Image imgDeleteDown;
+	private       ImageView  ivCopyToClipboard;
+	private       ImageView  ivPasteFromClipboard;
+	private       ImageView  ivWide;
+	private       ImageView  ivFull;
+	private       ImageView  ivDistractionFree;
+	private       ImageView  ivSaveFile;
+	private       ImageView  ivDeleteGist;
+	private       ImageView  ivNewGist;
+	private       ImageView  ivEditCategories;
+	private       ImageView  ivUndo;
+	private       Image      imgWideUp;
+	private       Image      imgWideDown;
+	private       Image      imgKittyUp;
+	private       Image      imgKittyDown;
+	private       Image      imgFullUp;
+	private       Image      imgFullDown;
+	private       Image      imgCloudUp;
+	private       Image      imgCloudDown;
+	private       Image      imgUndoUp;
+	private       Image      imgUndoDown;
+	private       Image      imgCategoriesUp;
+	private       Image      imgCategoriesDown;
+	private       Image      imgSaveUp;
+	private       Image      imgSaveDown;
+	private       Image      imgDeleteUp;
+	private       Image      imgDeleteDown;
 	private final GistWindow gistWindow;
 
 	private void createIcons() {
@@ -77,31 +78,31 @@ public class ToolBars {
 		ivDeleteGist         = new ImageView(imgDeleteUp);
 		ivNewGist            = new ImageView(imgKittyUp);
 		ivEditCategories     = new ImageView(imgCategoriesUp);
-		ivUndo			     = new ImageView(imgUndoUp);
+		ivUndo               = new ImageView(imgUndoUp);
 
-		ivWide.setOnMousePressed(e->{ivWide.setImage(imgWideDown);});
-		ivWide.setOnMouseReleased(e->{ivWide.setImage(imgWideUp);});
+		ivWide.setOnMousePressed(e -> {ivWide.setImage(imgWideDown);});
+		ivWide.setOnMouseReleased(e -> {ivWide.setImage(imgWideUp);});
 
-		ivNewGist.setOnMousePressed(e->{ivNewGist.setImage(imgKittyDown);});
-		ivNewGist.setOnMouseReleased(e->{ivNewGist.setImage(imgKittyUp);});
+		ivNewGist.setOnMousePressed(e -> {ivNewGist.setImage(imgKittyDown);});
+		ivNewGist.setOnMouseReleased(e -> {ivNewGist.setImage(imgKittyUp);});
 
-		ivFull.setOnMousePressed(e->{ivFull.setImage(imgFullDown);});
-		ivFull.setOnMouseReleased(e->{ivFull.setImage(imgFullUp);});
+		ivFull.setOnMousePressed(e -> {ivFull.setImage(imgFullDown);});
+		ivFull.setOnMouseReleased(e -> {ivFull.setImage(imgFullUp);});
 
-		ivDistractionFree.setOnMousePressed(e->{ivDistractionFree.setImage(imgCloudDown);});
-		ivDistractionFree.setOnMouseReleased(e->{ivDistractionFree.setImage(imgCloudUp);});
+		ivDistractionFree.setOnMousePressed(e -> {ivDistractionFree.setImage(imgCloudDown);});
+		ivDistractionFree.setOnMouseReleased(e -> {ivDistractionFree.setImage(imgCloudUp);});
 
-		ivUndo.setOnMousePressed(e->{ivUndo.setImage(imgUndoDown);});
-		ivUndo.setOnMouseReleased(e->{ivUndo.setImage(imgUndoUp);});
+		ivUndo.setOnMousePressed(e -> {ivUndo.setImage(imgUndoDown);});
+		ivUndo.setOnMouseReleased(e -> {ivUndo.setImage(imgUndoUp);});
 
-		ivEditCategories.setOnMousePressed(e->{ivEditCategories.setImage(imgCategoriesDown);});
-		ivEditCategories.setOnMouseReleased(e->{ivEditCategories.setImage(imgCategoriesUp);});
+		ivEditCategories.setOnMousePressed(e -> {ivEditCategories.setImage(imgCategoriesDown);});
+		ivEditCategories.setOnMouseReleased(e -> {ivEditCategories.setImage(imgCategoriesUp);});
 
-		ivSaveFile.setOnMousePressed(e->{ivSaveFile.setImage(imgSaveDown);});
-		ivSaveFile.setOnMouseReleased(e->{ivSaveFile.setImage(imgSaveUp);});
+		ivSaveFile.setOnMousePressed(e -> {ivSaveFile.setImage(imgSaveDown);});
+		ivSaveFile.setOnMouseReleased(e -> {ivSaveFile.setImage(imgSaveUp);});
 
-		ivDeleteGist.setOnMousePressed(e->{ivDeleteGist.setImage(imgDeleteDown);});
-		ivDeleteGist.setOnMouseReleased(e->{ivDeleteGist.setImage(imgDeleteUp);});
+		ivDeleteGist.setOnMousePressed(e -> {ivDeleteGist.setImage(imgDeleteDown);});
+		ivDeleteGist.setOnMouseReleased(e -> {ivDeleteGist.setImage(imgDeleteUp);});
 
 		ivCopyToClipboard.setPreserveRatio(true);
 		ivPasteFromClipboard.setPreserveRatio(true);
@@ -114,23 +115,27 @@ public class ToolBars {
 		ivEditCategories.setPreserveRatio(true);
 		ivUndo.setPreserveRatio(true);
 
+		double base     = AppSettings.get().iconBaseSize();
 		double fitWidth = 50;
+		if (base > 0) {
+			fitWidth = base;
+		}
 
-		if(LiveSettings.getOS().equals(OS.WINDOWS)) {
+		if (LiveSettings.getOS().equals(OS.WINDOWS)) {
 			fitWidth = 35;
 			//TODO Find out if the size delta is ok with Dustin
 		}
-
-		ivCopyToClipboard		.setFitWidth(fitWidth);
-		ivPasteFromClipboard	.setFitWidth(fitWidth);
-		ivWide					.setFitWidth(fitWidth+35);
-		ivFull					.setFitWidth(fitWidth);
-		ivDistractionFree		.setFitWidth(fitWidth+20);
-		ivSaveFile				.setFitWidth(fitWidth);
-		ivDeleteGist			.setFitWidth(fitWidth);
-		ivNewGist				.setFitWidth(fitWidth+25);
-		ivEditCategories		.setFitWidth(fitWidth);
-		ivUndo					.setFitWidth(fitWidth);
+		setIconSize(fitWidth);
+		ivCopyToClipboard.setFitWidth(fitWidth);
+		ivPasteFromClipboard.setFitWidth(fitWidth);
+		ivWide.setFitWidth(fitWidth);
+		ivFull.setFitWidth(fitWidth);
+		ivDistractionFree.setFitWidth(fitWidth);
+		ivSaveFile.setFitWidth(fitWidth);
+		ivDeleteGist.setFitWidth(fitWidth);
+		ivNewGist.setFitWidth(fitWidth);
+		ivEditCategories.setFitWidth(fitWidth);
+		ivUndo.setFitWidth(fitWidth);
 
 		Tooltip.install(ivCopyToClipboard, Action.newTooltip("Copy selected file to clipboard"));
 		Tooltip.install(ivPasteFromClipboard, Action.newTooltip("Paste clipboard to selected file and overwrite"));
@@ -181,7 +186,7 @@ public class ToolBars {
 	private HBox getIconBox(ObservableList<ImageView> activeIconList) {
 		HBox hbox = new HBox(30);
 		hbox.getChildren().setAll(activeIconList);
-		hbox.setPadding(new Insets(5,5,5,5));
+		hbox.setPadding(new Insets(5, 5, 5, 5));
 		hbox.setAlignment(Pos.CENTER);
 		return hbox;
 	}
@@ -208,5 +213,18 @@ public class ToolBars {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
 		iconList.setAll(ivWide, ivFull, ivNewGist, ivEditCategories);
 		return getIconBox(iconList);
+	}
+
+	public void setIconSize(double size) {
+		ivCopyToClipboard.setFitWidth(size);
+		ivPasteFromClipboard.setFitWidth(size);
+		ivWide.setFitWidth(size);
+		ivFull.setFitWidth(size);
+		ivDistractionFree.setFitWidth(size);
+		ivSaveFile.setFitWidth(size);
+		ivDeleteGist.setFitWidth(size);
+		ivNewGist.setFitWidth(size);
+		ivEditCategories.setFitWidth(size);
+		ivUndo.setFitWidth(size);
 	}
 }

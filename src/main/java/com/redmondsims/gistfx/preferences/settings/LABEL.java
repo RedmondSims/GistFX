@@ -38,8 +38,8 @@ public enum LABEL {
 	SYSTRAY_COLOR,
 	SHOW_APP_ICON,
 	DIVIDER_AT_REST,
-	DIVIDER_EXPANDED
-	;
+	DIVIDER_EXPANDED,
+	ICON_BASE_SIZE;
 
 	public String Name(LABEL this) {
 		if (LiveSettings.getDevMode()) {
@@ -77,6 +77,7 @@ public enum LABEL {
 				case SHOW_APP_ICON -> "GFX_DEV_Show_App_Icon";
 				case DIVIDER_AT_REST -> "GFX_DEV_Divider_At_Rest";
 				case DIVIDER_EXPANDED -> "GFX_DEV_Divider_Expanded";
+				case ICON_BASE_SIZE -> "GFX_DEV_Icon_Base_Size";
 			};
 		}
 		else {
@@ -114,6 +115,7 @@ public enum LABEL {
 				case SHOW_APP_ICON -> "GFX_Show_App_Icon";
 				case DIVIDER_AT_REST -> "GFX_Divider_At_Rest";
 				case DIVIDER_EXPANDED -> "GFX_Divider_Expanded";
+				case ICON_BASE_SIZE -> "GFX_Icon_Base_Size";
 			};
 		}
 	}

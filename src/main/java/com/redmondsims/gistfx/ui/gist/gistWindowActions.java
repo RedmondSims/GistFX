@@ -412,6 +412,9 @@ public class gistWindowActions {
 		});
 	}
 
+
+	long start = System.currentTimeMillis();
+
 	private String newFileAction = "";
 	public void newFile(Gist gist) {
 		if (Status.comparingLocalDataWithGitHub()) {
@@ -426,13 +429,13 @@ public class gistWindowActions {
 
 		double width = 900;
 		double height = 800;
-		Label lblFilename = new Label("Filename");
-		Label lblDescription = new Label("Description");
-		String sceneName = "NewFile";
-		TextField tfFilename = new TextField();
-		TextArea taDescription = new TextArea();
-		Button btnSave = new Button("Save");
-		Button btnCancel = new Button("Cancel");
+		String    sceneName      = "NewFile";
+		Label     lblFilename    = new Label("Filename");
+		TextField tfFilename     = new TextField();
+		Label     lblDescription = new Label("Description");
+		TextArea  taDescription  = new TextArea();
+		Button    btnSave        = new Button("Save");
+		Button    btnCancel      = new Button("Cancel");
 		lblFilename.setMinWidth(45);
 		lblFilename.setAlignment(Pos.CENTER_LEFT);
 		lblDescription.setMinWidth(45);
@@ -448,12 +451,15 @@ public class gistWindowActions {
 			SceneOne.close(sceneName);
 		});
 		MonacoFX monaco = Editors.getMonacoOne();
+		HBox boxFilename = new HBox(10,lblFilename, tfFilename);
+/*
 		AnchorPane apnf = new AnchorPane(lblFilename,lblDescription,tfFilename,taDescription,monaco);
 		setAnchors(lblFilename,10,-1,10,-1);
 		setAnchors(tfFilename,65,400,10,-1);
 		setAnchors(lblDescription,10,10,45,-1);
 		setAnchors(taDescription,10,10,70, -1);
 		setAnchors(monaco,10,10,135,10);
+*/
 		monaco.getEditor().getDocument().setText(getDefaultJavaText(gist.getName()));
 		contents.bind(monaco.getEditor().getDocument().textProperty());
 		filename.bind(tfFilename.textProperty());
@@ -465,7 +471,20 @@ public class gistWindowActions {
 		});
 		description.bind(taDescription.textProperty());
 		tfFilename.setText(gist.getName().replaceAll(" ","")+".java");
-		ToolWindow toolWindow = new ToolWindow.Builder(apnf)
+
+		VBox vbox = new VBox(10,boxFilename,lblDescription, taDescription, monaco);
+		vbox.setPadding(new Insets(15,10,10,15));
+
+
+		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> {
+			String extension = FilenameUtils.getExtension(newValue);
+			if(extension.equals("py"))
+				monaco.getEditor().setCurrentLanguage("python");
+			else
+				monaco.getEditor().setCurrentLanguage(extension);
+		});
+
+		ToolWindow toolWindow = new ToolWindow.Builder(vbox)
 				.addButton(btnCancel)
 				.addButton(btnSave)
 				.setSceneId(sceneName)

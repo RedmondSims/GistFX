@@ -33,7 +33,7 @@ public class Main extends Application {
 		LiveSettings.init();
 		Resources.init();
 		TreeIcons.init();
-		TrayIcon.start(primaryStage,AppSettings.get().runInSystemTray());
+		TrayIcon.start(primaryStage, AppSettings.get().runInSystemTray());
 		AppSettings.clear().fileMoveWarning();
 		LiveSettings.applyAppSettings();
 		String      color       = LiveSettings.getLoginScreenColor().Name();
@@ -107,6 +107,12 @@ public class Main extends Application {
 			}
 			if (arg.toLowerCase().startsWith("wipesql")) {
 				Action.wipeSQLOnly();
+			}
+			if (arg.toLowerCase().startsWith("iconbase=")) {
+				String num   = arg.replaceFirst("iconbase=", "");
+				double value = Double.parseDouble(num);
+				AppSettings.set().iconBaseSize(value);
+				System.out.println("iconbase set to " + value);
 			}
 		}
 		if (stopFlag) System.exit(100);

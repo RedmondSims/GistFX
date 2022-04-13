@@ -414,6 +414,13 @@ public class GistWindow {
 		});
 	}
 
+	public void setIconSize(double size) {
+		if(toolbarAnchored != null) {
+			toolBars.setIconSize(size);
+			reselectToolbar();
+		}
+	}
+
 	private void labelsVisible(boolean visible) {
 		lblGistDescription.setVisible(visible);
 		lblDescriptionLabel.setVisible(visible);

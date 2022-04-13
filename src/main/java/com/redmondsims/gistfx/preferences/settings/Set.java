@@ -179,6 +179,11 @@ public class Set {
 		prefs.putDouble(LABEL.DIVIDER_EXPANDED.Name(), value);
 	}
 
+	public void iconBaseSize(double value) {
+		AppSettings.clear().iconBaseSize();
+		prefs.putDouble(LABEL.ICON_BASE_SIZE.Name(), value);
+	}
+
 	public void setDefaults() {
 		try {prefs.clear();}catch (BackingStoreException e) {e.printStackTrace();}
 	}

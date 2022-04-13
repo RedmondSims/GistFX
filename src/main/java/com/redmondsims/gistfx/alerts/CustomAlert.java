@@ -405,6 +405,7 @@ public class CustomAlert {
 		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue.isEmpty()) tfFilename.setText("File.java");
 			String ext = FilenameUtils.getExtension(newValue);
+			if(ext.toLowerCase().contains("py")) ext = "python";
 			monacoFX.getEditor().setCurrentLanguage(ext);
 		});
 		tfFilename.setMinWidth(250);

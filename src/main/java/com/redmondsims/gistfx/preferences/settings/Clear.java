@@ -83,6 +83,8 @@ public class Clear {
 
 	public void dividerExpanded()   {prefs.remove(LABEL.DIVIDER_EXPANDED.name());}
 
+	public void iconBaseSize()   {prefs.remove(LABEL.ICON_BASE_SIZE.name());}
+
 
 	/**
 	 * Tree Icon SMTPServerSettings

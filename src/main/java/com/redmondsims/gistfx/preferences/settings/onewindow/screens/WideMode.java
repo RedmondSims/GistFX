@@ -10,10 +10,10 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.math3.util.Precision;
@@ -31,37 +31,47 @@ public class WideMode {
 	}
 
 	GistWindow gistWindow;
-	private       State          state            = State.IDLE;
-	private       Label          lblAtRest;
-	private       TextField      tfAtRest;
-	private       Button         btnAtRest;
-	private       Label          lblExpanded;
-	private       TextField      tfExpanded;
-	private       Button         btnExpanded;
-	private final DoubleProperty positionProperty = new SimpleDoubleProperty();
-	private       Label          lblMessage;
-	private final Dimension      dimension        = Toolkit.getDefaultToolkit().getScreenSize();
-	private       double         atRestValue      = AppSettings.get().dividerAtRest();
-	private       double         expandedValue    = AppSettings.get().dividerExpanded();
-	private       double         sceneWidth       = 0;
-	private       double         splitPosition    = 0;
-	private       double         X                = 0;
-	private       double         Y                = 0;
+	private       State            state            = State.IDLE;
+	private       Label            lblAtRest;
+	private       TextField        tfAtRest;
+	private       Button           btnAtRest;
+	private       Label            lblExpanded;
+	private       TextField        tfExpanded;
+	private       Button           btnExpanded;
+	private final DoubleProperty   positionProperty = new SimpleDoubleProperty();
+	private       Label            lblMessage;
+	private       Label            lblIconSize;
+	private       Spinner<Integer> spinner;
+	private final Dimension        dimension        = Toolkit.getDefaultToolkit().getScreenSize();
+	private       double           atRestValue      = AppSettings.get().dividerAtRest();
+	private       double           expandedValue    = AppSettings.get().dividerExpanded();
+	private       double           sceneWidth       = 0;
+	private       double           splitPosition    = 0;
+	private       double           X                = 0;
+	private       double           Y                = 0;
 
 	public VBox content(GistWindow gistWindow) {
 		this.gistWindow = gistWindow;
-		lblAtRest = new Label("Position At Rest");
-		tfAtRest = new TextField();
-		btnAtRest = new Button("Enable At Rest");
-		lblExpanded = new Label("Position Expanded");
-		tfExpanded = new TextField();
-		btnExpanded = new Button("Enable Expanded");
-		lblMessage = new Label();
-
+		lblAtRest       = new Label("Position At Rest");
+		tfAtRest        = new TextField();
+		btnAtRest       = new Button("Enable At Rest");
+		lblExpanded     = new Label("Position Expanded");
+		tfExpanded      = new TextField();
+		btnExpanded     = new Button("Enable Expanded");
+		lblMessage      = new Label();
+		lblIconSize     = new Label("Icon Size");
+		spinner         = new Spinner<>(1,200,(int) AppSettings.get().iconBaseSize());
 		lblMessage.setId("LargerFont");
 
 		lblAtRest.setAlignment(Pos.CENTER_RIGHT);
 		lblExpanded.setAlignment(Pos.CENTER_RIGHT);
+		lblIconSize.setAlignment(Pos.CENTER_RIGHT);
+		spinner.setMinWidth(75);
+		spinner.setMaxWidth(75);
+		spinner.setPrefWidth(75);
+		lblIconSize.setMinWidth(250);
+		lblIconSize.setMaxWidth(250);
+		lblIconSize.setPrefWidth(250);
 		lblAtRest.setMinWidth(110);
 		lblAtRest.setMaxWidth(110);
 		lblAtRest.setPrefWidth(110);
@@ -85,31 +95,32 @@ public class WideMode {
 
 		tfAtRest.setText(round(AppSettings.get().dividerAtRest()));
 		tfExpanded.setText(round(AppSettings.get().dividerExpanded()));
-		HBox boxAtRest = new HBox(5,lblAtRest,tfAtRest,btnAtRest);
-		HBox boxExpanded = new HBox(5,lblExpanded,tfExpanded,btnExpanded);
+		HBox boxAtRest   = new HBox(5, lblAtRest, tfAtRest, btnAtRest);
+		HBox boxExpanded = new HBox(5, lblExpanded, tfExpanded, btnExpanded);
+		HBox boxIcon = new HBox(5, lblIconSize, spinner);
 		boxAtRest.setAlignment(Pos.CENTER);
 		boxExpanded.setAlignment(Pos.CENTER);
 
 		positionProperty.addListener((observable, oldValue, newValue) -> {
 			String valueString = round((double) newValue);
 
-			if(state.equals(State.REST)) {
+			if (state.equals(State.REST)) {
 				atRestValue = (double) newValue;
 				AppSettings.set().dividerAtRest(atRestValue);
 				Platform.runLater(() -> tfAtRest.setText(valueString));
 			}
-			if(state.equals(State.EXPANDED)) {
+			if (state.equals(State.EXPANDED)) {
 				expandedValue = (double) newValue;
 				AppSettings.set().dividerExpanded(expandedValue);
 				Platform.runLater(() -> tfExpanded.setText(valueString));
 			}
 		});
 
-		btnAtRest.setOnAction(e->{
+		btnAtRest.setOnAction(e -> {
 			state = State.IDLE;
-			if(sceneWidth == 0){
-				sceneWidth = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getWidth();
-				X = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getX();
+			if (sceneWidth == 0) {
+				sceneWidth    = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getWidth();
+				X             = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getX();
 				Y             = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getY();
 				splitPosition = gistWindow.getSplitPane().getDividers().get(0).getPosition();
 			}
@@ -121,11 +132,11 @@ public class WideMode {
 			state = State.REST;
 		});
 
-		btnExpanded.setOnAction(e->{
+		btnExpanded.setOnAction(e -> {
 			state = State.IDLE;
-			if(sceneWidth == 0){
-				sceneWidth = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getWidth();
-				X = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getX();
+			if (sceneWidth == 0) {
+				sceneWidth    = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getWidth();
+				X             = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getX();
 				Y             = SceneOne.getScene(Resources.getSceneIdGistWindow()).getWindow().getY();
 				splitPosition = gistWindow.getSplitPane().getDividers().get(0).getPosition();
 			}
@@ -137,10 +148,15 @@ public class WideMode {
 			state = State.EXPANDED;
 		});
 
+		spinner.setOnMouseClicked(e->{
+			gistWindow.setIconSize((double) spinner.getValue());
+			AppSettings.set().iconBaseSize((double) spinner.getValue());
+		});
+
 		Tooltip.install(btnAtRest, Action.newTooltip("This will put the main screen into a wide mode with the\ndivider at resting position. Set the desired location of\nthe divider when in the 'at rest' state."));
 		Tooltip.install(btnExpanded, Action.newTooltip("This will put the main screen into a wide mode with the\ndivider at the extended position. Set the desired location of\nthe divider when in the 'extended' state."));
 
-		VBox content = new VBox(15,boxAtRest,boxExpanded,lblMessage);
+		VBox content = new VBox(15, boxAtRest, boxExpanded, boxIcon, lblMessage);
 		content.setPadding(new Insets(30, 0, 0, 0));
 		content.setAlignment(Pos.CENTER);
 		return content;

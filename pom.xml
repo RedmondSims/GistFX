@@ -129,6 +129,11 @@
             <artifactId>FXTrayIcon</artifactId>
             <version>3.1.2</version>
         </dependency>-->
+        <dependency>
+            <groupId>com.simtechdata</groupId>
+            <artifactId>FXTrayIcon</artifactId>
+            <version>3.1.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -205,6 +210,7 @@
                     <customizedJre>false</customizedJre>
                     <generateInstaller>true</generateInstaller>
                     <administratorRequired>false</administratorRequired>
+                    <copyDependencies>true</copyDependencies>
                 </configuration>
                 <executions>
                     <execution>
@@ -214,6 +220,7 @@
                             <goal>package</goal>
                         </goals>
                         <configuration>
+                            <assetsDir>/Users/michael/IdeaProjects/GistFX/assets</assetsDir>
                             <platform>auto</platform>
                             <createZipball>false</createZipball>
                             <createTarball>true</createTarball>
@@ -228,11 +235,11 @@
                                 <generateMsi>false</generateMsi>
                             </winConfig>
                             <macConfig>
-                                <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>
+                              <!--  <icnsFile>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</icnsFile>-->
                                 <generateDmg>true</generateDmg>
                                 <generatePkg>false</generatePkg>
                                 <volumeName>GistFX</volumeName>
-                                <volumeIcon>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>
+                            <!--    <volumeIcon>/Users/michael/IdeaProjects/GistFX/src/main/resources/com/redmondsims/gistfx/Assets/mac/GistFX.icns</volumeIcon>-->
                                 <entitlements>entitlements.plist</entitlements>
                             </macConfig>
                         </configuration>

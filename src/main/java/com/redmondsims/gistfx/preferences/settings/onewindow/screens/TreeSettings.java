@@ -117,7 +117,7 @@ public class TreeSettings {
 		GridPane.setRowIndex(colorPicker, 1);
 		GridPane.setValignment(colorPicker, javafx.geometry.VPos.CENTER);
 		colorPicker.setPrefHeight(26.0);
-		colorPicker.setPrefWidth(110.0);
+		colorPicker.setPrefWidth(150.0);
 
 		GridPane.setColumnIndex(btnResetDefault, 1);
 		GridPane.setHalignment(btnResetDefault, javafx.geometry.HPos.CENTER);
@@ -172,7 +172,6 @@ public class TreeSettings {
 		lblColor.visibleProperty().bind(cbUseCustomIcon.selectedProperty().not());
 		btnDefaultColor.visibleProperty().bind(cbUseCustomIcon.selectedProperty().not());
 		colorPicker.visibleProperty().bind(cbUseCustomIcon.selectedProperty().not());
-		colorPicker.setPrefWidth(100);
 
 		//Control Actions
 		cbUseCustomIcon.setOnAction(e -> {
@@ -320,7 +319,6 @@ public class TreeSettings {
 			}
 		}
 	}
-
 
 	private String getTypeString(Type type) {
 		return switch(type) {

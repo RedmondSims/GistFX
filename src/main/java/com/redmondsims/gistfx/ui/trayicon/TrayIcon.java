@@ -91,6 +91,11 @@ public class TrayIcon {
 	}
 
 	public static void setGraphic() {
-		trayIcon.setGraphic(Resources.getTrayIconFile());
+		if(LiveSettings.getOS().equals(OS.WINDOWS)) {
+			trayIcon.setGraphic(Resources.getTrayIconFile(),17,17);
+		}
+		else {
+			trayIcon.setGraphic(Resources.getTrayIconFile(),26,26);
+		}
 	}
 }

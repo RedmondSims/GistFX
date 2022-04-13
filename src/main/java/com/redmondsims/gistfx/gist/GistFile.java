@@ -75,12 +75,10 @@ public class GistFile {
 		Private getters
 	 */
 
-	private String getFileExtension() {
-		boolean hasDot = fileName.name().contains(".");
-		if (hasDot) {
-			return FilenameUtils.getExtension(fileName.name());
-		}
-		return "";
+	private void setEditorLanguage(String fileExtension) {
+		String language = fileExtension;
+		if (language.equals("py")) language = "python";
+		CodeEditor.setLanguage(language);
 	}
 
 	/**
@@ -221,7 +219,7 @@ public class GistFile {
 
 	public void setName(String newFilename) {
 		String oldFilename = fileName.getValue();
-		CodeEditor.setLanguage(getFileExtension());
+		setEditorLanguage(FilenameUtils.getExtension(this.fileName.getValue()));
 		Action.renameFile(gistId, fileId, oldFilename, newFilename, liveVersion.getValue());
 		Platform.runLater(() -> fileName.setValue(newFilename));
 	}
@@ -229,7 +227,7 @@ public class GistFile {
 	public void setActive() {
 		GistManager.unBindFileObjects();
 		CodeEditor.bindDocumentTo(this);
-		CodeEditor.setLanguage(getFileExtension());
+		setEditorLanguage(FilenameUtils.getExtension(this.fileName.getValue()));
 		CodeEditor.get().setDisable(fileState.equals(CONFLICT));
 	}
 
@@ -274,14 +272,10 @@ public class GistFile {
 	public Integer getFileId()     {return fileId;}
 
 	public String getLanguage() {
-		return getFileExtension();
+		return FilenameUtils.getExtension(fileName.getValue());
 	}
 
 	public ObjectProperty<Node> getGraphicNode() {return graphicNode;}
-
-	public CStringProperty getNameProperty() {
-		return fileName;
-	}
 
 	/**
 		SQL Actions

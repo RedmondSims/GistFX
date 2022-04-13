@@ -63,6 +63,7 @@ public class TreeIcons {
 	}
 
 	private static ImageView reColor(Image inputImage, Color finalColor) {
+		boolean file = inputImage.getUrl().toLowerCase().contains("file.png");
 		Color sourceColor = Color.WHITE;
 		int W = (int) inputImage.getWidth();
 		int H = (int) inputImage.getHeight();
@@ -89,7 +90,10 @@ public class TreeIcons {
 		}
 		ImageView ivOut = new ImageView(outputImage);
 		ivOut.setPreserveRatio(true);
-		ivOut.setFitWidth(17);
+		if(file)
+			ivOut.setFitWidth(12.5);
+		else
+			ivOut.setFitWidth(14);
 		return ivOut;
 	}
 
@@ -100,7 +104,7 @@ public class TreeIcons {
 	private static ImageView newImageView(String imagePath) {
 		ImageView iv = new ImageView(new Image("file:" + imagePath));
 		iv.setPreserveRatio(true);
-		iv.setFitWidth(17);
+		iv.setFitWidth(14);
 		return iv;
 	}
 }

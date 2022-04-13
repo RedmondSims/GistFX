@@ -17,11 +17,11 @@ public class Get {
 
 	public Color progressBarColor() {
 		Color color;
-		if(progressColorRandom()) {
-			color = Colors.random();
-		}
-		else if (progressColorLogin()) {
+		if (progressColorLogin()) {
 			color = LiveSettings.getLoginScreenColor().getColor();
+		}
+		else if(progressColorRandom()) {
+			color = Colors.random();
 		}
 		else {
 			color = progressCustomColor();
@@ -84,17 +84,17 @@ public class Get {
 	}
 
 	public Color categoryFolderIconColor() {
-		String setting = LABEL.prefs.get(LABEL.CATEGORY_FOLDER_ICON_COLOR.Name(), "0xffa200ff");
+		String setting = LABEL.prefs.get(LABEL.CATEGORY_FOLDER_ICON_COLOR.Name(), "0xcc6633ff");
 		return Color.valueOf(setting);
 	}
 
 	public Color gistFolderIconColor() {
-		String setting = prefs.get(LABEL.GIST_FOLDER_ICON_COLOR.name(), "0xffff00ff");
+		String setting = prefs.get(LABEL.GIST_FOLDER_ICON_COLOR.name(), "0xe6994dff");
 		return Color.valueOf(setting);
 	}
 
 	public Color fileIconColor() {
-		String setting = prefs.get(LABEL.FILE_ICON_COLOR.Name(), "0xccffffff");
+		String setting = prefs.get(LABEL.FILE_ICON_COLOR.Name(), "0xffe6b3ff");
 		return Color.valueOf(setting);
 	}
 
@@ -164,6 +164,10 @@ public class Get {
 
 	public double dividerExpanded() {
 		return prefs.getDouble(LABEL.DIVIDER_EXPANDED.Name(), 0.0);
+	}
+
+	public double iconBaseSize() {
+		return prefs.getDouble(LABEL.ICON_BASE_SIZE.Name(), 0.0);
 	}
 
 
