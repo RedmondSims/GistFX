@@ -39,7 +39,7 @@ managing Gists a breeze.
 - Still working on Help content.
 ### Running GistFX
 
-1. The fastest way to get up and running is to just download one of the installers from [this link](https://github.com/RedmondSims/GistFX/releases/tag/3.4.2), or by clicking on the Release link at the right. Currently there are installers for Mac and Windows with Linux on the way.
+1. The fastest way to get up and running is to just download the latest installer from [this link](https://github.com/RedmondSims/GistFX/releases), or by clicking on the Release link at the right. Currently there are installers for Mac and Windows with Linux on the way.
 2. You can also clone the project and if you have Maven and JavaFX 18 SDK installed, go into the POM file and change the paths to the icon files and do one of these:
       - ```mvn clean package```
       - ```mvn clean javafx:run```
