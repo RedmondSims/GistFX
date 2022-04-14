@@ -34,14 +34,14 @@ public class TreeNode implements GistInterface {
 		this.nodeName = Util.truncate(gistCategory.getCategoryName().replaceAll("\\n", " "), 30, true);
 	}
 
-	public TreeNode(String text, Gist gist) {
+	public TreeNode(Gist gist) {
 		this.gistId      = gist.getGistId();
 		this.description = gist.getDescription();
 		this.type        = TreeType.GIST;
 		this.nodeName = Util.truncate(gist.getName().replaceAll("\\n", " "), 30, true);
 	}
 
-	public TreeNode(String text, GistFile file) {
+	public TreeNode(GistFile file) {
 		this.gistId = file.getGistId();
 		this.fileId = file.getFileId();
 		this.type   = TreeType.FILE;

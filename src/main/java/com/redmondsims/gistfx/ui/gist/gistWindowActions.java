@@ -402,12 +402,18 @@ public class gistWindowActions {
 				String  description = choices[3];
 				String  gistFile    = choices[4];
 				String  category    = choices[5];
-				String  newGistID   = GistManager.addNewGistToGitHub(gistName, description, filename, gistFile, isPublic);
+				String  newGistId   = GistManager.addNewGistToGitHub(gistName, description, filename, gistFile, isPublic);
 				String finalCategory = (!category.trim().equals("!@#none#@!")) ? category : categorySet ? selectedCategory : "";
 				if (!finalCategory.isEmpty()) {
-					Action.mapCategoryNameToGist(newGistID, finalCategory);
+					Action.mapCategoryNameToGist(newGistId, finalCategory);
 				}
 				WindowManager.fillTree();
+				gistWindow.getTreeActions().addGistToCategory(newGistId,selectedCategory);
+				TreeItem<TreeNode> leaf = gistWindow.getTreeActions().getLeaf(newGistId,filename);
+				leaf.getParent().setExpanded(true);
+				leaf.getParent().getParent().setExpanded(true);
+				gistWindow.getTreeView().getSelectionModel().select(leaf);
+				gistWindow.setSelectedNode(leaf.getValue());
 			}
 		});
 	}

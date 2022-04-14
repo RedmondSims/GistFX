@@ -26,6 +26,17 @@ public class TreeActions {
 	 * Tree Methods
 	 */
 
+	public void addGistToCategory(String gistId, String category) {
+		TreeItem<TreeNode> gistBranch = new TreeItem<>(new TreeNode(GistManager.getGist(gistId)));
+		addFilesToBranch(gistBranch);
+		for(TreeItem<TreeNode> rootBranch : gistWindow.getTreeRoot().getChildren()) {
+			if (rootBranch.getValue().getType().equals(CATEGORY) && rootBranch.getValue().getName().equals(category)) {
+				rootBranch.getChildren().add(gistBranch);
+				break;
+			}
+		}
+	}
+
 	public void refreshGistBranch(String gistId) {
 		try {
 			TreeItem<TreeNode> branch = getBranch(gistId);
@@ -58,7 +69,7 @@ public class TreeActions {
 	public void addFileToBranch(String gistId, String filename) {
 		GistFile           file   = GistManager.getFile(gistId, filename);
 		TreeItem<TreeNode> branch = getBranch(gistId);
-		TreeItem<TreeNode> leaf   = new TreeItem<>(new TreeNode(filename, file));
+		TreeItem<TreeNode> leaf   = new TreeItem<>(new TreeNode(file));
 		leaf.graphicProperty().bind(file.getGraphicNode());
 		branch.getChildren().add(leaf);
 	}
@@ -123,7 +134,7 @@ public class TreeActions {
 		TreeItem<TreeNode> branch;
 		String             gistId = gist.getGistId();
 		String             name   = Action.getGistName(gistId);
-		branch = new TreeItem<>(new TreeNode(name, gist));
+		branch = new TreeItem<>(new TreeNode(gist));
 		branch.setGraphic(TreeIcons.getGistIcon());
 		boolean isDirty = addFilesToBranch(branch);
 		if(isDirty)
@@ -144,7 +155,7 @@ public class TreeActions {
 	}
 
 	public TreeItem<TreeNode> getNewLeaf(GistFile file) {
-		TreeItem<TreeNode> leaf = new TreeItem<>(new TreeNode(file.getFilename(), file));
+		TreeItem<TreeNode> leaf = new TreeItem<>(new TreeNode(file));
 		leaf.graphicProperty().bind(file.getGraphicNode());
 		file.refreshGraphicNode();
 		return leaf;
