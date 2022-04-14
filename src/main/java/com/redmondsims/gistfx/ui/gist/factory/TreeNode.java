@@ -11,8 +11,7 @@ import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
 import com.redmondsims.gistfx.ui.gist.GistCategory;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import com.redmondsims.gistfx.utils.Util;
 
 public class TreeNode implements GistInterface {
 
@@ -32,20 +31,21 @@ public class TreeNode implements GistInterface {
 		this.gistCategory = gistCategory;
 		this.type         = TreeType.CATEGORY;
 		this.nodeName = gistCategory.getCategoryName();
+		this.nodeName = Util.truncate(gistCategory.getCategoryName().replaceAll("\\n", " "), 30, true);
 	}
 
 	public TreeNode(String text, Gist gist) {
 		this.gistId      = gist.getGistId();
 		this.description = gist.getDescription();
 		this.type        = TreeType.GIST;
-		this.nodeName = gist.getName();
+		this.nodeName = Util.truncate(gist.getName().replaceAll("\\n", " "), 30, true);
 	}
 
 	public TreeNode(String text, GistFile file) {
 		this.gistId = file.getGistId();
 		this.fileId = file.getFileId();
 		this.type   = TreeType.FILE;
-		this.nodeName = file.getFilename();
+		this.nodeName = Util.truncate(file.getFilename().replaceAll("\\n", " "), 30, true);
 	}
 
 	public boolean canContainChildren() {

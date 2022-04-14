@@ -183,7 +183,7 @@ public class GistWindow {
 				.newStage()
 				.onCloseEvent(this::closeWindowEvent)
 				.autoSize()
-				.title("GistFX - " + Action.getName())
+				.title("GistFX - " + Action.getGitHubUsername())
 				.show();
 		SceneOne.setOnKeyPressed(sceneId, e -> {
 			if (e.getCode() == KeyCode.T && e.isMetaDown()) {

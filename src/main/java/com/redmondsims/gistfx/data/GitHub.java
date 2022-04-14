@@ -9,7 +9,9 @@ import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.gist.WindowManager;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
 import javafx.application.Platform;
 import org.kohsuke.github.*;
@@ -42,39 +44,29 @@ class GitHub {
 		return LiveSettings.isOffline();
 	}
 
-	public String getName() {
-		if(offLine()) return "Off Line Mode";
-		try {
-			return gitHub.getMyself().getName();
-		}
-		catch (IOException e) {
-			throwAlert();
-			e.printStackTrace();
-		}
-		return "";
-	}
-
 	private void notifyUser(String gistId) {
 		gitHub.searchCommits().committerEmail("");
 
 		new Thread(() -> {
-			boolean proceed = gistId.isEmpty();
-			if (ghGistList != null) {
-				if(!proceed) {
-					for (GHGist ghGist : ghGistList) {
-						String ghGistId    = ghGist.getGistId();
-						String description = ghGist.getDescription();
-						descriptionMap.putIfAbsent(ghGistId, description);
+			if(WindowManager.gistWindowIsShowing()) {
+				boolean proceed = gistId.isEmpty();
+				if (ghGistList != null) {
+					if(!proceed) {
+						for (GHGist ghGist : ghGistList) {
+							String ghGistId    = ghGist.getGistId();
+							String description = ghGist.getDescription();
+							descriptionMap.putIfAbsent(ghGistId, description);
+						}
+						String description = descriptionMap.get(gistId);
+						if (!description.equals(Names.GITHUB_METADATA.Name()))
+							proceed = true;
 					}
-					String description = descriptionMap.get(gistId);
-					if (!description.equals(Names.GITHUB_METADATA.Name()))
-						proceed = true;
-				}
-				if(proceed) {
-					WindowManager.updateGitHubLabel("Updating GitHub ", true);
-					while(Action.accessingGitHub()) Action.sleep(100);
-					Action.sleep(2000);
-					WindowManager.updateGitHubLabel("",false);
+					if(proceed) {
+						WindowManager.updateGitHubLabel("Updating GitHub ", true);
+						while(Action.accessingGitHub()) Action.sleep(100);
+						Action.sleep(2000);
+						WindowManager.updateGitHubLabel("",false);
+					}
 				}
 			}
 		}).start();
@@ -121,18 +113,14 @@ class GitHub {
 		try {
 			gitHub = new GitHubBuilder().withOAuthToken(token).build();
 			boolean authenticated = gitHub.isCredentialValid();
-			if(!authenticated) {
-				System.out.println("Failed: " + token);
-			}
 			LiveSettings.setGitHubAuthenticated(authenticated);
 			if(authenticated) {
 				response = LoginStates.TOKEN_VALID;
-				Action.loadMetaData();
 				Action.setGitHubUserId(gitHub.getMyself().getId());
 				ghGistList = gitHub.getMyself().listGists().toList();
 			}
 			else {
-				LoginWindow.updateProgress("clearToken failed ");
+				Action.updateProgress("clearToken failed ");
 				if (!internetPings()) {
 					response = LoginStates.INTERNET_DOWN;
 				}
@@ -164,45 +152,11 @@ class GitHub {
 		Action.setProgress(value);
 	}
 
+	boolean downloadingGists = false;
 	public boolean ghGistMapIsEmpty() {
 		if(offLine()) return true;
-		try {
-			if (ghGistMap == null) return true;
-			else return ghGistMap.size() < gitHub.getMyself().listGists().toList().size();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
-
-	public String getGitHubFileContent(String gistId, String filename) {
-		if(offLine()) return "";
-		GHGist ghGist = ghGistMap.get(gistId);
-		return ghGist.getFiles().get(filename).getContent();
-	}
-
-	public Map<String, GHGist> getNewGHGistMap() {
-		try {
-			List<GHGist> ghGists = gitHub.getMyself().listGists().toList();
-			double       size = ghGists.size();
-			ghGistMap            = new ConcurrentHashMap<>();
-			ghGistFileContentMap = new ConcurrentHashMap<>();
-			int x=0;
-			for(GHGist ghGist : ghGists) {
-				String gistId = ghGist.getGistId();
-				GHGist realGHGist = gitHub.getGist(gistId);
-				mapGHGist(gistId, realGHGist);
-				x++;
-				setProgress(x / (size - 2));
-			}
-			setProgress(0);
-		}
-		catch (IOException e) {
-			throwAlert();
-			e.printStackTrace();
-		}
-		return ghGistMap;
+		boolean mapIsNull = ghGistMap == null;
+		return ghGistMap == null || downloadingGists;
 	}
 
 	private void mapGHGist(String gistId, GHGist ghGist) {
@@ -245,15 +199,69 @@ class GitHub {
 		}).start();
 	}
 
+	public void refreshAllData() {
+		if(offLine()) return;
+		getNewGHGistMap();
+		GistManager.startFromGitHub(ghGistMap, Source.RELOAD);
+	}
+
+	private void checkMapForNull() {
+		if(offLine()) return;
+		if(ghGistMap == null && LiveSettings.gitHubAuthenticated()) {
+			getNewGHGistMap();
+		}
+	}
+
+	/**
+	 * Public Getters
+	 */
+
 	public Map<String, GHGist> getGHGistMap() {
 		if (ghGistMap == null) getNewGHGistMap();
 		return ghGistMap;
 	}
 
-	public void refreshAllData() {
-		if(offLine()) return;
-		getNewGHGistMap();
-		GistManager.startFromGit(ghGistMap, Source.RELOAD);
+	public String getGitHubUsername() {
+		if(offLine()) return "Off Line Mode";
+		try {
+			return gitHub.getMyself().getName();
+		}
+		catch (IOException e) {
+			throwAlert();
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	public String getGitHubFileContent(String gistId, String filename) {
+		if(offLine()) return "";
+		GHGist ghGist = ghGistMap.get(gistId);
+		return ghGist.getFiles().get(filename).getContent();
+	}
+
+	public Map<String, GHGist> getNewGHGistMap() {
+		downloadingGists = true;
+		try {
+			List<GHGist> ghGists = gitHub.getMyself().listGists().toList();
+			double       size = ghGists.size();
+			ghGistMap            = new ConcurrentHashMap<>();
+			ghGistFileContentMap = new ConcurrentHashMap<>();
+			int x=0;
+			for(GHGist ghGist : ghGists) {
+				String gistId = ghGist.getGistId();
+				GHGist realGHGist = gitHub.getGist(gistId);
+				mapGHGist(gistId, realGHGist);
+				x++;
+				setProgress(x / (size - 2));
+			}
+			setProgress(0);
+		}
+		catch (IOException e) {
+			throwAlert();
+			e.printStackTrace();
+		}
+		downloadingGists = false;
+		return ghGistMap;
 	}
 
 	public GHGist getLocalGist(String gistId) {
@@ -294,6 +302,28 @@ class GitHub {
 		}
 		return null;
 	}
+
+	public Integer getForkCount(String gistId) {
+		if(offLine()) return -1;
+		try {
+			return gitHub.getGist(gistId).listForks().toList().size();
+		}
+		catch (IOException e) {
+			throwAlert();
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getGistDescription(String gistId) {
+		String description = "";
+		description = ghGistMap.get(gistId).getDescription();
+		return description;
+	}
+
+	/**
+	 * GitHub Change Actions
+	 */
 
 	public void updateDescription(Gist gist) {
 		if(offLine()) return;
@@ -414,13 +444,6 @@ class GitHub {
 		}
 	}
 
-	private void checkMapForNull() {
-		if(offLine()) return;
-		if(ghGistMap == null && LiveSettings.gitHubAuthenticated()) {
-			getNewGHGistMap();
-		}
-	}
-
 	public GHGistFile addFileToGist(String gistId, String filename, String content) {
 		if(offLine()) return null;
 		checkMapForNull();
@@ -458,17 +481,9 @@ class GitHub {
 		return ghGist;
 	}
 
-	public Integer getForkCount(String gistId) {
-		if(offLine()) return -1;
-		try {
-			return gitHub.getGist(gistId).listForks().toList().size();
-		}
-		catch (IOException e) {
-			throwAlert();
-			e.printStackTrace();
-		}
-		return null;
-	}
+	/**
+	 * Custom Alert
+	 */
 
 	private void throwAlert() {
 		Platform.runLater(() -> CustomAlert.showWarning("There was a problem accessing GitHub. See help for more information."));

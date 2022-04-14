@@ -65,7 +65,7 @@ public class Resources {
 	}
 
 	public static File getTrayIconFile() {
-		return switch (AppSettings.get().systrayColor()) {
+		return switch (AppSettings.get().trayIconColor()) {
 			case WHITE -> Paths.get(externalTrayIconPath.toString(),trayIconWhite).toFile();
 			case BLACK -> Paths.get(externalTrayIconPath.toString(),trayIconBlack).toFile();
 			case BLUE -> Paths.get(externalTrayIconPath.toString(),trayIconBlue).toFile();

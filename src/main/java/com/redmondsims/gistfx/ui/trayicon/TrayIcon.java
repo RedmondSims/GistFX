@@ -10,9 +10,12 @@ import com.redmondsims.gistfx.utils.Resources;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.MenuItem;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 
 public class TrayIcon {
@@ -26,21 +29,15 @@ public class TrayIcon {
 	private static MenuItem menuExit;
 	private static MenuItem menuShowGistFX;
 
+	private static int dimension;
 
 	public static void start(Stage primaryStage, boolean show) {
-		try {
-			if(FXTrayIcon.isSupported()) {
-				assignMenuActions();
-				int dimension = LiveSettings.getOS().equals(OS.WINDOWS) ? 19 : 26;
-				trayIcon = new FXTrayIcon
-						.Builder(primaryStage, Resources.getTrayIconFile().toURL(), dimension, dimension)
-						.menuItem(menuExit)
-						.build();
-				if(show) show();
-			}
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
+		if (FXTrayIcon.isSupported()) {
+			assignMenuActions();
+			dimension = LiveSettings.getTempIconSize();
+			trayIcon = new FXTrayIcon.Builder(primaryStage, Resources.getTrayIconFile()).menuItem(menuExit).build();
+			if (show) show();
+
 		}
 	}
 
@@ -91,11 +88,13 @@ public class TrayIcon {
 	}
 
 	public static void setGraphic() {
-		if(LiveSettings.getOS().equals(OS.WINDOWS)) {
-			trayIcon.setGraphic(Resources.getTrayIconFile(),17,17);
+		File   imageFile = Resources.getTrayIconFile();
+		try (InputStream is = new FileInputStream(imageFile);){
+			trayIcon.setGraphic(imageFile);
 		}
-		else {
-			trayIcon.setGraphic(Resources.getTrayIconFile(),26,26);
+		catch (IOException e) {
+			throw new RuntimeException(e);
 		}
+
 	}
 }

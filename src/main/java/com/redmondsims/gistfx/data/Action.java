@@ -1,6 +1,6 @@
 package com.redmondsims.gistfx.data;
 
-import com.redmondsims.gistfx.data.metadata.Json;
+import com.redmondsims.gistfx.data.metadata.MetaManager;
 import com.redmondsims.gistfx.enums.LoginStates;
 import com.redmondsims.gistfx.enums.Source;
 import com.redmondsims.gistfx.gist.Gist;
@@ -47,8 +47,8 @@ public class Action {
 	private static final DoubleProperty  progress               = new SimpleDoubleProperty(0);
 	private static final GitHub          GITHUB                 = new GitHub();
 	private static final SQLite          SQLITE                 = new SQLite();
-	private static final Disk            DISK                   = new Disk();
-	private static final Json            JSON                   = new Json();
+	private static final Disk        DISK         = new Disk();
+	private static final MetaManager META_MANAGER = new MetaManager();
 
 	/**
 	 * SQLite ONLY Methods
@@ -64,7 +64,7 @@ public class Action {
 
 	public static void addGistToSQL(Gist gist) {SQLITE.addGist(gist);}
 
-	public static void wipeSQLAndMetaData() {
+	public static void wipeSQLAndLocalData() {
 		SQLITE.cleanDatabase();
 		AppSettings.clear().metadata();
 	}
@@ -98,15 +98,20 @@ public class Action {
 	}
 
 	public static String getGistName(@NotNull GHGist ghGist) {
-		return JSON.getName(ghGist.getGistId());
+		return getGistName(ghGist.getGistId());
 	}
 
 	public static String getGistName(String gistId) {
-		return JSON.getName(gistId);
+		String gistName = META_MANAGER.getName(gistId);
+		if(gistName.isEmpty()) {
+			gistName = GITHUB.getGistDescription(gistId);
+			setGistName(gistId,gistName);
+		}
+		return gistName;
 	}
 
 	public static void setGistName(String gistId, String newName) {
-		JSON.setName(gistId, newName);
+		META_MANAGER.setName(gistId, newName);
 	}
 
 	public static String getSQLMetadata() {
@@ -141,8 +146,8 @@ public class Action {
 		return GITHUB.newGist(description,filename,content,isPublic);
 	}
 
-	public static String getName() {
-		return GITHUB.getName();
+	public static String getGitHubUsername() {
+		return GITHUB.getGitHubUsername();
 	}
 
 	public static GHGist addGistToGitHub(String description, String filename, String content, boolean isPublic) {
@@ -170,7 +175,7 @@ public class Action {
 			else {
 				LoginWindow.updateProgress("Downloading Gist Objects");
 				Map<String,GHGist> ghGistMap = GITHUB.getNewGHGistMap();
-				GistManager.startFromGit(ghGistMap, Source.GITHUB);
+				GistManager.startFromGitHub(ghGistMap, Source.GITHUB);
 			}
 		}
 		else if (dataSource.equals(UISettings.DataSource.LOCAL)) {
@@ -179,7 +184,9 @@ public class Action {
 	}
 
 	public static void updateProgress(String text) {
-		LoginWindow.updateProgress(text);
+		Platform.runLater(() -> {
+			LoginWindow.updateProgress(text);
+		});
 	}
 
 	public static void refreshAllData() {
@@ -242,109 +249,105 @@ public class Action {
 	}
 
 	/**
-	 * Json Methods
+	 * MetaManager Methods
 	 */
 
-	public static void deleteGitHubMetadata() {JSON.deleteGitHubMetadata();}
+	public static void deleteGitHubMetadata() {META_MANAGER.deleteGitHubMetadata();}
 
 	public static void loadMetaData() {
-		JSON.loadMetaData();
-	}
-
-	public static String getJSonGistName(String gistId) {
-		return JSON.getName(gistId);
+		META_MANAGER.loadMetaData();
 	}
 
 	public static void deleteGistMetadata(String gistId) {
-		JSON.deleteGistMetadata(gistId);
+		META_MANAGER.deleteGistMetadata(gistId);
 	}
 
 	public static void setJsonName(String gistId, String name) {
-		JSON.setName(gistId,name);
+		META_MANAGER.setName(gistId, name);
 	}
 
 	/**
-	 * Json Category Methods
+	 * MetaManager Category Methods
 	 */
 
 	public static ObservableList<String> getCategoryList() {
-		return JSON.getCategoryList();
+		return META_MANAGER.getCategoryList();
 	}
 
 	public static void changeCategoryName(String oldName, String newName) {
-		JSON.changeCategoryName(oldName,newName);
+		META_MANAGER.changeCategoryName(oldName, newName);
 	}
 
 	public static void mapCategoryNameToGist(String gistId, String categoryName) {
-		JSON.mapCategoryNameToGist(gistId,categoryName);
+		META_MANAGER.mapCategoryNameToGist(gistId, categoryName);
 	}
 
 	public static void deleteCategoryName(String categoryName) {
-		JSON.deleteCategoryName(categoryName);
+		META_MANAGER.deleteCategoryName(categoryName);
 	}
 
 	public static void addCategoryName(String categoryName) {
-		JSON.addCategoryName(categoryName);
+		META_MANAGER.addCategoryName(categoryName);
 	}
 
 	public static Collection<String> getNameList() {
-		return JSON.getNameList();
+		return META_MANAGER.getNameList();
 	}
 
 	public static String getGistIdByName (String name) {
-		return JSON.getGistIdByName(name);
+		return META_MANAGER.getGistIdByName(name);
 	}
 
 	public static String getGistCategoryName(String gistId) {
-		return JSON.getGistCategoryName(gistId);
+		return META_MANAGER.getGistCategoryName(gistId);
 	}
 
 	public static ChoiceBox<String> getCategoryBox() {
-		return JSON.getGistCategoryBox();
+		return META_MANAGER.getGistCategoryBox();
 	}
 
 	public static List<Gist> getGistsInCategory(String category) {
-		return JSON.getGistsInCategory(category);
+		return META_MANAGER.getGistsInCategory(category);
 	}
 
 	/**
-	 * Json File Description Methods
+	 * MetaManager File Description Methods
 	 */
 
 	public static void setFileDescription(GistFile gistFile, String description) {
-		JSON.setFileDescription(gistFile,description);
+		META_MANAGER.setFileDescription(gistFile, description);
 	}
 
 	public static void setFileDescription(String gistId, String filename, String description) {
-		JSON.setFileDescription(gistId,filename,description);
+		META_MANAGER.setFileDescription(gistId, filename, description);
 	}
 
 	public static String getFileDescription(GistFile gistFile) {
-		return JSON.getFileDescription(gistFile);
+		return META_MANAGER.getFileDescription(gistFile);
 	}
 
 	public static void deleteFileDescription(String gistId, String filename) {
-		JSON.deleteFileDescription(gistId,filename);
+		META_MANAGER.deleteFileDescription(gistId, filename);
 	}
 
 	/**
-	 * Json Hosts Methods
+	 * MetaManager Hosts Methods
 	 */
 
 	public static void addHost(String host) {
-		JSON.addHost(host);
+		META_MANAGER.addHost(host);
 	}
 
 	public static Collection<String> getHostCollection() {
-		return JSON.getHostCollection();
+		return META_MANAGER.getHostCollection();
 	}
 
 	public static void removeHost(String host) {
-		JSON.removeHost(host);
+		META_MANAGER.removeHost(host);
 	}
 
 	public static void renameHost(String oldName, String newName) {
-		JSON.renameHost(oldName,newName);
+		META_MANAGER.renameHost(oldName, newName);
 	}
 
 	/**
@@ -372,6 +375,10 @@ public class Action {
 	public static void renameFile(String gistId, Integer fileId, String oldFilename, String newFilename, String content) {
 		GITHUB.renameFile(gistId,oldFilename,newFilename,content);
 		SQLITE.renameFile(fileId,newFilename);
+	}
+
+	public static void getNewGHGistMap() {
+		GITHUB.getNewGHGistMap();
 	}
 
 	/**
@@ -450,7 +457,7 @@ public class Action {
 	}
 
 	public static void setGitHubUserId(Long gitHubUserId) {
-		JSON.setGitHubUserId(gitHubUserId);
+		META_MANAGER.setGitHubUserId(gitHubUserId);
 	}
 
 	public static BooleanProperty getGitHubActivityProperty() {
@@ -469,7 +476,7 @@ public class Action {
 
 	public static void deleteLocalGist(String gistId) {
 		SQLITE.deleteGist(gistId);
-		JSON.deleteGistMetadata(gistId);
+		META_MANAGER.deleteGistMetadata(gistId);
 	}
 
 	public static void deleteLocalFiles() {
@@ -499,7 +506,7 @@ public class Action {
 				GITHUB.addFileToGist(newGistId,filename,content);
 		}
 		if(!newGistId.isEmpty()) {
-			JSON.changeGistId(gistId,newGistId);
+			META_MANAGER.changeGistId(gistId, newGistId);
 		}
 	}
 

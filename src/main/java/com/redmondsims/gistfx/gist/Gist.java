@@ -2,7 +2,7 @@ package com.redmondsims.gistfx.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.javafx.CBooleanProperty;
-import com.redmondsims.gistfx.ui.gist.GistCategory;
+import com.redmondsims.gistfx.utils.Util;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -27,13 +27,6 @@ public class Gist {
 		this.description.setValue(description);
 		this.isPublic = isPublic;
 		this.gistURL  = gistURL;
-	}
-
-	private String truncate(String string, int numChars, boolean ellipses) {
-		int    len = string.length();
-		String out = string.substring(0, Math.min(numChars, string.length()));
-		if (len > numChars && ellipses) out += "...";
-		return out;
 	}
 
 	/**
@@ -125,5 +118,5 @@ public class Gist {
 	public int getForkCount() {return Action.getForkCount(gistId);}
 
 	@Override
-	public String toString() {return truncate(name.getValue().replaceAll("\\n", " "), 30, true);}
+	public String toString() {return Util.truncate(name.getValue().replaceAll("\\n", " "), 30, true);}
 }

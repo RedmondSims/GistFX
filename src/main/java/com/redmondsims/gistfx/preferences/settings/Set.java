@@ -1,5 +1,6 @@
 package com.redmondsims.gistfx.preferences.settings;
 
+import com.redmondsims.gistfx.enums.ColorOption;
 import com.redmondsims.gistfx.enums.Colors;
 import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.preferences.UISettings;
@@ -160,9 +161,14 @@ public class Set {
 		prefs.putBoolean((LABEL.RUN_IN_SYSTRAY.Name()), value);
 	}
 
-	public void systrayColor(Colors setting) {
-		AppSettings.clear().systrayColor();
-		prefs.put((LABEL.SYSTRAY_COLOR.Name()),setting.Name());
+	public void trayIconColor(Colors setting) {
+		AppSettings.clear().trayIconColor();
+		prefs.put((LABEL.TRAY_ICON_COLOR.Name()), setting.Name());
+	}
+
+	public void trayIconUserColor(Colors value) {
+		AppSettings.clear().trayIconUserColor();
+		prefs.put((LABEL.TRAY_ICON_USER_COLOR.Name()),value.Name());
 	}
 
 	public void showAppIcon(boolean value) {
@@ -182,6 +188,11 @@ public class Set {
 	public void iconBaseSize(double value) {
 		AppSettings.clear().iconBaseSize();
 		prefs.putDouble(LABEL.ICON_BASE_SIZE.Name(), value);
+	}
+
+	public void trayIconColorOption(ColorOption option) {
+		AppSettings.clear().trayIconColorOption();
+		prefs.put(LABEL.TRAY_ICON_COLOR_OPTION.Name(), option.Name());
 	}
 
 	public void setDefaults() {

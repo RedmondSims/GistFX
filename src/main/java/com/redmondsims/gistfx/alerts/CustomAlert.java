@@ -297,7 +297,7 @@ public class CustomAlert {
 		lblMessage.setPrefWidth(100);
 		lblMessage.setPrefHeight(35);
 		Label    lblBlank          = new Label(" ");
-		Label    lblNewGistName    = new Label("New getName:");
+		Label    lblNewGistName    = new Label("New getGitHubUsername:");
 		TextArea taGistDescription = new TextArea(currentDescription);
 		taGistDescription.setWrapText(true);
 		taGistDescription.setPrefWidth(500);
@@ -410,7 +410,7 @@ public class CustomAlert {
 		});
 		tfFilename.setMinWidth(250);
 		TextField tfGistName = newTextField("New Gist", "");
-		tfGistName.setPromptText("Gist getName");
+		tfGistName.setPromptText("Gist getGitHubUsername");
 		tfGistName.textProperty().addListener((observable, oldValue, newValue) -> {if (newValue.isEmpty()) tfGistName.setText("New Gist");});
 		tfGistName.setMinWidth(200);
 		TextArea taGistDescription = new TextArea("Gist Description");

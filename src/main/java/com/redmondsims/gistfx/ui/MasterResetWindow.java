@@ -29,7 +29,6 @@ public class MasterResetWindow {
 	}
 
 	private void startWindow() {
-		System.out.println("Showing MasterReset");
 		double width    = 400;
 		double height   = 415;
 		Label  lblTitle = new Label("Master Reset");
@@ -92,7 +91,15 @@ public class MasterResetWindow {
 				   - All of your Gist custom names
 				   - All of your file descriptions
 				""";
-		CustomAlert.showInfo(message, SceneOne.getOwner(sceneId));
+		TextArea ta = new TextArea(message);
+		ta.setEditable(false);
+		Button btnOK = new Button("OK");
+		btnOK.setOnAction(e->SceneOne.close("Warning"));
+		ta.setMinWidth(200);
+		VBox vbox = new VBox(ta);
+		vbox.setPadding(new Insets(20,20,20,20));
+		ToolWindow alert = new ToolWindow.Builder(vbox).setSceneId("Warning").title("Warning!").addButton(btnOK).size(375,265).attachToStage(SceneOne.getStage(sceneId)).build();
+		alert.showAndWait();
 	}
 
 	private HBox centeredHBox(Node node) {
@@ -119,12 +126,12 @@ public class MasterResetWindow {
 		}
 		options.append("\nAre you sure this is what you want to do?");
 		if (showAlert(options.toString(), false)) {
-			if (deleteLocalFiles) Action.deleteLocalFiles();
-			if (database) Action.deleteDatabaseFile();
+			if (gitHubMetadata) Action.deleteGitHubMetadata();
 			if (localMetadata) Action.deleteLocalMetaData(!database);
 			if (appSettings) AppSettings.clear().clearAll();
 			if (credentials) AppSettings.resetCredentials();
-			if (gitHubMetadata) Action.deleteGitHubMetadata();
+			if (database) Action.deleteDatabaseFile();
+			if (deleteLocalFiles) Action.deleteLocalFiles();
 			CustomAlert.showInfo("It is done!", SceneOne.getOwner(sceneId));
 			SceneOne.close(sceneId);
 			System.exit(11);

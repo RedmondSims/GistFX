@@ -1,7 +1,9 @@
 package com.redmondsims.gistfx;
 
+import com.redmondsims.gistfx.cryptology.Crypto;
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.enums.Colors;
+import com.redmondsims.gistfx.enums.Type;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.LoginWindow;
@@ -9,6 +11,7 @@ import com.redmondsims.gistfx.ui.Password;
 import com.redmondsims.gistfx.ui.TreeIcons;
 import com.redmondsims.gistfx.ui.trayicon.TrayIcon;
 import com.redmondsims.gistfx.utils.Resources;
+import com.redmondsims.gistfx.utils.Util;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -82,6 +85,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		boolean stopFlag = false;
+		LiveSettings.setTempIconSize(22);
 		for (String arg : args) {
 			if (arg.toLowerCase(Locale.ROOT).startsWith("newdatabase")) {
 				com.redmondsims.gistfx.data.Action.deleteDatabaseFile();
@@ -113,6 +117,11 @@ public class Main extends Application {
 				double value = Double.parseDouble(num);
 				AppSettings.set().iconBaseSize(value);
 				System.out.println("iconbase set to " + value);
+			}
+			if (arg.toLowerCase().startsWith("iconsize=")) {
+				String num   = arg.replaceFirst("iconsize=", "");
+				int value = Integer.parseInt(num);
+				LiveSettings.setTempIconSize(value);
 			}
 		}
 		if (stopFlag) System.exit(100);

@@ -1,12 +1,12 @@
 package com.redmondsims.gistfx.preferences.settings;
 
+import com.redmondsims.gistfx.enums.ColorOption;
 import com.redmondsims.gistfx.enums.Colors;
 import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.UISettings;
 import javafx.scene.paint.Color;
 
-import java.util.Random;
 import java.util.prefs.Preferences;
 
 public class Get {
@@ -150,8 +150,19 @@ public class Get {
 	 	return prefs.getBoolean(LABEL.RUN_IN_SYSTRAY.Name(), false);
 	}
 
-	public Colors systrayColor() {
-		return Colors.get(prefs.get(LABEL.SYSTRAY_COLOR.Name(), "White"));
+	public Colors trayIconColor() {
+		Colors color = null;
+		if(trayIconColorOption().equals(ColorOption.FOLLOW_LOGIN))
+			color = loginScreenColor();
+		else if (trayIconColorOption().equals(ColorOption.DEFAULT))
+			color = Colors.GREEN;
+		else
+			color = trayIconUserColor();
+		return color;
+	}
+
+	public Colors trayIconUserColor() {
+		return Colors.get(prefs.get(LABEL.TRAY_ICON_USER_COLOR.Name(), "Green"));
 	}
 
 	public boolean showAppIcon() {
@@ -170,5 +181,11 @@ public class Get {
 		return prefs.getDouble(LABEL.ICON_BASE_SIZE.Name(), 0.0);
 	}
 
+	public ColorOption trayIconColorOption() {
+		ColorOption option = ColorOption.get(prefs.get(LABEL.TRAY_ICON_COLOR_OPTION.Name(), "Default"));
+		if (option == null)
+			return ColorOption.get("Default");
+		return option;
+	}
 
 }

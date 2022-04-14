@@ -139,4 +139,8 @@ public class WindowManager {
 		SceneOne.show(Resources.getSceneIdGistWindow());
 	}
 
+	public static boolean gistWindowIsShowing() {
+		return gistWindow != null;
+	}
+
 }

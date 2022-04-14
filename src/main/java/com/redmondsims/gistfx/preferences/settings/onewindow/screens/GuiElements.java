@@ -2,6 +2,7 @@ package com.redmondsims.gistfx.preferences.settings.onewindow.screens;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.data.Action;
+import com.redmondsims.gistfx.enums.ColorOption;
 import com.redmondsims.gistfx.enums.Colors;
 import com.redmondsims.gistfx.enums.Theme;
 import com.redmondsims.gistfx.gist.WindowManager;
@@ -36,17 +37,17 @@ public class GuiElements {
 	private final Scene             callingScene;
 	private       ChoiceBox<Theme>  cbTheme;
 	private       ChoiceBox<Colors> cbLoginScreenColor;
-	private       ChoiceBox<Colors> cbSystemTrayColor;
+	private       ChoiceBox<Colors> cbTrayIconColor;
 	private       Label             lblAppTheme;
 	private       Label             lblLoginScreenColor;
 	private       ColorPicker       progressBarColorPicker;
-	private       CheckBox          cbCustomProgressColor;
-	private       CheckBox          cbToolBar;
-	private       CheckBox          cbDisableWarning;
-	private       CheckBox          cbTrayIcon;
-	private       CheckBox          cbTrayIconLogin;
-	private       CheckBox          cbProgressColorLogin;
-	private       CheckBox          cbRandomLoginScreen;
+	private       CheckBox          cbxCustomProgressColor;
+	private       CheckBox          cbxToolBar;
+	private       CheckBox          cbxDisableWarning;
+	private       CheckBox          cbxTrayIcon;
+	private       CheckBox          cbxTrayIconLogin;
+	private       CheckBox          cbxProgressColorLogin;
+	private       CheckBox          cbxRandomLoginScreen;
 	private final double            choiceWidth = 100;
 	private final double            labelWidth  = 215;
 	private final double            cBoxWidth   = 217.5;
@@ -56,61 +57,61 @@ public class GuiElements {
 		lblLoginScreenColor    = newLabelTypeOne("Login Screen Color");
 		cbTheme                = new ChoiceBox<>(Theme.themeList());
 		cbLoginScreenColor     = new ChoiceBox<>(Colors.loginScreenColorList());
-		cbSystemTrayColor      = new ChoiceBox<>(Colors.trayIconColorList());
-		cbCustomProgressColor  = Utility.checkBoxLabelLeft("Custom Progress Bar Color");
-		cbToolBar              = Utility.checkBoxLabelLeft("Show Toolbar At Launch");
-		cbDisableWarning       = Utility.checkBoxLabelLeft("Disable Dirty File Exit Warning");
-		cbTrayIcon             = Utility.checkBoxLabelLeft("Run GistFX From System Tray");
-		cbTrayIconLogin        = Utility.checkBoxLabelLeft("Login");
-		cbProgressColorLogin   = Utility.checkBoxLabelLeft("Login");
-		cbRandomLoginScreen    = Utility.checkBoxLabelLeft("Random");
+		cbTrayIconColor        = new ChoiceBox<>(Colors.trayIconColorList());
+		cbxCustomProgressColor = Utility.checkBoxLabelLeft("Custom Progress Bar Color");
+		cbxToolBar             = Utility.checkBoxLabelLeft("Show Toolbar At Launch");
+		cbxDisableWarning     = Utility.checkBoxLabelLeft("Disable Dirty File Exit Warning");
+		cbxTrayIcon       = Utility.checkBoxLabelLeft("Run GistFX From System Tray");
+		cbxTrayIconLogin = Utility.checkBoxLabelLeft("Login");
+		cbxProgressColorLogin = Utility.checkBoxLabelLeft("Login");
+		cbxRandomLoginScreen  = Utility.checkBoxLabelLeft("Random");
 		progressBarColorPicker = new ColorPicker();
 	}
 
 	private void installTooltips() {
-		Tooltip.install(cbToolBar, Action.newTooltip("Show the tool bar by default. Otherwise,\nyou will need to toggle it on each time\nGistFX loads.\n\nThe tool bar changes depending on what\nis currently selected in the window.\n\nThe functionality of each button is also\nin the programs menu structure."));
+		Tooltip.install(cbxToolBar, Action.newTooltip("Show the tool bar by default. Otherwise,\nyou will need to toggle it on each time\nGistFX loads.\n\nThe tool bar changes depending on what\nis currently selected in the window.\n\nThe functionality of each button is also\nin the programs menu structure."));
 		Tooltip.install(cbTheme, Action.newTooltip("Which side of the Force will you chose?"));
-		Tooltip.install(cbCustomProgressColor, Action.newTooltip("If this is unchecked, GistFX will\nselect a random color for the two\nprogress bars from a pre-defined\ncolor list"));
+		Tooltip.install(cbxCustomProgressColor, Action.newTooltip("If this is unchecked, GistFX will\nselect a random color for the two\nprogress bars from a pre-defined\ncolor list"));
 		Tooltip.install(progressBarColorPicker, Action.newTooltip("Set the color of the progress bars."));
-		Tooltip.install(cbDisableWarning, Action.newTooltip("If checked, this will prevent GistFX\nfrom warning you that you have edited\nGists that have not been uploaded to GitHub."));
-		Tooltip.install(cbTrayIcon, Action.newTooltip("Run GistFX from your system tray. This can be be useful because GistFX will\nalways be at the ready and it won't clutter up your screen or your\ntaskbar. When you minimize the main window, it will be out of the way\nbut can always be called back by clicking on the G in the system tray"));
-		Tooltip.install(cbTrayIconLogin, Action.newTooltip("Match Tray Icon Color with login screen color choice"));
-		Tooltip.install(cbProgressColorLogin, Action.newTooltip("Match Progress Bar Color with login screen color choice"));
-		Tooltip.install(cbSystemTrayColor, Action.newTooltip("Any color you like ... as long as it's in the list."));
-		Tooltip.install(cbRandomLoginScreen, Action.newTooltip("GistFX selects from the five options, randomly at startup"));
+		Tooltip.install(cbxDisableWarning, Action.newTooltip("If checked, this will prevent GistFX\nfrom warning you that you have edited\nGists that have not been uploaded to GitHub."));
+		Tooltip.install(cbxTrayIcon, Action.newTooltip("Run GistFX from your system tray. This can be be useful because GistFX will\nalways be at the ready and it won't clutter up your screen or your\ntaskbar. When you minimize the main window, it will be out of the way\nbut can always be called back by clicking on the G in the system tray"));
+		Tooltip.install(cbxTrayIconLogin, Action.newTooltip("Match Tray Icon Color with login screen color choice"));
+		Tooltip.install(cbxProgressColorLogin, Action.newTooltip("Match Progress Bar Color with login screen color choice"));
+		Tooltip.install(cbTrayIconColor, Action.newTooltip("Any color you like ... as long as it's in the list."));
+		Tooltip.install(cbxRandomLoginScreen, Action.newTooltip("GistFX selects from the five options, randomly at startup"));
 	}
 
 	private void setControlProperties() {
 		cbTheme.setValue(AppSettings.get().theme());
-		cbSystemTrayColor.setValue(AppSettings.get().systrayColor());
+		cbTrayIconColor.setValue(AppSettings.get().trayIconColor());
 		cbLoginScreenColor.setValue(AppSettings.get().loginScreenColor());
 		progressBarColorPicker.setValue(AppSettings.get().progressCustomColor());
-		cbCustomProgressColor.setSelected(!AppSettings.get().progressColorRandom());
-		cbToolBar.setSelected(AppSettings.get().showToolBar());
-		cbDisableWarning.setSelected(AppSettings.get().disableDirtyWarning());
-		cbTrayIcon.setSelected(AppSettings.get().runInSystemTray());
-		cbSystemTrayColor.setValue(AppSettings.get().systrayColor());
-		cbProgressColorLogin.setSelected(AppSettings.get().progressColorLogin());
-		cbRandomLoginScreen.setSelected(AppSettings.get().loginScreenRandom());
-		progressBarColorPicker.visibleProperty().bind(cbCustomProgressColor.selectedProperty());
-		progressBarColorPicker.disableProperty().bind(cbProgressColorLogin.selectedProperty());
-		cbProgressColorLogin.visibleProperty().bind(cbCustomProgressColor.selectedProperty());
-		cbSystemTrayColor.visibleProperty().bind(cbTrayIcon.selectedProperty());
-		cbSystemTrayColor.disableProperty().bind(cbTrayIconLogin.selectedProperty());
-		cbLoginScreenColor.disableProperty().bind(cbRandomLoginScreen.selectedProperty());
-		cbTrayIconLogin.visibleProperty().bind(cbTrayIcon.selectedProperty());
-		cbCustomProgressColor.setMinWidth(cBoxWidth);
-		cbCustomProgressColor.setMaxWidth(cBoxWidth);
-		cbCustomProgressColor.setPrefWidth(cBoxWidth);
+		cbxCustomProgressColor.setSelected(!AppSettings.get().progressColorRandom());
+		cbxToolBar.setSelected(AppSettings.get().showToolBar());
+		cbxDisableWarning.setSelected(AppSettings.get().disableDirtyWarning());
+		cbxTrayIcon.setSelected(AppSettings.get().runInSystemTray());
+		cbTrayIconColor.setValue(AppSettings.get().trayIconUserColor());
+		cbxProgressColorLogin.setSelected(AppSettings.get().progressColorLogin());
+		cbxRandomLoginScreen.setSelected(AppSettings.get().loginScreenRandom());
+		progressBarColorPicker.visibleProperty().bind(cbxCustomProgressColor.selectedProperty());
+		progressBarColorPicker.disableProperty().bind(cbxProgressColorLogin.selectedProperty());
+		cbxProgressColorLogin.visibleProperty().bind(cbxCustomProgressColor.selectedProperty());
+		cbTrayIconColor.visibleProperty().bind(cbxTrayIcon.selectedProperty());
+		cbTrayIconColor.disableProperty().bind(cbxTrayIconLogin.selectedProperty());
+		cbLoginScreenColor.disableProperty().bind(cbxRandomLoginScreen.selectedProperty());
+		cbxTrayIconLogin.visibleProperty().bind(cbxTrayIcon.selectedProperty());
+		cbxCustomProgressColor.setMinWidth(cBoxWidth);
+		cbxCustomProgressColor.setMaxWidth(cBoxWidth);
+		cbxCustomProgressColor.setPrefWidth(cBoxWidth);
 		cbTheme.setMinWidth(choiceWidth);
 		cbTheme.setMaxWidth(choiceWidth);
 		cbTheme.setPrefWidth(choiceWidth);
 		cbLoginScreenColor.setMinWidth(choiceWidth);
 		cbLoginScreenColor.setMaxWidth(choiceWidth);
 		cbLoginScreenColor.setPrefWidth(choiceWidth);
-		cbSystemTrayColor.setMinWidth(choiceWidth);
-		cbSystemTrayColor.setMaxWidth(choiceWidth);
-		cbSystemTrayColor.setPrefWidth(choiceWidth);
+		cbTrayIconColor.setMinWidth(choiceWidth);
+		cbTrayIconColor.setMaxWidth(choiceWidth);
+		cbTrayIconColor.setPrefWidth(choiceWidth);
 		progressBarColorPicker.setMinWidth(choiceWidth);
 		progressBarColorPicker.setMaxWidth(choiceWidth);
 		progressBarColorPicker.setPrefWidth(choiceWidth);
@@ -122,15 +123,24 @@ public class GuiElements {
 		lblLoginScreenColor.setMaxWidth(labelWidth);
 		lblLoginScreenColor.setPrefWidth(labelWidth);
 		lblLoginScreenColor.setAlignment(Pos.CENTER_RIGHT);
-		cbToolBar.setMinWidth(cBoxWidth);
-		cbToolBar.setMaxWidth(cBoxWidth);
-		cbToolBar.setPrefWidth(cBoxWidth);
-		cbDisableWarning.setMinWidth(cBoxWidth);
-		cbDisableWarning.setMaxWidth(cBoxWidth);
-		cbDisableWarning.setPrefWidth(cBoxWidth);
-		cbTrayIcon.setMinWidth(cBoxWidth);
-		cbTrayIcon.setMaxWidth(cBoxWidth);
-		cbTrayIcon.setPrefWidth(cBoxWidth);
+		cbxToolBar.setMinWidth(cBoxWidth);
+		cbxToolBar.setMaxWidth(cBoxWidth);
+		cbxToolBar.setPrefWidth(cBoxWidth);
+		cbxDisableWarning.setMinWidth(cBoxWidth);
+		cbxDisableWarning.setMaxWidth(cBoxWidth);
+		cbxDisableWarning.setPrefWidth(cBoxWidth);
+		cbxTrayIcon.setMinWidth(cBoxWidth);
+		cbxTrayIcon.setMaxWidth(cBoxWidth);
+		cbxTrayIcon.setPrefWidth(cBoxWidth);
+
+		switch(AppSettings.get().trayIconColorOption()) {
+			case DEFAULT, USER_SELECTED -> {
+				cbxTrayIconLogin.setSelected(false);
+			}
+			case FOLLOW_LOGIN -> {
+				cbxTrayIconLogin.setSelected(true);
+			}
+		}
 	}
 
 	private void setControlActions() {
@@ -138,11 +148,11 @@ public class GuiElements {
 			AppSettings.set().progressCustomColor(progressBarColorPicker.getValue());
 			WindowManager.refreshPBarStyle();
 		});
-		cbCustomProgressColor.setOnAction(e -> {
-			AppSettings.set().progressColorRandom(!cbCustomProgressColor.isSelected());
+		cbxCustomProgressColor.setOnAction(e -> {
+			AppSettings.set().progressColorRandom(!cbxCustomProgressColor.isSelected());
 		});
-		cbProgressColorLogin.setOnAction(e->{
-			AppSettings.set().progressColorLogin(cbProgressColorLogin.isSelected());
+		cbxProgressColorLogin.setOnAction(e->{
+			AppSettings.set().progressColorLogin(cbxProgressColorLogin.isSelected());
 		});
 		cbTheme.setOnAction(e -> {
 			Theme theme = cbTheme.getValue();
@@ -155,49 +165,54 @@ public class GuiElements {
 			SceneOne.getScene("SettingWindow").getStylesheets().add(AppSettings.get().theme().getStyleSheet());
 		});
 		cbLoginScreenColor.setOnAction(e->AppSettings.set().loginScreenColor(cbLoginScreenColor.getValue()));
-		cbToolBar.selectedProperty().addListener((observable, oldValue, newValue) -> AppSettings.set().showToolBar(newValue));
-		cbDisableWarning.setOnAction(e -> {
-			AppSettings.set().disableDirtyWarning(cbDisableWarning.isSelected());
-			if(cbDisableWarning.isSelected())
+		cbxToolBar.selectedProperty().addListener((observable, oldValue, newValue) -> AppSettings.set().showToolBar(newValue));
+		cbxDisableWarning.setOnAction(e -> {
+			AppSettings.set().disableDirtyWarning(cbxDisableWarning.isSelected());
+			if(cbxDisableWarning.isSelected())
 				Platform.runLater(() -> CustomAlert.showInfo("Disabling this feature prevents GistFX from throwing a warning when you close the app, if you have data that has not been uploaded to GitHub.\n\nHowever, GistFX will automatically upload your unsaved data when you close the app, when this box is checked.", null));
 
 		});
-		cbTrayIcon.setOnAction(this::engageTrayIcon);
-		cbTrayIconLogin.setOnAction(e -> {
-			if(cbTrayIconLogin.isSelected()) {
-				AppSettings.set().systrayColor(AppSettings.get().loginScreenColor());
+		cbxTrayIcon.setOnAction(this::engageTrayIcon);
+		cbxTrayIconLogin.setOnAction(e -> {
+			if(cbxTrayIconLogin.isSelected()) {
+				AppSettings.set().trayIconColorOption(ColorOption.FOLLOW_LOGIN);
 			}
 			else {
-				AppSettings.set().systrayColor(cbSystemTrayColor.getValue());
+				AppSettings.set().trayIconColorOption(ColorOption.USER_SELECTED);
 			}
 			TrayIcon.setGraphic();
 		});
-		cbSystemTrayColor.setOnAction(e-> {
-			AppSettings.set().systrayColor(cbSystemTrayColor.getValue());
+		cbTrayIconColor.setOnAction(e-> {
+			AppSettings.set().trayIconColorOption(ColorOption.USER_SELECTED);
+			AppSettings.set().trayIconUserColor(cbTrayIconColor.getValue());
 			TrayIcon.setGraphic();
 		});
-		cbRandomLoginScreen.setOnAction(e->{
-			AppSettings.set().loginScreenRandom(cbRandomLoginScreen.isSelected());
+		cbxRandomLoginScreen.setOnAction(e->{
+			AppSettings.set().loginScreenRandom(cbxRandomLoginScreen.isSelected());
 		});
 	}
 
 	public VBox controls() {
 		HBox boxTheme  = new HBox(10,lblAppTheme, cbTheme);
-		HBox boxLoginScreenColor = new HBox(10,lblLoginScreenColor,cbLoginScreenColor,cbRandomLoginScreen);
-		HBox boxDisableWarning  = new HBox(10,cbDisableWarning);
-		HBox boxToolBar  = new HBox(cbToolBar);
-		HBox boxTrayIcon  = new HBox(10,cbTrayIcon,cbSystemTrayColor,cbTrayIconLogin);
-		HBox boxCustomColor  = new HBox(10,cbCustomProgressColor,progressBarColorPicker,cbProgressColorLogin);
+		HBox boxLoginScreenColor = new HBox(10, lblLoginScreenColor, cbLoginScreenColor, cbxRandomLoginScreen);
+		HBox boxDisableWarning  = new HBox(10, cbxDisableWarning);
+		HBox boxToolBar  = new HBox(cbxToolBar);
+		HBox boxTrayIcon  = new HBox(10, cbxTrayIcon, cbTrayIconColor, cbxTrayIconLogin);
+		HBox boxCustomColor  = new HBox(10, cbxCustomProgressColor, progressBarColorPicker, cbxProgressColorLogin);
 		VBox vbox = new VBox(13,boxTheme,boxLoginScreenColor,boxToolBar,boxDisableWarning,boxTrayIcon,boxCustomColor);
 		vbox.setPadding(new Insets(25,10,10,20));
 		return vbox;
 	}
 
 	private void engageTrayIcon(ActionEvent e) {
-		AppSettings.set().runInSystemTray(cbTrayIcon.isSelected());
-		if (cbTrayIcon.isSelected())
+		AppSettings.set().runInSystemTray(cbxTrayIcon.isSelected());
+		if (cbxTrayIcon.isSelected()){
 			TrayIcon.show();
-		else
+			AppSettings.set().trayIconColorOption(ColorOption.USER_SELECTED);
+		}
+		else {
 			TrayIcon.hide();
+			AppSettings.set().trayIconColorOption(ColorOption.DEFAULT);
+		}
 	}
 }

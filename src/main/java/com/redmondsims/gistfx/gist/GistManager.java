@@ -30,9 +30,9 @@ public class GistManager {
 	private static final UISettings.DataSource LOCAL = UISettings.DataSource.LOCAL;
 	private static       Map<String, Gist>     gistMap;
 
-	public static void startFromGit(Map<String, GHGist> ghGistMap, Source launchSource) {
+	public static void startFromGitHub(Map<String, GHGist> ghGistMap, Source launchSource) {
 		Status.setState(State.LOADING);
-		Action.wipeSQLAndMetaData();
+		Action.wipeSQLAndLocalData();
 		gistMap      = new HashMap<>();
 		for (GHGist ghGist : ghGistMap.values()) {
 			if (!ghGist.getDescription().equals(Names.GITHUB_METADATA.Name())) {
@@ -40,7 +40,6 @@ public class GistManager {
 			}
 		}
 		WindowManager.newGistWindow(launchSource);
-		AppSettings.set().firstRun(false);
 		AppSettings.set().dataSource(LOCAL);
 		LiveSettings.applyAppSettings();
 	}
@@ -72,7 +71,7 @@ public class GistManager {
 	public static void addNewGistFromGitHub(GHGist ghGist) {
 		if(ghGist != null) {
 			String  gistId      = ghGist.getGistId();
-			String  name        = Action.getGistName(ghGist); //This returns the name from the NameMap table or the local JSon file if either exists, otherwise it gets back the gist description
+			String  name        = Action.getGistName(ghGist); //This returns either the name given by the user, or the description of the Gist.
 			String  description = ghGist.getDescription();
 			boolean isPublic    = ghGist.isPublic();
 			String  url         = ghGist.getHtmlUrl().toString();
@@ -86,6 +85,16 @@ public class GistManager {
 			gist.addFiles(fileList);
 			gistMap.putIfAbsent(gistId,gist);
 		}
+	}
+
+	private static GistFile newGistFileAddSQL(String gistId, GHGistFile ghGistFile) {
+		if(ghGistFile != null) {
+			String filename   = ghGistFile.getFileName();
+			String content    = ghGistFile.getContent();
+			int    fileId     = Action.addFileToSQL(gistId, filename, content);
+			return new GistFile(fileId, gistId, filename, content, false);
+		}
+		return null;
 	}
 
 	public static void addFileToGist(String gistId, GHGistFile ghGistFile) {
@@ -139,16 +148,6 @@ public class GistManager {
 				Action.setFileDescription(gistId,filename,description);
 			}
 		}
-	}
-
-	private static GistFile newGistFileAddSQL(String gistId, GHGistFile ghGistFile) {
-		if(ghGistFile != null) {
-			String filename   = ghGistFile.getFileName();
-			String content    = ghGistFile.getContent();
-			int    fileId     = Action.addFileToSQL(gistId, filename, content);
-			return new GistFile(fileId, gistId, filename, content, false);
-		}
-		return null;
 	}
 
 	private static GistFile newGistFileAddSQL(String gistId, String filename, String content) {

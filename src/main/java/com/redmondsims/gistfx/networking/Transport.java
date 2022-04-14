@@ -19,7 +19,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.DataInputStream;
@@ -345,9 +344,9 @@ public class Transport {
 				showConnecting(message);
 			}
 			switch(type) {
-				case CATEGORY -> 	payloadBuilder = new PayloadBuilder(Action.getName(), gistList, categoryName, tfPassword.getText());
-				case GIST -> 		payloadBuilder = new PayloadBuilder(Action.getName(), gist, tfPassword.getText());
-				case FILE -> 		payloadBuilder = new PayloadBuilder(Action.getName(), gistFile, tfPassword.getText());
+				case CATEGORY -> 	payloadBuilder = new PayloadBuilder(Action.getGitHubUsername(), gistList, categoryName, tfPassword.getText());
+				case GIST -> 		payloadBuilder = new PayloadBuilder(Action.getGitHubUsername(), gist, tfPassword.getText());
+				case FILE -> 		payloadBuilder = new PayloadBuilder(Action.getGitHubUsername(), gistFile, tfPassword.getText());
 			}
 			Payload payload = payloadBuilder.getPayload();
 			connecting = false;

@@ -35,11 +35,14 @@ public enum LABEL {
 	LAST_TOKEN_HASH,
 	LAST_GITHUB_USER_ID,
 	RUN_IN_SYSTRAY,
-	SYSTRAY_COLOR,
+	TRAY_ICON_COLOR,
 	SHOW_APP_ICON,
 	DIVIDER_AT_REST,
 	DIVIDER_EXPANDED,
-	ICON_BASE_SIZE;
+	ICON_BASE_SIZE,
+	TRAY_ICON_COLOR_OPTION,
+	TRAY_ICON_USER_COLOR
+	;
 
 	public String Name(LABEL this) {
 		if (LiveSettings.getDevMode()) {
@@ -73,11 +76,13 @@ public enum LABEL {
 				case LAST_TOKEN_HASH -> "GFX_DEV_Last_Token_Hash";
 				case LAST_GITHUB_USER_ID -> "GFX_DEV_Last_GitHub_User_Id";
 				case RUN_IN_SYSTRAY -> "GFX_DEV_Run_In_Systray";
-				case SYSTRAY_COLOR -> "GFX_DEV_Systray_Color";
+				case TRAY_ICON_COLOR -> "GFX_DEV_Tray_Icon_Color";
 				case SHOW_APP_ICON -> "GFX_DEV_Show_App_Icon";
 				case DIVIDER_AT_REST -> "GFX_DEV_Divider_At_Rest";
 				case DIVIDER_EXPANDED -> "GFX_DEV_Divider_Expanded";
 				case ICON_BASE_SIZE -> "GFX_DEV_Icon_Base_Size";
+				case TRAY_ICON_COLOR_OPTION -> "GFX_DEV_Tray_Icon_Color_Option";
+				case TRAY_ICON_USER_COLOR -> "GFX_DEV_Tray_Icon_User_Color";
 			};
 		}
 		else {
@@ -111,11 +116,13 @@ public enum LABEL {
 				case LAST_TOKEN_HASH -> "GFX_Last_Token_Hash";
 				case LAST_GITHUB_USER_ID -> "GFX_Last_GitHub_User_Id";
 				case RUN_IN_SYSTRAY -> "GFX_Run_In_Systray";
-				case SYSTRAY_COLOR -> "GFX_Systray_Color";
+				case TRAY_ICON_COLOR -> "GFX_Tray_Icon_Color";
 				case SHOW_APP_ICON -> "GFX_Show_App_Icon";
 				case DIVIDER_AT_REST -> "GFX_Divider_At_Rest";
 				case DIVIDER_EXPANDED -> "GFX_Divider_Expanded";
 				case ICON_BASE_SIZE -> "GFX_Icon_Base_Size";
+				case TRAY_ICON_COLOR_OPTION -> "GFX_Tray_Icon_Color_Option";
+				case TRAY_ICON_USER_COLOR -> "GFX_Tray_Icon_User_Color";
 			};
 		}
 	}

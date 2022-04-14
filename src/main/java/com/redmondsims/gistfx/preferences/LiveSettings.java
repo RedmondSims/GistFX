@@ -34,6 +34,16 @@ public class LiveSettings {
 	private static       boolean             devMode               = false;
 	private static Colors loginScreenColor;
 
+	private static int tempIconSize;
+
+	public static void setTempIconSize(int tempIconSize) {
+		LiveSettings.tempIconSize = tempIconSize;
+	}
+
+	public static int getTempIconSize() {
+		return tempIconSize;
+	}
+
 	public static void init() {
 		if(AppSettings.get().loginScreenRandom()) {
 			loginScreenColor = Colors.randomLoginScreen();

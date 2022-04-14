@@ -454,7 +454,7 @@ public class UISettings {
 		ChoiceBox<String> cbColor = new ChoiceBox<>();
 		cbColor.getItems().add("White");
 		cbColor.getItems().add("Black");
-		//cbColor.setValue(AppSettings.get().systrayColor());
+		//cbColor.setValue(AppSettings.get().trayIconColor());
 		cbColor.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
 		cbShowAppIcon.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
 		lblShowAppIcon.visibleProperty().bind(cbLaunchInSystray.selectedProperty());
@@ -475,7 +475,7 @@ public class UISettings {
 			if(selection == null || selection.isEmpty()) {
 				selection = "White";
 			}
-		//	AppSettings.set().systrayColor(selection);
+		//	AppSettings.set().trayIconColor(selection);
 			cbColor.setValue(selection);
 		});
 		Tooltip.install(cbLaunchInSystray, Action.newTooltip("""

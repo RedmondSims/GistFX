@@ -75,7 +75,7 @@ public class Clear {
 
 	public void runInSystemTray() {prefs.remove(LABEL.RUN_IN_SYSTRAY.name());}
 
-	public void systrayColor()   {prefs.remove(LABEL.SYSTRAY_COLOR.name());}
+	public void trayIconColor() {prefs.remove(LABEL.TRAY_ICON_COLOR.name());}
 
 	public void showAppIcon()   {prefs.remove(LABEL.SHOW_APP_ICON.name());}
 
@@ -85,6 +85,13 @@ public class Clear {
 
 	public void iconBaseSize()   {prefs.remove(LABEL.ICON_BASE_SIZE.name());}
 
+	public void trayIconColorOption() {
+		prefs.remove(LABEL.TRAY_ICON_COLOR_OPTION.Name());
+	}
+
+	public void trayIconUserColor() {
+		prefs.remove(LABEL.TRAY_ICON_USER_COLOR.Name());
+	}
 
 	/**
 	 * Tree Icon SMTPServerSettings

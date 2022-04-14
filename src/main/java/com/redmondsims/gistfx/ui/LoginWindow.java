@@ -11,6 +11,7 @@ import com.redmondsims.gistfx.help.Help;
 import com.redmondsims.gistfx.javafx.CProgressBar;
 import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.preferences.LiveSettings;
+import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -80,6 +81,9 @@ public class LoginWindow {
 	private boolean hasTypedPassword;
 
 	public LoginWindow() {
+		if (AppSettings.get().firstRun()) {
+			Help.showIntro();
+		}
 		LiveSettings.applyAppSettings();
 		tfToken         = newTextField();
 		tfPassword      = newPasswordField("GistFX Password");
@@ -94,9 +98,6 @@ public class LoginWindow {
 		tfToken.setId("login");
 		tfPassword.setText("");
 		setControlProperties();
-		if (AppSettings.get().firstRun()) {
-			Help.showIntro();
-		}
 		startingTheme = AppSettings.get().theme();
 		AppSettings.set().theme(Theme.DARK);
 		loginForm();
@@ -295,13 +296,14 @@ public class LoginWindow {
 	private LoginStates checkToken(String token) {
 		LoginStates ts = Action.tokenValid(token);
 		if (ts.equals(TOKEN_VALID)) {
-			Platform.runLater(() -> updateProgress("Token Valid"));
+			Action.updateProgress("Token Valid");
+			Action.loadMetaData();
 		}
 		if (ts.equals(TOKEN_FAILURE)) {
-			Platform.runLater(() -> updateProgress("\nToken NOT Valid"));
+			Action.updateProgress("\nToken NOT Valid");
 		}
 		if (ts.equals(INTERNET_DOWN)) {
-			Platform.runLater(() -> updateProgress("\nCannot Reach GitHub - Internet Down?"));
+			Action.updateProgress("\nCannot Reach GitHub - Internet Down?");
 		}
 		else {
 			tfPassword.setDisable(false);
@@ -317,7 +319,7 @@ public class LoginWindow {
 	private void checkPassword() {
 		passwordValid = Crypto.validatePassword(userPassword.getValue(), hashedPassword);
 		if (passwordValid) {
-			updateProgress("Password Valid");
+			Action.updateProgress("Password Valid");
 			Crypto.setSessionKey(userPassword.getValue());
 		}
 		else {
@@ -330,11 +332,11 @@ public class LoginWindow {
 		setBooleans();
 		new Thread(() -> {
 			if (hasHashedPassword && hasTypedPassword && hasHashedToken) {
-				updateProgress("Checking Password...");
+				Action.updateProgress("Checking Password...");
 				checkPassword();
 				if (passwordValid) {
 					Crypto.setSessionKey(userPassword.get());
-					updateProgress("Checking Token...");
+					Action.updateProgress("Checking Token...");
 					if(hasTypedToken) {
 						tokenStatus = checkToken(userToken.get());
 						if(tokenStatus.equals(TOKEN_VALID)) {
@@ -368,7 +370,7 @@ public class LoginWindow {
 						AppSettings.clear().hashedPassword();
 						AppSettings.clear().hashedToken();
 						CustomAlert.showWarning("Mandatory Reset", "You have entered the wrong password too many times. Your Gist access token and password have both been reset. You can enter a new (or the same) access token and type in a new password.");
-						Action.wipeSQLAndMetaData();
+						Action.wipeSQLAndLocalData();
 						AppSettings.set().dataSource(GITHUB);
 						LiveSettings.applyAppSettings();
 						tfPassword.clear();
@@ -384,7 +386,7 @@ public class LoginWindow {
 					boolean passwordsMatch = Password.verify(userPassword.getValue(), SceneOne.getStage(sceneId));
 					if (passwordsMatch) {
 						new Thread(() -> {
-							updateProgress("Hashing Password...");
+							Action.updateProgress("Hashing Password...");
 							String passwordHash = Crypto.hashPassword(userPassword.getValue());
 							AppSettings.set().hashedPassword(passwordHash);
 							AppSettings.set().hashedToken(Crypto.encryptWithPassword(userToken.getValue(), userPassword.get()));
@@ -435,7 +437,7 @@ public class LoginWindow {
 					tfToken.setDisable(false);
 					tfPassword.setDisable(false);
 					tfToken.requestFocus();
-					updateProgress("clear");
+					Action.updateProgress("clear");
 				}
 			}
 			else {
@@ -464,7 +466,7 @@ public class LoginWindow {
 		}
 		else {
 			if(LiveSettings.getDataSource().equals(LOCAL)) {
-				Platform.runLater(() -> updateProgress("Loading local Gist data and creating window"));
+				Action.updateProgress("Loading local Gist data and creating window");
 			}
 			Action.loadWindow();
 			Platform.runLater(() -> pBar.progressProperty().unbind());
