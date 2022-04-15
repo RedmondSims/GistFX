@@ -93,6 +93,10 @@ public class Clear {
 		prefs.remove(LABEL.TRAY_ICON_USER_COLOR.Name());
 	}
 
+	public void searchFileContents() {
+		prefs.remove(LABEL.SEARCH_FILE_CONTENTS.Name());
+	}
+
 	/**
 	 * Tree Icon SMTPServerSettings
 	 */

@@ -277,6 +277,10 @@ public class GistFile {
 
 	public ObjectProperty<Node> getGraphicNode() {return graphicNode;}
 
+	public String getFileContents() {
+		return liveVersion.get();
+	}
+
 	/**
 		SQL Actions
 	 */

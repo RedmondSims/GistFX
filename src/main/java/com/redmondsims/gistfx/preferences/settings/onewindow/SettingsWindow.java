@@ -22,7 +22,7 @@ public class SettingsWindow {
 	public SettingsWindow(GistWindow gistWindow) {
 		this.gistWindow = gistWindow;
 		createForm();
-		double height = 325;
+		double height = 355;
 		setGuiElements();
 		setWideMode();
 		setResetOptions();

@@ -41,7 +41,8 @@ public enum LABEL {
 	DIVIDER_EXPANDED,
 	ICON_BASE_SIZE,
 	TRAY_ICON_COLOR_OPTION,
-	TRAY_ICON_USER_COLOR
+	TRAY_ICON_USER_COLOR,
+	SEARCH_FILE_CONTENTS
 	;
 
 	public String Name(LABEL this) {
@@ -83,6 +84,7 @@ public enum LABEL {
 				case ICON_BASE_SIZE -> "GFX_DEV_Icon_Base_Size";
 				case TRAY_ICON_COLOR_OPTION -> "GFX_DEV_Tray_Icon_Color_Option";
 				case TRAY_ICON_USER_COLOR -> "GFX_DEV_Tray_Icon_User_Color";
+				case SEARCH_FILE_CONTENTS -> "GFX_DEV_Search_File_Contents";
 			};
 		}
 		else {
@@ -123,6 +125,7 @@ public enum LABEL {
 				case ICON_BASE_SIZE -> "GFX_Icon_Base_Size";
 				case TRAY_ICON_COLOR_OPTION -> "GFX_Tray_Icon_Color_Option";
 				case TRAY_ICON_USER_COLOR -> "GFX_Tray_Icon_User_Color";
+				case SEARCH_FILE_CONTENTS -> "GFX_Search_File_Contents";
 			};
 		}
 	}

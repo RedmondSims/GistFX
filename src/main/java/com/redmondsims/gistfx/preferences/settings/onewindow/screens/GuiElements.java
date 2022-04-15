@@ -48,6 +48,7 @@ public class GuiElements {
 	private       CheckBox          cbxTrayIconLogin;
 	private       CheckBox          cbxProgressColorLogin;
 	private       CheckBox          cbxRandomLoginScreen;
+	private       CheckBox          cbxSearchFileContents;
 	private final double            choiceWidth = 100;
 	private final double            labelWidth  = 215;
 	private final double            cBoxWidth   = 217.5;
@@ -65,6 +66,7 @@ public class GuiElements {
 		cbxTrayIconLogin = Utility.checkBoxLabelLeft("Login");
 		cbxProgressColorLogin = Utility.checkBoxLabelLeft("Login");
 		cbxRandomLoginScreen  = Utility.checkBoxLabelLeft("Random");
+		cbxSearchFileContents  = Utility.checkBoxLabelLeft("Use File Contents In Tree Search");
 		progressBarColorPicker = new ColorPicker();
 	}
 
@@ -79,6 +81,7 @@ public class GuiElements {
 		Tooltip.install(cbxProgressColorLogin, Action.newTooltip("Match Progress Bar Color with login screen color choice"));
 		Tooltip.install(cbTrayIconColor, Action.newTooltip("Any color you like ... as long as it's in the list."));
 		Tooltip.install(cbxRandomLoginScreen, Action.newTooltip("GistFX selects from the five options, randomly at startup"));
+		Tooltip.install(cbxSearchFileContents, Action.newTooltip("Includes the text in Gist files when performing a search in the tree"));
 	}
 
 	private void setControlProperties() {
@@ -93,6 +96,7 @@ public class GuiElements {
 		cbTrayIconColor.setValue(AppSettings.get().trayIconUserColor());
 		cbxProgressColorLogin.setSelected(AppSettings.get().progressColorLogin());
 		cbxRandomLoginScreen.setSelected(AppSettings.get().loginScreenRandom());
+		cbxSearchFileContents.setSelected(AppSettings.get().searchFileContents());
 		progressBarColorPicker.visibleProperty().bind(cbxCustomProgressColor.selectedProperty());
 		progressBarColorPicker.disableProperty().bind(cbxProgressColorLogin.selectedProperty());
 		cbxProgressColorLogin.visibleProperty().bind(cbxCustomProgressColor.selectedProperty());
@@ -132,6 +136,9 @@ public class GuiElements {
 		cbxTrayIcon.setMinWidth(cBoxWidth);
 		cbxTrayIcon.setMaxWidth(cBoxWidth);
 		cbxTrayIcon.setPrefWidth(cBoxWidth);
+		cbxSearchFileContents.setMinWidth(cBoxWidth);
+		cbxSearchFileContents.setMaxWidth(cBoxWidth);
+		cbxSearchFileContents.setPrefWidth(cBoxWidth);
 
 		switch(AppSettings.get().trayIconColorOption()) {
 			case DEFAULT, USER_SELECTED -> {
@@ -190,6 +197,9 @@ public class GuiElements {
 		cbxRandomLoginScreen.setOnAction(e->{
 			AppSettings.set().loginScreenRandom(cbxRandomLoginScreen.isSelected());
 		});
+		cbxSearchFileContents.setOnAction(e->{
+			AppSettings.set().searchFileContents(cbxSearchFileContents.isSelected());
+		});
 	}
 
 	public VBox controls() {
@@ -199,7 +209,8 @@ public class GuiElements {
 		HBox boxToolBar  = new HBox(cbxToolBar);
 		HBox boxTrayIcon  = new HBox(10, cbxTrayIcon, cbTrayIconColor, cbxTrayIconLogin);
 		HBox boxCustomColor  = new HBox(10, cbxCustomProgressColor, progressBarColorPicker, cbxProgressColorLogin);
-		VBox vbox = new VBox(13,boxTheme,boxLoginScreenColor,boxToolBar,boxDisableWarning,boxTrayIcon,boxCustomColor);
+		HBox boxSearchFileContents  = new HBox(10, cbxSearchFileContents);
+		VBox vbox = new VBox(13,boxTheme,boxLoginScreenColor,boxTrayIcon,boxCustomColor,boxToolBar,boxDisableWarning,boxSearchFileContents);
 		vbox.setPadding(new Insets(25,10,10,20));
 		return vbox;
 	}

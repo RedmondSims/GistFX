@@ -2,6 +2,7 @@ package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.javafx.CStringProperty;
+import com.redmondsims.gistfx.preferences.AppSettings;
 import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
@@ -18,6 +19,7 @@ public class Search {
 	private final Map<Integer, TreeItem<TreeNode>> treeMap = new HashMap<>();
 	private final Map<Integer, String> wordMap = new HashMap<>();
 	private final LinkedList<Integer> hitList = new LinkedList<>();
+	private String results;
 
 	public void bindTo(StringProperty searchFieldProperty) {
 		searchText.bind(searchFieldProperty);
@@ -45,6 +47,9 @@ public class Search {
 						String filename = fileNode.getValue().getName();
 						String fileDescription = fileNode.getValue().getFile().getDescription();
 						finalString = filename + " " + fileDescription;
+						if(AppSettings.get().searchFileContents()) {
+							finalString = finalString + " " + fileNode.getValue().getFile().getFileContents().replaceAll("\\n"," ");
+						}
 						index++;
 						treeMap.put(index,fileNode);
 						wordMap.put(index,finalString);
@@ -73,8 +78,8 @@ public class Search {
 					if (line.contains(value)) {
 						hitList.addLast(idx);
 						totalHits++;
-						final String currentCount = "Found " + totalHits + " hits";
-						feedbackProperty.setValue(currentCount);
+						results = "Found " + totalHits + " hits";
+						feedbackProperty.setValue(results);
 						hitIndex = 0;
 					}
 				}
@@ -92,6 +97,8 @@ public class Search {
 		if(hitList.size() > 0) {
 			int nodeIndex = hitList.get(hitIndex);
 			hitIndex++;
+			String feedback = results + " (" + hitIndex + ")";
+			feedbackProperty.setValue(feedback);
 			node = treeMap.get(nodeIndex);
 			if (hitIndex > hitList.size() - 1) {
 				hitIndex = 0;

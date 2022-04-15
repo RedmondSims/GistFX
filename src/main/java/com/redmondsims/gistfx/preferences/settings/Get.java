@@ -188,4 +188,8 @@ public class Get {
 		return option;
 	}
 
+	public boolean searchFileContents() {
+		return prefs.getBoolean(LABEL.SEARCH_FILE_CONTENTS.Name(), false);
+	}
+
 }

@@ -195,6 +195,11 @@ public class Set {
 		prefs.put(LABEL.TRAY_ICON_COLOR_OPTION.Name(), option.Name());
 	}
 
+	public void searchFileContents(boolean value) {
+		AppSettings.clear().searchFileContents();
+		prefs.putBoolean(LABEL.SEARCH_FILE_CONTENTS.Name(), value);
+	}
+
 	public void setDefaults() {
 		try {prefs.clear();}catch (BackingStoreException e) {e.printStackTrace();}
 	}
