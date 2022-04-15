@@ -178,7 +178,7 @@ public class Get {
 	}
 
 	public double iconBaseSize() {
-		return prefs.getDouble(LABEL.ICON_BASE_SIZE.Name(), 0.0);
+		return prefs.getDouble(LABEL.ICON_BASE_SIZE.Name(), 25.0);
 	}
 
 	public ColorOption trayIconColorOption() {

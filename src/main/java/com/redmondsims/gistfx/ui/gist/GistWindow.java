@@ -42,6 +42,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -128,8 +129,9 @@ public class GistWindow {
 	private final        MenuItem           miToggleFullScreen    = new MenuItem("Enter Fullscreen");
 	private final        MenuItem           miToggleToolbarState  = new MenuItem("Detach Toolbar");
 	private              MenuItem           miShowHideToolbar;
-
-
+	private Search    search   = new Search();
+	private TextField tfSearch = new TextField();
+	private Label searchResults = new Label();
 
 	private void setAnchors(Node node, double left, double right, double top, double bottom) {
 		if (top != -1) AnchorPane.setTopAnchor(node, top);
@@ -241,6 +243,8 @@ public class GistWindow {
 		addMainNode(lblDescriptionLabel, 20, -1, 55, -1);
 		addMainNode(lblGistDescription, 105, 20, 55, -1);
 		addMainNode(pBar, 15, 15, 90, -1);
+		addMainNode(tfSearch,15,-1,73,-1);
+		addMainNode(searchResults,180,-1,80,-1);
 		addPaneNode(toolbarAnchored, 5, 5, 5, -1);
 		addPaneNode(taFileDescription,5,5,65, -1);
 		addPaneNode(CodeEditor.get(), 0, 0, 90, 0);
@@ -285,6 +289,10 @@ public class GistWindow {
 		buttonSaveFile.setMaxWidth(85);
 		taFileDescription.setMaxHeight(20);
 		taFileDescription.setId("filedesc");
+		tfSearch.setMinWidth(150);
+		tfSearch.setMaxWidth(150);
+		searchResults.setMinWidth(150);
+		searchResults.setMaxWidth(150);
 		buttonUndo.setMaxWidth(80);
 		Tooltip.install(buttonPasteFromClip, Action.newTooltip("Paste text contents from clipboard into selected document."));
 		publicCheckBox.setDisable(true);
@@ -412,7 +420,56 @@ public class GistWindow {
 				});
 			}
 		});
+		search.bindTo(tfSearch.textProperty());
+		searchResults.textProperty().bind(search.getFeedbackProperty());
+		tfSearch.setOnMouseClicked(e->{
+			search.startSearch(treeRoot);
+		});
+		tfSearch.setId("noCaret");
+		tfSearch.setOnAction(e-> {
+			TreeItem<TreeNode> node = search.getNextHit();
+			if (lastNode != null) {
+				switch (lastNode.getValue().getType()) {
+					case GIST -> {
+						lastNode.setExpanded(false);
+						if (!lastNode.getParent().equals(treeRoot)) {
+							lastNode.getParent().setExpanded(false);
+						}
+					}
+					case CATEGORY -> {
+						lastNode.setExpanded(false);
+					}
+					case FILE -> {
+						lastNode.getParent().setExpanded(false);
+						if (!lastNode.getParent().getParent().equals(treeRoot)) {
+							lastNode.getParent().getParent().setExpanded(false);
+						}
+					}
+				}
+			}
+			lastNode = node;
+			if(node != null) {
+				switch (node.getValue().getType()) {
+					case FILE -> {
+						node.getParent().setExpanded(true);
+						if (!node.getParent().getParent().equals(treeRoot)) {
+							node.getParent().getParent().setExpanded(true);
+						}
+					}
+					case GIST -> {
+						node.setExpanded(true);
+						if (!node.getParent().equals(treeRoot))
+							node.getParent().setExpanded(true);
+					}
+					case CATEGORY -> node.setExpanded(true);
+				}
+				treeView.getSelectionModel().select(node);
+				setSelectedNode(node.getValue());
+			}
+		});
 	}
+
+	TreeItem<TreeNode> lastNode;
 
 	public void setIconSize(double size) {
 		if(toolbarAnchored != null) {

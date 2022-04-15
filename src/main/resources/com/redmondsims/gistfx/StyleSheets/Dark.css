@@ -306,3 +306,8 @@
     -fx-border-color: transparent;
     -fx-text-alignment: right;
 }
+
+
+#noCaret {
+    -fx-display-caret: false;
+}
