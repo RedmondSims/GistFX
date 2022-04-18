@@ -3,7 +3,7 @@
  * Copyright (C) 29/03/2021 David Thaler.
  * All rights reserved
  */
-package com.redmondsims.gistfx.ui.gist.factory;
+package com.redmondsims.gistfx.ui.gist.treefactory;
 
 import com.redmondsims.gistfx.alerts.CustomAlert;
 import com.redmondsims.gistfx.alerts.ToolWindow;
@@ -13,8 +13,6 @@ import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.preferences.AppSettings;
-import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;

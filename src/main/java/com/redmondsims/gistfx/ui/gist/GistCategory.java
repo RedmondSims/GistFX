@@ -2,15 +2,11 @@ package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.data.Action;
 import com.redmondsims.gistfx.gist.Gist;
-import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.scene.control.TreeItem;
 
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 public class GistCategory {
 

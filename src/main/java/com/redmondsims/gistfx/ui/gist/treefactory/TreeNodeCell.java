@@ -1,4 +1,4 @@
-package com.redmondsims.gistfx.ui.gist.factory;
+package com.redmondsims.gistfx.ui.gist.treefactory;
 
 import com.redmondsims.gistfx.gist.WindowManager;
 import javafx.scene.control.*;

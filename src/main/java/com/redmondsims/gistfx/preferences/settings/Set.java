@@ -185,9 +185,9 @@ public class Set {
 		prefs.putDouble(LABEL.DIVIDER_EXPANDED.Name(), value);
 	}
 
-	public void iconBaseSize(double value) {
+	public void iconBaseSize(Integer value) {
 		AppSettings.clear().iconBaseSize();
-		prefs.putDouble(LABEL.ICON_BASE_SIZE.Name(), value);
+		prefs.putInt(LABEL.ICON_BASE_SIZE.Name(), value);
 	}
 
 	public void trayIconColorOption(ColorOption option) {

@@ -5,7 +5,7 @@ import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
 import com.redmondsims.gistfx.gist.GistManager;
 import com.redmondsims.gistfx.ui.TreeIcons;
-import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
+import com.redmondsims.gistfx.ui.gist.treefactory.TreeNode;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;

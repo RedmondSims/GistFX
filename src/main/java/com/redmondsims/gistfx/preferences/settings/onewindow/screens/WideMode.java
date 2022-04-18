@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import org.apache.commons.math3.util.Precision;
 
 import java.awt.*;
@@ -60,7 +61,7 @@ public class WideMode {
 		btnExpanded     = new Button("Enable Expanded");
 		lblMessage      = new Label();
 		lblIconSize     = new Label("Icon Size");
-		spinner         = new Spinner<>(1,200,(int) AppSettings.get().iconBaseSize());
+		spinner         = new Spinner<>(15,100,(int) AppSettings.get().iconBaseSize());
 		lblMessage.setId("LargerFont");
 
 		lblAtRest.setAlignment(Pos.CENTER_RIGHT);
@@ -148,9 +149,12 @@ public class WideMode {
 			state = State.EXPANDED;
 		});
 
-		spinner.setOnMouseClicked(e->{
-			gistWindow.setIconSize((double) spinner.getValue());
-			AppSettings.set().iconBaseSize((double) spinner.getValue());
+		spinner.setInitialDelay(Duration.millis(900));
+		spinner.getValueFactory().setValue(AppSettings.get().iconBaseSize());
+
+		spinner.getValueFactory().valueProperty().addListener((observable, oldValue, newValue) -> {
+			gistWindow.setIconSize((double) newValue);
+			AppSettings.set().iconBaseSize(newValue);
 		});
 
 		Tooltip.install(btnAtRest, Action.newTooltip("This will put the main screen into a wide mode with the\ndivider at resting position. Set the desired location of\nthe divider when in the 'at rest' state."));

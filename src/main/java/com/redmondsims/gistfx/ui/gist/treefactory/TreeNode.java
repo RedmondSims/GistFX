@@ -3,7 +3,7 @@
  * Copyright (C) 29/03/2021 David Thaler.
  * All rights reserved
  */
-package com.redmondsims.gistfx.ui.gist.factory;
+package com.redmondsims.gistfx.ui.gist.treefactory;
 
 import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.gist.Gist;

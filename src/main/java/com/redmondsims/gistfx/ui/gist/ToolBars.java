@@ -1,10 +1,9 @@
 package com.redmondsims.gistfx.ui.gist;
 
 import com.redmondsims.gistfx.data.Action;
-import com.redmondsims.gistfx.enums.OS;
 import com.redmondsims.gistfx.preferences.AppSettings;
-import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.ui.TreeIcons;
+import com.redmondsims.gistfx.ui.gist.treefactory.Toolbox;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -49,6 +48,11 @@ public class ToolBars {
 	private       Image      imgDeleteUp;
 	private       Image      imgDeleteDown;
 	private final GistWindow gistWindow;
+	private double iconSize;
+	private double iconCount;
+	private double boxWidth;
+	private double boxHeight;
+	private double spacing;
 
 	private void createIcons() {
 		imgWideUp         = new Image(TreeIcons.getToolBarIcon("Wide/WideUp.png"));
@@ -116,26 +120,21 @@ public class ToolBars {
 		ivUndo.setPreserveRatio(true);
 
 		double base     = AppSettings.get().iconBaseSize();
-		double fitWidth = 50;
+		iconSize = 50;
 		if (base > 0) {
-			fitWidth = base;
+			iconSize = base;
 		}
-
-		if (LiveSettings.getOS().equals(OS.WINDOWS)) {
-			fitWidth = 35;
-			//TODO Find out if the size delta is ok with Dustin
-		}
-		setIconSize(fitWidth);
-		ivCopyToClipboard.setFitWidth(fitWidth);
-		ivPasteFromClipboard.setFitWidth(fitWidth);
-		ivWide.setFitWidth(fitWidth);
-		ivFull.setFitWidth(fitWidth);
-		ivDistractionFree.setFitWidth(fitWidth);
-		ivSaveFile.setFitWidth(fitWidth);
-		ivDeleteGist.setFitWidth(fitWidth);
-		ivNewGist.setFitWidth(fitWidth);
-		ivEditCategories.setFitWidth(fitWidth);
-		ivUndo.setFitWidth(fitWidth);
+		setIconSize(iconSize);
+		ivCopyToClipboard.setFitWidth(iconSize);
+		ivPasteFromClipboard.setFitWidth(iconSize);
+		ivWide.setFitWidth(iconSize);
+		ivFull.setFitWidth(iconSize);
+		ivDistractionFree.setFitWidth(iconSize);
+		ivSaveFile.setFitWidth(iconSize);
+		ivDeleteGist.setFitWidth(iconSize);
+		ivNewGist.setFitWidth(iconSize);
+		ivEditCategories.setFitWidth(iconSize);
+		ivUndo.setFitWidth(iconSize);
 
 		Tooltip.install(ivCopyToClipboard, Action.newTooltip("Copy selected file to clipboard"));
 		Tooltip.install(ivPasteFromClipboard, Action.newTooltip("Paste clipboard to selected file and overwrite"));
@@ -182,40 +181,57 @@ public class ToolBars {
 		});
 	}
 
+	private void calculateBox() {
+		boxHeight = (iconSize * 2) + 10;
+		spacing = iconSize * .75;
+		boxWidth = (iconCount * iconSize) + (spacing * iconCount) + 10;
+	}
 
 	private HBox getIconBox(ObservableList<ImageView> activeIconList) {
-		HBox hbox = new HBox(30);
+		HBox hbox = new HBox(spacing);
 		hbox.getChildren().setAll(activeIconList);
 		hbox.setPadding(new Insets(5, 5, 5, 5));
+		hbox.setMinWidth(boxWidth);
+		hbox.setMaxWidth(boxWidth);
+		hbox.setPrefWidth(boxWidth);
 		hbox.setAlignment(Pos.CENTER);
 		return hbox;
 	}
 
-	public HBox gistSelected() {
+	public Toolbox gistSelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
 		iconList.setAll(ivWide, ivFull, ivDeleteGist, ivNewGist);
-		return getIconBox(iconList);
+		iconCount = 4;
+		calculateBox();
+		return new Toolbox(getIconBox(iconList), boxWidth, boxHeight);
 	}
 
-	public HBox categorySelected() {
+	public Toolbox categorySelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
 		iconList.setAll(ivWide, ivFull, ivEditCategories);
-		return getIconBox(iconList);
+		iconCount = 3;
+		calculateBox();
+		return new Toolbox(getIconBox(iconList), boxWidth, boxHeight);
 	}
 
-	public HBox fileSelected() {
+	public Toolbox fileSelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
 		iconList.setAll(ivWide, ivFull, ivDistractionFree, ivSaveFile, ivUndo);
-		return getIconBox(iconList);
+		iconCount = 5;
+		calculateBox();
+		return new Toolbox(getIconBox(iconList), boxWidth, boxHeight);
 	}
 
-	public HBox nothingSelected() {
+	public Toolbox nothingSelected() {
 		ObservableList<ImageView> iconList = FXCollections.observableArrayList();
 		iconList.setAll(ivWide, ivFull, ivNewGist, ivEditCategories);
-		return getIconBox(iconList);
+		iconCount = 4;
+		calculateBox();
+		return new Toolbox(getIconBox(iconList), boxWidth, boxHeight);
 	}
-
 	public void setIconSize(double size) {
+		iconSize = size;
+		calculateBox();
 		ivCopyToClipboard.setFitWidth(size);
 		ivPasteFromClipboard.setFitWidth(size);
 		ivWide.setFitWidth(size);

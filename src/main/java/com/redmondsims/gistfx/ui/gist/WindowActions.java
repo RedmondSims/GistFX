@@ -12,11 +12,9 @@ import com.redmondsims.gistfx.networking.FileRecord;
 import com.redmondsims.gistfx.networking.Payload;
 import com.redmondsims.gistfx.networking.PayloadBuilder;
 import com.redmondsims.gistfx.preferences.AppSettings;
-import com.redmondsims.gistfx.preferences.LiveSettings;
-import com.redmondsims.gistfx.preferences.UISettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.Editors;
-import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
+import com.redmondsims.gistfx.ui.gist.treefactory.TreeNode;
 import com.redmondsims.gistfx.utils.Resources;
 import com.redmondsims.gistfx.utils.Status;
 import eu.mihosoft.monacofx.MonacoFX;
@@ -49,9 +47,9 @@ import java.util.Map;
 import static com.redmondsims.gistfx.enums.Response.*;
 import static com.redmondsims.gistfx.enums.TreeType.*;
 
-public class gistWindowActions {
+public class WindowActions {
 
-	public gistWindowActions(Stage gistStage, Window stageWindow, GistWindow gistWindow) {
+	public WindowActions(Stage gistStage, Window stageWindow, GistWindow gistWindow) {
 		this.gistStage   = gistStage;
 		this.stageWindow = stageWindow;
 		this.gistWindow  = gistWindow;
@@ -61,25 +59,178 @@ public class gistWindowActions {
 	private final Window     stageWindow;
 	private final String     compareWarning = "Please wait until I'm done comparing local Gists with GitHub.";
 	private final GistWindow gistWindow;
+	private       int        passwordAttempts;
+	private       String     btnPressed     = "";
+	private       String     newFileGistId  = "";
+	private final String     reject         = "RL:P>V*FxN)?Ns©7A=g<DPamfNF2E=kXA2mG>a=e?UH7-5)";
+	private String newFileAction = "";
+
+	private HBox newHBox(Node... nodes) {
+		HBox hbox = new HBox(nodes);
+		hbox.setSpacing(5);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+		return hbox;
+	}
+
+	private String notifyUserIncomingPayload(boolean needsPassword, PayloadBuilder payloadBuilder) {
+		String type      = payloadBuilder.getType().Name();
+		Text   textOne   = new Text("You have received a " + type + " from: ");
+		Text   textTwo   = new Text(payloadBuilder.getSenderName());
+		Text   textThree = new Text("Having name: ");
+		Text   textFour  = new Text(payloadBuilder.getTitle());
+		HBox   boxOne    = newHBox(textOne, textTwo);
+		HBox   boxTwo    = newHBox(textThree, textFour);
+		textOne.setStrokeWidth(4);
+		textTwo.setStrokeWidth(4);
+		textThree.setStrokeWidth(4);
+		textFour.setStrokeWidth(4);
+		if (AppSettings.get().theme().equals(Theme.DARK)) {
+			textTwo.setFill(Color.DARKORANGE);
+			textFour.setFill(Color.DARKORANGE);
+		}
+		else {
+			textTwo.setFill(Color.DARKBLUE);
+			textFour.setFill(Color.DARKBLUE);
+		}
+		passwordAttempts = 1;
+		String    name         = "notifyPayload";
+		double    width        = 350;
+		double    height       = 230;
+		TextField tfPassword   = new TextField();
+		Text      textPassword = new Text("This data requires a password for decryption.\n\n");
+		if (needsPassword) {
+			tfPassword.setVisible(true);
+		}
+		Text textReceive = new Text("Do you wish to receive it?");
+		textPassword.setLineSpacing(.2);
+		textPassword.setFill(Color.RED);
+		textPassword.setTextAlignment(TextAlignment.CENTER);
+		Button btnYes = new Button("Yes");
+		Button btnNo  = new Button("No");
+		tfPassword.setAlignment(Pos.CENTER);
+		tfPassword.setVisible(needsPassword);
+		HBox buttonBox = newHBox(btnYes, btnNo);
+		buttonBox.setAlignment(Pos.CENTER);
+		buttonBox.setSpacing(30);
+		AnchorPane nuAP = new AnchorPane(boxOne, boxTwo, textReceive, tfPassword, buttonBox);
+		if (needsPassword) {
+			nuAP.getChildren().add(textPassword);
+			setAnchors(textPassword, 45, 0, -1, 45);
+		}
+		setAnchors(boxOne, 10, 10, 10, -1);
+		setAnchors(boxTwo, 10, 10, 40, -1);
+		setAnchors(textReceive, 10, 10, 70, -1);
+		setAnchors(tfPassword, 40, 40, -1, 40);
+		setAnchors(buttonBox, 40, 40, -1, 5);
+		btnYes.setOnAction(e -> {
+			btnPressed = "yes";
+			if (needsPassword) {
+				if (tfPassword.getText().isEmpty()) {
+					CustomAlert.showInfo("Need a password", SceneOne.getWindow(name));
+				}
+				else {
+					if (payloadBuilder.passwordValid(tfPassword.getText())) {
+						String msg = (passwordAttempts > 4) ? "Too many password attempts, canceling inbound payload." : "Invalid Password, Try again";
+						CustomAlert.showInfo(msg, SceneOne.getWindow(name));
+						passwordAttempts++;
+						if (passwordAttempts > 4) {
+							Platform.runLater(() -> {
+								btnPressed = "no";
+								SceneOne.close(name);
+							});
+						}
+					}
+					else {
+						SceneOne.close(name);
+					}
+				}
+			}
+			else {
+				SceneOne.close(name);
+			}
+		});
+		btnNo.setOnAction(e -> {
+			btnPressed = "no";
+			Platform.runLater(() -> SceneOne.close(name));
+		});
+		EventHandler<WindowEvent> eventHandler = event -> {
+			if (btnPressed.equals("yes")) {
+				if (!payloadBuilder.usePassword()) tfPassword.setText("");
+			}
+			else {
+				tfPassword.setText(reject);
+			}
+		};
+		SceneOne.set(nuAP, name, gistStage).centered().size(width, height).onCloseEvent(eventHandler).showAndWait();
+		return tfPassword.getText();
+	}
+
+	private void askUserAboutMissingGist(String gistId) {
+		Gist          gist = GistManager.getGist(gistId);
+		StringBuilder sb   = new StringBuilder("Gist Name:\n\t");
+		sb.append(gist.getName()).append("\n\nFiles:\n");
+		for (GistFile file : gist.getFiles()) {
+			sb.append("\t").append(file.getFilename()).append("\n");
+		}
+		Label label = new Label("You have one or more Gists in your local database that does not exist on GitHub.\n(Perhaps it was created in offline mode or it was deleted from GitHub)\nWould you like to delete the Gist from your local data,\nor would you like to upload the Gist to GitHub?");
+		label.setWrapText(true);
+		label.setPadding(new Insets(10, 10, 10, 10));
+		TextArea taGistInfo = new TextArea(sb.toString());
+		taGistInfo.setEditable(false);
+		Button btnDelete = new Button("Delete");
+		Button btnKeep   = new Button("Keep And Upload");
+		double width     = 600;
+		double height    = 400;
+		String sceneId   = "KeepOrNot";
+		btnDelete.setOnAction(e -> {
+			if (CustomAlert.showConfirmation("Are you sure you wish to PERMANENTLY delete this Gist?")) {
+				GistManager.deleteLocalGist(gistId);
+				SceneOne.close(sceneId);
+			}
+		});
+		btnKeep.setOnAction(e -> {
+			Action.uploadGistToGitHub(gistId);
+			SceneOne.close(sceneId);
+		});
+		VBox vbox = new VBox(label, taGistInfo);
+		vbox.setPadding(new Insets(10, 10, 10, 10));
+		vbox.setSpacing(10);
+		ToolWindow toolWindow = new ToolWindow.Builder(vbox)
+				.size(width, height)
+				.addButton(btnDelete)
+				.addButton(btnKeep)
+				.setSceneId(sceneId).title("Gist Conflict")
+				.onCloseEvent(e -> SceneOne.close(sceneId))
+				.attachToStage(SceneOne.getStage("GistWindow"))
+				.build();
+		toolWindow.showAndWait();
+	}
+
+	private void setAnchors(Node node, double left, double right, double top, double bottom) {
+		if (top != -1) AnchorPane.setTopAnchor(node, top);
+		if (bottom != -1) AnchorPane.setBottomAnchor(node, bottom);
+		if (left != -1) AnchorPane.setLeftAnchor(node, left);
+		if (right != -1) AnchorPane.setRightAnchor(node, right);
+	}
 
 	public void receiveData(Payload payload) {
 		Platform.runLater(() -> {
 			PayloadBuilder payloadBuilder = new PayloadBuilder(payload);
 			boolean        needsPassword  = payloadBuilder.usePassword();
 			String         password       = notifyUserIncomingPayload(needsPassword, payloadBuilder);
-			if(password.equals(reject)) return;
-			if(!payloadBuilder.getType().equals(FILE))
-				addingDataMessage(true);
+			if (password.equals(reject)) return;
+			if (!payloadBuilder.getType().equals(FILE)) {addingDataMessage(true);}
 			new Thread(() -> {
-				if(payloadBuilder.usePassword())
-					if (payloadBuilder.passwordValid(password)){
+				if (payloadBuilder.usePassword()) {
+					if (payloadBuilder.passwordValid(password)) {
 						CustomAlert.showWarning("Password Invalid");
 						gistWindow.closeShareWindow();
 						return;
 					}
-				if(payloadBuilder.getType().equals(FILE)) {
+				}
+				if (payloadBuilder.getType().equals(FILE)) {
 					dropFileIntoGist(payloadBuilder.getGistPayloadFile());
-					if(!newFileGistId.isEmpty()) {
+					if (!newFileGistId.isEmpty()) {
 						WindowManager.fillTree();
 						refreshFiles(newFileGistId);
 					}
@@ -104,14 +255,6 @@ public class gistWindowActions {
 		}
 	}
 
-	private HBox newHBox(Node...nodes) {
-		HBox hbox = new HBox(nodes);
-		hbox.setSpacing(5);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-		return hbox;
-	}
-
-	private String newFileGistId = "";
 	public void dropFileIntoGist(FileRecord fileRecord) {
 		newFileGistId = "";
 		Label           label       = new Label("Select the Gist that you want to drop the file into");
@@ -123,7 +266,7 @@ public class gistWindowActions {
 		vbox.setAlignment(Pos.CENTER);
 		EventHandler<ActionEvent> addEventHandler = event -> {
 			Gist gist = cbGists.getValue();
-			if(gist != null) {
+			if (gist != null) {
 				Platform.runLater(() -> addingDataMessage(true));
 				String filename    = fileRecord.filename();
 				String content     = fileRecord.content();
@@ -138,152 +281,57 @@ public class gistWindowActions {
 			SceneOne.close(thisSceneId);
 		};
 		ToolWindow toolWindow = new ToolWindow.Builder(vbox)
-				.size(300,200)
+				.size(300, 200)
 				.attachToStage(gistStage)
-				.addButton("Save",30,addEventHandler)
-				.addButton("Close",30,closeEventHandler)
+				.addButton("Save", 30, addEventHandler)
+				.addButton("Close", 30, closeEventHandler)
 				.setSceneId(thisSceneId)
 				.build();
 		Platform.runLater(toolWindow::showAndWait);
 	}
 
-	private int passwordAttempts;
-	private String btnPressed = "";
-	private final String reject = "RL:P>V*FxN)?Ns©7A=g<DPamfNF2E=kXA2mG>a=e?UH7-5)";
-	private String notifyUserIncomingPayload(boolean needsPassword, PayloadBuilder payloadBuilder) {
-		String type    = payloadBuilder.getType().Name();
-		Text   textOne = new Text("You have received a " + type + " from: ");
-		Text   textTwo = new Text(payloadBuilder.getSenderName());
-		Text textThree = new Text("Having name: ");
-		Text textFour = new Text(payloadBuilder.getTitle());
-		HBox boxOne = newHBox(textOne,textTwo);
-		HBox boxTwo = newHBox(textThree,textFour);
-		textOne.setStrokeWidth(4);
-		textTwo.setStrokeWidth(4);
-		textThree.setStrokeWidth(4);
-		textFour.setStrokeWidth(4);
-		if(AppSettings.get().theme().equals(Theme.DARK)) {
-			textTwo.setFill(Color.DARKORANGE);
-			textFour.setFill(Color.DARKORANGE);
-		}
-		else {
-			textTwo.setFill(Color.DARKBLUE);
-			textFour.setFill(Color.DARKBLUE);
-		}
-		passwordAttempts = 1;
-		String name = "notifyPayload";
-		double width = 350;
-		double    height       = 230;
-		TextField tfPassword   = new TextField();
-		Text      textPassword = new Text("This data requires a password for decryption.\n\n");
-		if(needsPassword) {
-			tfPassword.setVisible(true);
-		}
-		Text textReceive = new Text("Do you wish to receive it?");
-		textPassword.setLineSpacing(.2);
-		textPassword.setFill(Color.RED);
-		textPassword.setTextAlignment(TextAlignment.CENTER);
-		Button btnYes = new Button("Yes");
-		Button btnNo  = new Button("No");
-		tfPassword.setAlignment(Pos.CENTER);
-		tfPassword.setVisible(needsPassword);
-		HBox buttonBox = newHBox(btnYes,btnNo);
-		buttonBox.setAlignment(Pos.CENTER);
-		buttonBox.setSpacing(30);
-		AnchorPane nuAP = new AnchorPane(boxOne, boxTwo, textReceive, tfPassword, buttonBox);
-		if(needsPassword) {
-			nuAP.getChildren().add(textPassword);
-			setAnchors(textPassword,45,0,-1,45);
-		}
-		setAnchors(boxOne,10,10,10,-1);
-		setAnchors(boxTwo,10,10,40,-1);
-		setAnchors(textReceive,10,10,70,-1);
-		setAnchors(tfPassword,40,40,-1,40);
-		setAnchors(buttonBox,40,40,-1,5);
-		btnYes.setOnAction( e->{
-			btnPressed = "yes";
-			if(needsPassword) {
-				if (tfPassword.getText().isEmpty()) {
-					CustomAlert.showInfo("Need a password", SceneOne.getWindow(name));
-				}
-				else {
-					if (payloadBuilder.passwordValid(tfPassword.getText())) {
-						String msg = (passwordAttempts > 4) ? "Too many password attempts, canceling inbound payload." : "Invalid Password, Try again";
-						CustomAlert.showInfo(msg,SceneOne.getWindow(name));
-						passwordAttempts++;
-						if(passwordAttempts > 4){
-							Platform.runLater(() -> {
-								btnPressed = "no";
-								SceneOne.close(name);
-							});
-						}
-					}
-					else {
-						SceneOne.close(name);
-					}
-				}
-			}
-			else {
-				SceneOne.close(name);
-			}
-		});
-		btnNo.setOnAction(e->{
-			btnPressed = "no";
-			Platform.runLater(() -> SceneOne.close(name));
-		});
-		EventHandler<WindowEvent> eventHandler = event -> {
-			if(btnPressed.equals("yes")) {
-				if(!payloadBuilder.usePassword()) tfPassword.setText("");
-			}
-			else {
-				tfPassword.setText(reject);
-			}
-		};
-		SceneOne.set(nuAP,name,gistStage).centered().size(width,height).onCloseEvent(eventHandler).showAndWait();
-		return tfPassword.getText();
-	}
 	public void compareLocalWithGitHub() {
 		Status.setGistWindowState(State.COMPARING);
 		gistWindow.updateGitLabel("Comparing GitHub Data With Local", true);
-		Map<String, GHGist> ghGistMap = Action.getNewGhGistMap();
-		double totalActions = ghGistMap.size() * 4;
-		double actionSum = 0;
-		Map<String,Gist> gistMap = GistManager.getGistMap();
+		Map<String, GHGist> ghGistMap    = Action.getNewGhGistMap();
+		double              totalActions = ghGistMap.size() * 4;
+		double              actionSum    = 0;
+		Map<String, Gist>   gistMap      = GistManager.getGistMap();
 		//Make sure we have all Gists from GitHub
-		for(String gistId : ghGistMap.keySet()) {
+		for (String gistId : ghGistMap.keySet()) {
 			actionSum++;
 			Action.setProgress(actionSum / totalActions);
-			if(!ghGistMap.get(gistId).getDescription().equals(Names.GITHUB_METADATA.Name())) {
-				if(!gistMap.containsKey(gistId)) GistManager.addNewGistFromGitHub(ghGistMap.get(gistId));
+			if (!ghGistMap.get(gistId).getDescription().equals(Names.GITHUB_METADATA.Name())) {
+				if (!gistMap.containsKey(gistId)) GistManager.addNewGistFromGitHub(ghGistMap.get(gistId));
 			}
 		}
 		//See if we have any Gists that have been deleted from GitHub
-		for(String gistId : gistMap.keySet()) {
+		for (String gistId : gistMap.keySet()) {
 			actionSum++;
 			Action.setProgress(actionSum / totalActions);
-			if(!ghGistMap.containsKey(gistId)) {
+			if (!ghGistMap.containsKey(gistId)) {
 				Platform.runLater(() -> {
 					askUserAboutMissingGist(gistId);
 				});
 			}
 		}
 		//Add missing GitHub Gist Files to Local database
-		for(String gistId : ghGistMap.keySet()) {
+		for (String gistId : ghGistMap.keySet()) {
 			actionSum++;
 			Action.setProgress(actionSum / totalActions);
 			GHGist ghGist = ghGistMap.get(gistId);
 			if (!ghGist.getDescription().equals(Names.GITHUB_METADATA.Name())) {
 				List<String> gistFilenames = GistManager.getGistFilenames(gistId);
-				for(String filename : ghGist.getFiles().keySet()) {
-					if(!gistFilenames.contains(filename)) {
-						GistManager.addFileToGist(gistId,ghGist.getFile(filename));
+				for (String filename : ghGist.getFiles().keySet()) {
+					if (!gistFilenames.contains(filename)) {
+						GistManager.addFileToGist(gistId, ghGist.getFile(filename));
 					}
 				}
 			}
 		}
 		//Compare contents of local files with GitHub version
 		int nextInQue = 0;
-		for(String gistId : ghGistMap.keySet()) {
+		for (String gistId : ghGistMap.keySet()) {
 			actionSum++;
 			Action.setProgress(actionSum / totalActions);
 			GHGist ghGist = ghGistMap.get(gistId);
@@ -307,47 +355,6 @@ public class gistWindowActions {
 		Status.setGistWindowState(State.NORMAL);
 	}
 
-	private void askUserAboutMissingGist(String gistId) {
-		Gist gist = GistManager.getGist(gistId);
-		StringBuilder sb = new StringBuilder("Gist Name:\n\t");
-		sb.append(gist.getName()).append("\n\nFiles:\n");
-		for(GistFile file : gist.getFiles()) {
-			sb.append("\t").append(file.getFilename()).append("\n");
-		}
-		Label label = new Label("You have one or more Gists in your local database that does not exist on GitHub.\n(Perhaps it was created in offline mode or it was deleted from GitHub)\nWould you like to delete the Gist from your local data,\nor would you like to upload the Gist to GitHub?");
-		label.setWrapText(true);
-		label.setPadding(new Insets(10,10,10,10));
-		TextArea taGistInfo = new TextArea(sb.toString());
-		taGistInfo.setEditable(false);
-		Button btnDelete = new Button("Delete");
-		Button btnKeep   = new Button("Keep And Upload");
-		double width     = 600;
-		double height    = 400;
-		String sceneId   = "KeepOrNot";
-		btnDelete.setOnAction(e -> {
-			if(CustomAlert.showConfirmation("Are you sure you wish to PERMANENTLY delete this Gist?")) {
-				GistManager.deleteLocalGist(gistId);
-				SceneOne.close(sceneId);
-			}
-		});
-		btnKeep.setOnAction(e -> {
-			Action.uploadGistToGitHub(gistId);
-			SceneOne.close(sceneId);
-		});
-		VBox vbox = new VBox(label,taGistInfo);
-		vbox.setPadding(new Insets(10,10,10,10));
-		vbox.setSpacing(10);
-		ToolWindow toolWindow = new ToolWindow.Builder(vbox)
-				.size(width, height)
-				.addButton(btnDelete)
-				.addButton(btnKeep)
-				.setSceneId(sceneId).title("Gist Conflict")
-				.onCloseEvent(e -> SceneOne.close(sceneId))
-				.attachToStage(SceneOne.getStage("GistWindow"))
-				.build();
-		toolWindow.showAndWait();
-	}
-
 	public void addingDataMessage(boolean show) {
 		double width  = 400;
 		double height = 100;
@@ -368,16 +375,8 @@ public class gistWindowActions {
 			SceneOne.set(dmAP, name, gistStage).size(width, height).initStyle(StageStyle.TRANSPARENT).centered().show();
 		}
 		else {
-			if(SceneOne.sceneExists(name))
-				SceneOne.close(name);
+			if (SceneOne.sceneExists(name)) {SceneOne.close(name);}
 		}
-	}
-
-	public void setAnchors(Node node, double left, double right, double top, double bottom) {
-		if (top != -1) AnchorPane.setTopAnchor(node, top);
-		if (bottom != -1) AnchorPane.setBottomAnchor(node, bottom);
-		if (left != -1) AnchorPane.setLeftAnchor(node, left);
-		if (right != -1) AnchorPane.setRightAnchor(node, right);
 	}
 
 	public void newGist(TreeNode selectedNode) {
@@ -386,30 +385,30 @@ public class gistWindowActions {
 			return;
 		}
 		Platform.runLater(() -> {
-			boolean categorySet = false;
-			String selectedCategory = "";
-			if(selectedNode != null) {
+			boolean categorySet      = false;
+			String  selectedCategory = "";
+			if (selectedNode != null) {
 				if (selectedNode.getType().equals(CATEGORY)) {
-					categorySet = true;
+					categorySet      = true;
 					selectedCategory = selectedNode.getCategoryName();
 				}
 			}
-			String[] choices = CustomAlert.newGistAlert(getDefaultJavaText("File.java"), categorySet,selectedCategory);
+			String[] choices = CustomAlert.newGistAlert(getDefaultJavaText("File.java"), categorySet, selectedCategory);
 			if (choices != null) {
-				boolean isPublic    = choices[0].equals("Public");
-				String  gistName    = choices[1];
-				String  filename    = choices[2];
-				String  description = choices[3];
-				String  gistFile    = choices[4];
-				String  category    = choices[5];
-				String  newGistId   = GistManager.addNewGistToGitHub(gistName, description, filename, gistFile, isPublic);
-				String finalCategory = (!category.trim().equals("!@#none#@!")) ? category : categorySet ? selectedCategory : "";
+				boolean isPublic      = choices[0].equals("Public");
+				String  gistName      = choices[1];
+				String  filename      = choices[2];
+				String  description   = choices[3];
+				String  gistFile      = choices[4];
+				String  category      = choices[5];
+				String  newGistId     = GistManager.addNewGistToGitHub(gistName, description, filename, gistFile, isPublic);
+				String  finalCategory = (!category.trim().equals("!@#none#@!")) ? category : categorySet ? selectedCategory : "";
 				if (!finalCategory.isEmpty()) {
 					Action.mapCategoryNameToGist(newGistId, finalCategory);
 				}
 				WindowManager.fillTree();
-				gistWindow.getTreeActions().addGistToCategory(newGistId,selectedCategory);
-				TreeItem<TreeNode> leaf = gistWindow.getTreeActions().getLeaf(newGistId,filename);
+				gistWindow.getTreeActions().addGistToCategory(newGistId, selectedCategory);
+				TreeItem<TreeNode> leaf = gistWindow.getTreeActions().getLeaf(newGistId, filename);
 				leaf.getParent().setExpanded(true);
 				leaf.getParent().getParent().setExpanded(true);
 				gistWindow.getTreeView().getSelectionModel().select(leaf);
@@ -418,23 +417,19 @@ public class gistWindowActions {
 		});
 	}
 
-
-	long start = System.currentTimeMillis();
-
-	private String newFileAction = "";
 	public void newFile(Gist gist) {
 		if (Status.comparingLocalDataWithGitHub()) {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
-		else if(gist == null) return;
-		String                             gistId      = gist.getGistId();
-		StringProperty                     filename    = new SimpleStringProperty();
-		StringProperty                     contents    = new SimpleStringProperty();
-		StringProperty                     description = new SimpleStringProperty();
+		else if (gist == null) return;
+		String         gistId      = gist.getGistId();
+		StringProperty filename    = new SimpleStringProperty();
+		StringProperty contents    = new SimpleStringProperty();
+		StringProperty description = new SimpleStringProperty();
 
-		double width = 900;
-		double height = 800;
+		double    width          = 900;
+		double    height         = 800;
 		String    sceneName      = "NewFile";
 		Label     lblFilename    = new Label("Filename");
 		TextField tfFilename     = new TextField();
@@ -448,16 +443,16 @@ public class gistWindowActions {
 		lblDescription.setAlignment(Pos.CENTER_LEFT);
 		taDescription.setMinHeight(55);
 		taDescription.setMaxHeight(55);
-		btnSave.setOnAction(e-> {
+		btnSave.setOnAction(e -> {
 			newFileAction = "save";
 			SceneOne.close(sceneName);
 		});
-		btnCancel.setOnAction(e ->{
+		btnCancel.setOnAction(e -> {
 			newFileAction = "cancel";
 			SceneOne.close(sceneName);
 		});
-		MonacoFX monaco = Editors.getMonacoOne();
-		HBox boxFilename = new HBox(10,lblFilename, tfFilename);
+		MonacoFX monaco      = Editors.getMonacoOne();
+		HBox     boxFilename = new HBox(10, lblFilename, tfFilename);
 /*
 		AnchorPane apnf = new AnchorPane(lblFilename,lblDescription,tfFilename,taDescription,monaco);
 		setAnchors(lblFilename,10,-1,10,-1);
@@ -476,30 +471,28 @@ public class gistWindowActions {
 			}
 		});
 		description.bind(taDescription.textProperty());
-		tfFilename.setText(gist.getName().replaceAll(" ","")+".java");
+		tfFilename.setText(gist.getName().replaceAll(" ", "") + ".java");
 
-		VBox vbox = new VBox(10,boxFilename,lblDescription, taDescription, monaco);
-		vbox.setPadding(new Insets(15,10,10,15));
+		VBox vbox = new VBox(10, boxFilename, lblDescription, taDescription, monaco);
+		vbox.setPadding(new Insets(15, 10, 10, 15));
 
 
 		tfFilename.textProperty().addListener((observable, oldValue, newValue) -> {
 			String extension = FilenameUtils.getExtension(newValue);
-			if(extension.equals("py"))
-				monaco.getEditor().setCurrentLanguage("python");
-			else
-				monaco.getEditor().setCurrentLanguage(extension);
+			if (extension.equals("py")) {monaco.getEditor().setCurrentLanguage("python");}
+			else {monaco.getEditor().setCurrentLanguage(extension);}
 		});
 
 		ToolWindow toolWindow = new ToolWindow.Builder(vbox)
 				.addButton(btnCancel)
 				.addButton(btnSave)
 				.setSceneId(sceneName)
-				.size(width,height)
+				.size(width, height)
 				.attachToStage(gistStage)
 				.title("New File")
 				.build();
 		toolWindow.showAndWait();
-		if(newFileAction.equalsIgnoreCase("save")){
+		if (newFileAction.equalsIgnoreCase("save")) {
 			GistFile file = GistManager.addNewFile(gistId, filename.get(), contents.get(), description.get());
 			if (file != null) {
 				String newFilename = file.getFilename();
@@ -521,7 +514,7 @@ public class gistWindowActions {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
-		else if(file == null) return;
+		else if (file == null) return;
 		Platform.runLater(() -> {
 			String gistName = GistManager.getGist(file.getGistId()).getName();
 			if (CustomAlert.showConfirmation("Are you sure you want to delete the file\n\n" + file.getFilename() + "\n\nFrom Gist: " + gistName + "?")) {
@@ -537,7 +530,7 @@ public class gistWindowActions {
 			return;
 		}
 		GistFile file = gistWindow.getFile();
-		if(file != null) {
+		if (file != null) {
 			if (!file.isDirty()) {
 				CustomAlert.showInfo("File has not been edited since the last time it was uploaded to GitHub", SceneOne.getWindow(Resources.getSceneIdGistWindow()));
 				return;
@@ -555,23 +548,23 @@ public class gistWindowActions {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
-		if(gist == null) return;
-			String   gistId   = gist.getGistId();
-			Response response = deleteGistResponse(gistId);
-			if (response == YES) {
-				if (gistWindow.getTreeActions().removeBranch(gistId)) {
-					GistManager.deleteGist(gistId);
-					Platform.runLater(() -> CustomAlert.showInfo("Gist deleted successfully.", stageWindow));
-				}
+		if (gist == null) return;
+		String   gistId   = gist.getGistId();
+		Response response = deleteGistResponse(gistId);
+		if (response == YES) {
+			if (gistWindow.getTreeActions().removeBranch(gistId)) {
+				GistManager.deleteGist(gistId);
+				Platform.runLater(() -> CustomAlert.showInfo("Gist deleted successfully.", stageWindow));
 			}
-			if (response == MISTAKE) deleteGist(gist);
+		}
+		if (response == MISTAKE) deleteGist(gist);
 	}
 
 	public void renameGist(Gist gist) {
 		if (gist != null) {
 			Platform.runLater(() -> {
 				String gistId  = gist.getGistId();
-				String newName = CustomAlert.showChangeNameAlert(gist.getName(),Type.GIST, gistStage);
+				String newName = CustomAlert.showChangeNameAlert(gist.getName(), Type.GIST, gistStage);
 				if (!newName.isEmpty()) {
 					gist.setName(newName);
 					WindowManager.fillTree();
@@ -584,12 +577,12 @@ public class gistWindowActions {
 	}
 
 	public void renameCategory() {
-		if(gistWindow.getTreeView().getSelectionModel().getSelectedItem().getValue().getType().equals(CATEGORY)) {
+		if (gistWindow.getTreeView().getSelectionModel().getSelectedItem().getValue().getType().equals(CATEGORY)) {
 			String oldName = gistWindow.getTreeView().getSelectionModel().getSelectedItem().getValue().toString();
 			Platform.runLater(() -> {
 				String newName = CustomAlert.showChangeNameAlert(oldName, Type.CATEGORY, gistStage);
 				if (!newName.isEmpty()) {
-					Action.changeCategoryName(oldName,newName);
+					Action.changeCategoryName(oldName, newName);
 					gistWindow.fillTree();
 				}
 			});
@@ -601,7 +594,7 @@ public class gistWindowActions {
 			CustomAlert.showWarning(compareWarning);
 			return;
 		}
-		if(file != null) {
+		if (file != null) {
 			String oldName = gistWindow.getTreeView().getSelectionModel().getSelectedItem().getValue().toString();
 			String newName = CustomAlert.showChangeNameAlert(oldName, Type.FILE, gistStage);
 			if (!newName.isEmpty()) {
@@ -646,7 +639,7 @@ public class gistWindowActions {
 		tfSelectedCategory.setEditable(false);
 		ListView<String> lvCategories = new ListView<>();
 		lvCategories.getItems().setAll(Action.getCategoryList());
-		Button btnClose = new Button("Close");
+		Button btnClose  = new Button("Close");
 		Button btnDelete = new Button("Delete Category");
 		AnchorPane apCategories = new AnchorPane(lvCategories,
 												 lblNewCategory,
@@ -673,7 +666,7 @@ public class gistWindowActions {
 		setAnchors(tfNewName, 135, 20, 77.5, -1);
 		setAnchors(lvCategories, 20, 20, 125, 65);
 		setAnchors(btnClose, 80, -1, -1, 20);
-		setAnchors(btnDelete,-1, 80, -1, 20);
+		setAnchors(btnDelete, -1, 80, -1, 20);
 		btnDelete.setDisable(true);
 		tfSelectedCategory.textProperty().addListener((observable, oldValue, newValue) -> btnDelete.setDisable(newValue.length() == 0));
 		tfNewCategory.setOnMouseClicked(e -> {
@@ -693,7 +686,7 @@ public class gistWindowActions {
 			String newName = tfNewName.getText();
 			Action.changeCategoryName(oldName, newName);
 			Platform.runLater(() -> {
-				gistWindow.getTreeActions().renameCategory(oldName,newName);
+				gistWindow.getTreeActions().renameCategory(oldName, newName);
 				tfNewCategory.requestFocus();
 				tfSelectedCategory.clear();
 				tfNewName.clear();
@@ -721,7 +714,7 @@ public class gistWindowActions {
 			lvCategories.getItems().setAll(Action.getCategoryList());
 			WindowManager.fillTree();
 		});
-		SceneOne.set(apCategories, name,gistStage)
+		SceneOne.set(apCategories, name, gistStage)
 				.centered()
 				.newStage()
 				.title("Edit Categories")
@@ -740,9 +733,9 @@ public class gistWindowActions {
 	}
 
 	public Response deleteGistResponse(String gistId) {
-		Gist gist = GistManager.getGist(gistId);
-		int     forkCount = gist.getForkCount();
-		String  forkText  = "";
+		Gist   gist      = GistManager.getGist(gistId);
+		int    forkCount = gist.getForkCount();
+		String forkText  = "";
 		if (forkCount > 0) {
 			forkText = "This Gist currently has " + forkCount + " fork(s). When you delete this Gist, each fork will be converted into a local Gist for those users who have a fork.\n\n";
 		}
@@ -764,14 +757,12 @@ public class gistWindowActions {
 
 	private String getDefaultJavaText(String name) {
 		return """
-        public class %s {
-        
-        	public static void main(String[] args) {
-        		System.out.println("Hello World!")%s
-        	}
-        
-        }""".formatted(name.replaceAll(" ", ""), ";");
+				public class %s {
+				        
+					public static void main(String[] args) {
+						System.out.println("Hello World!")%s
+					}
+				        
+				}""".formatted(name.replaceAll(" ", ""), ";");
 	}
-
-
 }

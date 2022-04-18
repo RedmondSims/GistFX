@@ -151,6 +151,16 @@ public final class SceneOne {
 		autoSize(defaultSceneName);
 	}
 
+	public static void doSize(String sceneName) {
+		Platform.runLater(() -> {
+			autoSize(sceneName);
+		});
+	}
+
+	public static void setWidth(String sceneName, double width) {
+		sceneMap.get(sceneName).sizeToWidth(width);
+	}
+
 	/**
 	 * Named methods (called by above default Methods or called externally by passing in a sceneName
 	 */
@@ -195,6 +205,11 @@ public final class SceneOne {
 		return new Show(sceneName,true);
 	}
 
+	public static void showAndWait(String sceneName, double width, double height) {
+		checkScene(sceneName);
+		sceneMap.get(sceneName).showAndWait(width, height);
+	}
+
 	public static boolean isShowing(String sceneName) {
 		if(sceneMap.containsKey(sceneName)) {
 			return sceneMap.get(sceneName).isShowing();
@@ -204,6 +219,11 @@ public final class SceneOne {
 
 	public static boolean sceneExists(String sceneName) {
 		return sceneMap.containsKey(sceneName);
+	}
+
+	public static void removeScene(String sceneName) {
+		checkScene(sceneName);
+		sceneMap.remove(sceneName);
 	}
 
 	public static void setOnKeyPressed(String sceneName, EventHandler<? super KeyEvent> event) {
@@ -243,7 +263,7 @@ public final class SceneOne {
 
 	public static void setWindowSize(String sceneName,double width, double height) {
 		checkScene(sceneName);
-		sceneMap.get(sceneName).setWindowSize(width,height);
+		sceneMap.get(sceneName).setSize(width,height);
 	}
 
 	public static void runOnShown(String sceneName, EventHandler<Event> handler) {
@@ -820,13 +840,6 @@ public final class SceneOne {
 					stage.setHeight(VALUES.get(SIZE.HEIGHT));
 				}
 			}
-
-			public void resize(Window window) {
-				if(isSet()) {
-					window.setWidth(VALUES.get(SIZE.WIDTH));
-					window.setHeight(VALUES.get(SIZE.HEIGHT));
-				}
-			}
 		}
 
 		private       Parent                         root;
@@ -854,6 +867,8 @@ public final class SceneOne {
 		private final Stage                          owner;
 		private double originalWidth = 0;
 		private double originalHeight= 0;
+		private double desiredWidth = 0;
+		private double desiredHeight = 0;
 		private boolean alwaysOnTop;
 
 		private final ChangeListener<Boolean> lostFocusListener = (observable, oldValue, newValue) -> {
@@ -948,7 +963,7 @@ public final class SceneOne {
 		private void getStageForScene() {
 			StageObject stageObject = stageMap.getOrDefault(sceneName,stageMap.get(defaultSceneName));
 			stage = stageObject.get();
-			if(!stage.isShowing()) {
+			if(!stage.isShowing() && !stageObject.hasShown) {
 				if (stageStyle != null) stage.initStyle(stageStyle);
 				if (modality != null) stage.initModality(modality);
 			}
@@ -1054,7 +1069,7 @@ public final class SceneOne {
 			if (onShowEventHandler != null) {
 				onShowEventHandler.handle(null);
 			}
-			sceneSize.resize(this.window);
+			sceneSize.resize(this.stage);
 		}
 
 		private void showScene() {
@@ -1091,6 +1106,12 @@ public final class SceneOne {
 			showScene();
 		}
 
+		public void showAndWait(double width, double height) {
+			sceneSize.setWidth(width);
+			sceneSize.setHeight(height);
+			showAndWait();
+		}
+
 		private Term getDisplacement() {
 			if (scenePosition.isSet()) return Term.EXACT;
 			else return Term.CENTERED;
@@ -1122,17 +1143,7 @@ public final class SceneOne {
 
 		public void setSize(double width, double height) {
 			sceneSize.set(width,height);
-			sceneSize.resize(this.window);
-		}
-
-		public void setWindowSize(double width, double height) {
-			if(window.isShowing()) {
-				sceneSize.set(width,height);
-				sceneSize.resize(this.window);
-			}
-			else {
-				System.out.println("Window not showing");
-			}
+			sceneSize.resize(this.stage);
 		}
 
 		public void setPosition(double posX, double posY) {
@@ -1289,6 +1300,10 @@ public final class SceneOne {
 
 		public void autoSize() {
 			scene.getWindow().sizeToScene();
+		}
+
+		public void sizeToWidth(double width) {
+			stage.setWidth(width);
 		}
 
 		public boolean isFullscreen() {

@@ -1,8 +1,9 @@
 package com.redmondsims.gistfx.alerts;
 
 import com.redmondsims.gistfx.preferences.AppSettings;
-import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.sceneone.SceneOne;
+import com.redmondsims.gistfx.ui.gist.treefactory.Toolbox;
+import com.redmondsims.gistfx.utils.Util;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -24,6 +25,13 @@ import java.util.List;
 import static javafx.scene.layout.AnchorPane.*;
 
 public class ToolWindow {
+
+	private enum Source {
+		QUARTER,
+		HALF,
+		THREE_QUARTER,
+		FULL
+	}
 
 	private final String                    sceneId;
 	private       AnchorPane                ap;
@@ -174,37 +182,57 @@ public class ToolWindow {
 		SceneOne.resizeHeight(sceneId,height);
 	}
 
-	public void showAndWait() {
-		if(!SceneOne.sceneExists(sceneId)) {
-			defineParent();
-			if (callingStage != null) {
-				SceneOne.set(ap,sceneId,callingStage)
-						.size(width,height)
-						.title(title)
-						.styleSheets(AppSettings.get().theme().getStyleSheet())
-						.size(width,height)
-						.onCloseEvent(onCloseHandler)
-						.modality(initModality)
-						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
-						.showAndWait();
-			}
-			else {
-				SceneOne.set(ap,sceneId)
-						.size(width,height)
-						.title(title)
-						.styleSheets(AppSettings.get().theme().getStyleSheet())
-						.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
-						.modality(initModality)
-						.size(width,height)
-						.onCloseEvent(onCloseHandler)
-						.alwaysOnTop()
-						.showAndWait();
-			}
-			if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
+	private void createScene() {
+		defineParent();
+		if (callingStage != null) {
+			SceneOne.set(ap,sceneId,callingStage)
+					.size(width,height)
+					.title(title)
+					.styleSheets(AppSettings.get().theme().getStyleSheet())
+					.size(width,height)
+					.onCloseEvent(onCloseHandler)
+					.modality(initModality)
+					.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
+					.build();
 		}
 		else {
-			SceneOne.showScene(sceneId);
+			SceneOne.set(ap,sceneId)
+					.size(width,height)
+					.title(title)
+					.styleSheets(AppSettings.get().theme().getStyleSheet())
+					.initStyle(transparentStyle ? StageStyle.TRANSPARENT : StageStyle.DECORATED)
+					.modality(initModality)
+					.size(width,height)
+					.onCloseEvent(onCloseHandler)
+					.alwaysOnTop()
+					.build();
 		}
+	}
+
+	public void showAndWait(Toolbox toolBox) {
+		if(SceneOne.sceneExists(sceneId)) {
+			SceneOne.removeScene(sceneId);
+		}
+		createScene();
+		setContent(toolBox);
+		SceneOne.showAndWait(sceneId);
+		if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
+	}
+
+	public void showAndWait() {
+		if(!SceneOne.sceneExists(sceneId)) {
+			createScene();
+		}
+		SceneOne.showAndWait(sceneId);
+		if (afterCloseEvent != null) afterCloseEvent.handle(new ActionEvent());
+	}
+
+	public void show() {
+		if(!SceneOne.sceneExists(sceneId)) {
+			createScene();
+		}
+		SceneOne.showScene(sceneId);
+		setContent(this.content);
 	}
 
 	private void defineParent() {
@@ -251,30 +279,55 @@ public class ToolWindow {
 		if (right != -1) setRightAnchor(node, right);
 	}
 
-	public void setStyleSheet (String styleSheet) {
-		SceneOne.getScene(sceneId).getStylesheets().clear();
-		SceneOne.getScene(sceneId).getStylesheets().add(styleSheet);
-	}
-
 	public String getSceneId() {
 		return sceneId;
 	}
 
-	public void hide() {
-		SceneOne.hide(sceneId);
+	public void setContent(Toolbox toolbox) {
+		if (ap == null) {
+			if (this.content == null)
+				ap = new AnchorPane();
+			else
+				ap = new AnchorPane(this.content);
+		}
+		ap.getChildren().remove(this.content);
+		this.content = toolbox.content();
+		ap.getChildren().add(this.content);
+		SceneOne.setWindowSize(sceneId, toolbox.width(), toolbox.height() * calcOffset(toolbox.height()));
 	}
 
-	public void show() {
-		SceneOne.showScene(sceneId);
-		setContent(this.content);
+	private double calcOffset(double value) {
+		double coreValue = value - 40;
+		double range = 170;
+		double oneQuarter = range * .25;
+		double oneHalf = range * .5;
+		double threeQuarter = range * .75;
+		double finalOffset = Util.reMap(value,40,210,1.3,.66,3);
+		Source source;
+		if( coreValue <= oneQuarter) source = Source.QUARTER;
+		else if (coreValue <= oneHalf) source = Source.HALF;
+		else if (coreValue <= threeQuarter) source = Source.THREE_QUARTER;
+		else source = Source.FULL;
+		switch(source) {
+			case QUARTER -> finalOffset = Util.reMap(coreValue, 0, oneQuarter, 1.3, .91, 3);
+			case HALF -> finalOffset = Util.reMap(coreValue, oneQuarter, oneHalf, .89, .75, 3);
+			case THREE_QUARTER -> finalOffset = Util.reMap(coreValue, oneHalf, threeQuarter, .75, .685, 3);
+			case FULL -> finalOffset = Util.reMap(coreValue, threeQuarter, range, .69, .66, 3);
+		};
+		return finalOffset;
 	}
 
 	public void setContent(Node content) {
+		if(ap == null) {
+			if(this.content == null)
+				ap = new AnchorPane();
+			else
+				ap = new AnchorPane(this.content);
+		}
 		if (this.content != null) {
 			ap.getChildren().remove(this.content);
 			this.content = content;
 			ap.getChildren().add(this.content);
-			setNodePosition(this.content,0,0,0,noButtons ? 0 : 50);
 		}
 	}
 }

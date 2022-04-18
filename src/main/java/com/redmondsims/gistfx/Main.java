@@ -112,12 +112,6 @@ public class Main extends Application {
 			if (arg.toLowerCase().startsWith("wipesql")) {
 				Action.wipeSQLOnly();
 			}
-			if (arg.toLowerCase().startsWith("iconbase=")) {
-				String num   = arg.replaceFirst("iconbase=", "");
-				double value = Double.parseDouble(num);
-				AppSettings.set().iconBaseSize(value);
-				System.out.println("iconbase set to " + value);
-			}
 			if (arg.toLowerCase().startsWith("iconsize=")) {
 				String num   = arg.replaceFirst("iconsize=", "");
 				int value = Integer.parseInt(num);

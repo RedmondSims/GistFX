@@ -3,8 +3,7 @@ package com.redmondsims.gistfx.ui.gist;
 import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.javafx.CStringProperty;
 import com.redmondsims.gistfx.preferences.AppSettings;
-import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
-import javafx.application.Platform;
+import com.redmondsims.gistfx.ui.gist.treefactory.TreeNode;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.TreeItem;
 

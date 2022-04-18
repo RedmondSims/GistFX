@@ -1,11 +1,8 @@
-package com.redmondsims.gistfx.ui.gist.factory;
+package com.redmondsims.gistfx.ui.gist.treefactory;
 
 import com.redmondsims.gistfx.enums.TreeType;
 import com.redmondsims.gistfx.gist.Gist;
 import com.redmondsims.gistfx.gist.GistFile;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.scene.Node;
 
 import java.io.Serializable;
 

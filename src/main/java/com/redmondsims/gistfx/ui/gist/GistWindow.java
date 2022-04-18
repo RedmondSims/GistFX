@@ -21,8 +21,9 @@ import com.redmondsims.gistfx.preferences.LiveSettings;
 import com.redmondsims.gistfx.preferences.settings.onewindow.SettingsWindow;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.Editors;
-import com.redmondsims.gistfx.ui.gist.factory.TreeCellFactory;
-import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
+import com.redmondsims.gistfx.ui.gist.treefactory.Toolbox;
+import com.redmondsims.gistfx.ui.gist.treefactory.TreeCellFactory;
+import com.redmondsims.gistfx.ui.gist.treefactory.TreeNode;
 import com.redmondsims.gistfx.ui.trayicon.TrayIcon;
 import com.redmondsims.gistfx.utils.Resources;
 import com.redmondsims.gistfx.utils.Status;
@@ -109,9 +110,9 @@ public class GistWindow {
 	public final         CBooleanProperty   inFullScreen          = new CBooleanProperty(false);
 	private final        CBooleanProperty   windowResizing        = new CBooleanProperty(false);
 	private final        Transport          transport             = new Transport();
-	private              TreeItem<TreeNode> treeRoot;
-	private              gistWindowActions  actions;
-	private              TreeActions        treeActions;
+	private TreeItem<TreeNode> treeRoot;
+	private WindowActions      actions;
+	private TreeActions        treeActions;
 	private              GistFile           file;
 	private              Gist               gist;
 	private              String             gistURL               = "";
@@ -120,7 +121,7 @@ public class GistWindow {
 	private final        KeyCodeCombination kcCodeMac             = new KeyCodeCombination(KeyCode.C, KeyCombination.META_DOWN);
 	private final        KeyCodeCombination kcCodeOther           = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
 	private final        ToolBars           toolBars              = new ToolBars(this);
-	private              HBox               toolbarAnchored       = getToolBar();
+	private              HBox               toolbarAnchored       = getToolBar().content();
 	private              HBox               toolBarDetached;
 	private              SplitPane          splitPane;
 	private              ToolWindow         toolbarWindow;
@@ -163,7 +164,7 @@ public class GistWindow {
 		setControlActionProperties();
 		addMenuBarItems();
 		createScene();
-		actions     = new gistWindowActions(SceneOne.getStage(sceneId), SceneOne.getWindow(sceneId), this);
+		actions     = new WindowActions(SceneOne.getStage(sceneId), SceneOne.getWindow(sceneId), this);
 		treeActions = new TreeActions(this);
 		if (launchSource.equals(Source.LOCAL)) {
 			if(!LiveSettings.isOffline()) {
@@ -488,12 +489,10 @@ public class GistWindow {
 	}
 
 	private void detachToolBar() {
-		toolBarDetached = getToolBar();
+		Toolbox toolbox = getToolBar();
+		toolBarDetached = toolbox.content();
 		double width = 600;
 		double height = 95;
-		if(SceneOne.sceneExists(toolbarSceneId)) {
-			toolbarWindow.setContent(toolBarDetached);
-		}
 		if(toolbarWindow == null) {
 			toolbarWindow = new ToolWindow.Builder(toolBarDetached)
 					.noButtons()
@@ -504,7 +503,7 @@ public class GistWindow {
 					.onCloseEvent(e -> reattachToolbar())
 					.build();
 		}
-		toolbarWindow.showAndWait();
+		toolbarWindow.showAndWait(toolbox);
 	}
 
 	private void reattachToolbar() {
@@ -520,11 +519,13 @@ public class GistWindow {
 				case HIDDEN -> {
 					if(toolbarStatus.equals(ATTACHED)) {
 						removePaneNode(toolbarAnchored);
-						toolbarAnchored = getToolBar();
+						Toolbox toolbox = getToolBar();
+						toolbarAnchored = toolbox.content();
 						toolbarAnchored.setVisible(true);
 						addPaneNode(toolbarAnchored, 5, 5, 5, -1);
-						setAnchors(taFileDescription, 5, 5, 65, -1);
-						setAnchors(CodeEditor.get(), 0, 0, 112.5, 0);
+						double newPosition = toolbox.height() - (toolbox.height() * .43);
+						setAnchors(taFileDescription, 5, 5, newPosition, -1);
+						setAnchors(CodeEditor.get(), 0, 0, newPosition + 42.5, 0);
 					}
 					else if(toolbarStatus.equals(DETACHED)) {
 						lastToolbarStatus = toolbarStatus;
@@ -556,22 +557,26 @@ public class GistWindow {
 						setAnchors(CodeEditor.get(), 0, 0, 50, 0);
 					}
 					if(toolbarStatus.equals(ATTACHED)) {
-						SceneOne.hide(toolbarSceneId);
 						removePaneNode(toolbarAnchored);
-						toolbarAnchored = getToolBar();
+						Toolbox toolbox = getToolBar();
+						toolbarAnchored = toolbox.content();
 						addPaneNode(toolbarAnchored, 5, 5, 5, -1);
 						toolbarAnchored.setVisible(true);
-						setAnchors(taFileDescription, 5, 5, 65, -1);
-						setAnchors(CodeEditor.get(), 0, 0, 112.5, 0);
+						double newPosition = toolbox.height() - (toolbox.height() * .43);
+						setAnchors(taFileDescription, 5, 5, newPosition, -1);
+						setAnchors(CodeEditor.get(), 0, 0, newPosition + 42.5, 0);
+						toolbarWindow = null;
 					}
 				}
 				case NOSTATE -> {
 					if (toolbarStatus.equals(ATTACHED)) {
-						toolbarAnchored = getToolBar();
+						Toolbox toolbox = getToolBar();
+						toolbarAnchored = toolbox.content();
 						addPaneNode(toolbarAnchored,5,5,5,-1);
 						toolbarAnchored.setVisible(true);
-						setAnchors(taFileDescription, 5, 5, 65, -1);
-						setAnchors(CodeEditor.get(), 0, 0, 112.5, 0);
+						double newPosition = toolbox.height() - (toolbox.height() * .43);
+						setAnchors(taFileDescription, 5, 5, newPosition, -1);
+						setAnchors(CodeEditor.get(), 0, 0, newPosition + 42.5, 0);
 					}
 					else if (toolbarStatus.equals(HIDDEN)) {
 						setAnchors(taFileDescription, 5, 5, 5, -1);
@@ -595,15 +600,18 @@ public class GistWindow {
 		switch(toolbarStatus) {
 			case ATTACHED -> {
 				removePaneNode(toolbarAnchored);
-				toolbarAnchored = getToolBar();
+				Toolbox toolbox = getToolBar();
+				toolbarAnchored = toolbox.content();
 				addPaneNode(toolbarAnchored, 5, 5, 5, -1);
-				setAnchors(taFileDescription, 5, 5, 65, -1);
-				setAnchors(CodeEditor.get(), 0, 0, 112.5, 0);
+				double newPosition = toolbox.height() - (toolbox.height() * .43);
+				setAnchors(taFileDescription, 5, 5, newPosition, -1);
+				setAnchors(CodeEditor.get(), 0, 0, newPosition + 42.5, 0);
 			}
 			case DETACHED -> {
 				if(SceneOne.sceneExists(toolbarSceneId)) {
-					toolBarDetached = getToolBar();
-					toolbarWindow.setContent(toolBarDetached);
+					Toolbox toolbox = getToolBar();
+					toolBarDetached = toolbox.content();
+					toolbarWindow.setContent(toolbox);
 				}
 			}
 			case HIDDEN -> {
@@ -620,7 +628,7 @@ public class GistWindow {
 		}
 	}
 
-	private HBox getToolBar() {
+	private Toolbox getToolBar() {
 		if(selectedNode != null) {
 			return switch(selectedNode.getType()) {
 				case GIST -> toolBars.gistSelected();
@@ -1039,7 +1047,7 @@ public class GistWindow {
 
 	}
 
-	public gistWindowActions getActions() {
+	public WindowActions getActions() {
 		return actions;
 	}
 

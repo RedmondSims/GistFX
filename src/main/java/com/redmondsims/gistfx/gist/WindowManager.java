@@ -6,7 +6,7 @@ import com.redmondsims.gistfx.enums.State;
 import com.redmondsims.gistfx.networking.Payload;
 import com.redmondsims.gistfx.sceneone.SceneOne;
 import com.redmondsims.gistfx.ui.gist.GistWindow;
-import com.redmondsims.gistfx.ui.gist.factory.TreeNode;
+import com.redmondsims.gistfx.ui.gist.treefactory.TreeNode;
 import com.redmondsims.gistfx.utils.Resources;
 import com.redmondsims.gistfx.utils.Status;
 import javafx.application.Platform;
